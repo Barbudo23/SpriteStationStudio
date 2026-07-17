@@ -1,0 +1,40 @@
+# AssetForge AI
+# GS006_Export.yaml
+version: "1.0"
+status: "Frozen"
+
+generation_step:
+  id: GS006
+  name: Export Assets
+
+purpose:
+  Convert approved working assets into production formats.
+
+inputs:
+  source: WorkingAssets/
+  qa_report: QA_Report.md
+
+exports:
+  png_sequence:
+    enabled: true
+  sprite_sheet:
+    enabled: true
+    layout: automatic
+  gif_preview:
+    enabled: true
+
+requirements:
+  transparent_background: required
+  naming_convention: AssetForge_Standard
+  unity_compatible: true
+
+output:
+  export_directory: Export/
+  manifest: Export_Metadata.yaml
+
+on_fail:
+  stop_iteration: true
+  reason: Export failed
+
+next_step:
+  GS007_Package

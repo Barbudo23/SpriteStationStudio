@@ -1,0 +1,262 @@
+[
+  {
+    "path": ".gitignore",
+    "size": 55,
+    "sha256": "40caf1bb2cb166b7c487f7ab70149247a8d52fcb7952edc0dcdb41c830843790"
+  },
+  {
+    "path": "README.md",
+    "size": 812,
+    "sha256": "403b0b5c0d0d644352426b33d36cc2736311af6e88979796e314c9a961f55b72"
+  },
+  {
+    "path": "assetforge/__init__.py",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "assetforge/__main__.py",
+    "size": 60,
+    "sha256": "a99133ce6fd890c2e002b8dba7869e5009d0fa55f8fda7402cabec9a48a69ca1"
+  },
+  {
+    "path": "assetforge/core/__init__.py",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "assetforge/core/config_loader.py",
+    "size": 1080,
+    "sha256": "03f37ecceb54b89935707564f9ad1e4465f2df7ed67867934052a5fb2b38b627"
+  },
+  {
+    "path": "assetforge/core/pipeline.py",
+    "size": 602,
+    "sha256": "ee85a2f4c8620a59ab38a7503dd41a4ca2187925d7f723d74532648d20515d4e"
+  },
+  {
+    "path": "assetforge/core/state.py",
+    "size": 1097,
+    "sha256": "8c187fee4a9bfeb3ff2fea5d3c3bab0cdc7cdcfdd8c791ee28db41c5048c1fc6"
+  },
+  {
+    "path": "assetforge/engine/__init__.py",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "assetforge/engine/gs001_input_validation.py",
+    "size": 1028,
+    "sha256": "317e9b5214912bd55823569210c8c7a4a448792be99c5743b9c321ec2620fd01"
+  },
+  {
+    "path": "assetforge/engine/gs002_character_lock.py",
+    "size": 1099,
+    "sha256": "f798697e3220ccc44c39a9b218db2a19f5aea4ca6fe519d81846aca30edd6dc8"
+  },
+  {
+    "path": "assetforge/exporters/__init__.py",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "assetforge/models/__init__.py",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "assetforge/providers/__init__.py",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "assetforge/qa/__init__.py",
+    "size": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "assetforge/runner.py",
+    "size": 1508,
+    "sha256": "aad22cc0a90b64f91af5b8f234a8562dd1fed9aff5d4743c8a367f4ecd35ba93"
+  },
+  {
+    "path": "assets/references/etalon1/sheets/Etalon1_8_View_Reference_Sheet.png",
+    "size": 1535597,
+    "sha256": "9cf578e21604506c57e351e1f43606f9467e168226cb4cb150878e772c9c735b"
+  },
+  {
+    "path": "assets/references/etalon1/views/Etalon1_view_1.png",
+    "size": 191423,
+    "sha256": "be505422dc09026b1cbdd10dd56e0319993a644ce87ff63d13785b3ef744473c"
+  },
+  {
+    "path": "assets/references/etalon1/views/Etalon1_view_2.png",
+    "size": 189450,
+    "sha256": "25670131ef0944c6eb84c4f910b49895031c3e46407d071879608a84f27833cd"
+  },
+  {
+    "path": "assets/references/etalon1/views/Etalon1_view_3.png",
+    "size": 192078,
+    "sha256": "b8ecdb2d01b69844778154d49d516805806e6328fc97bedca17bf831b8f1b2e5"
+  },
+  {
+    "path": "assets/references/etalon1/views/Etalon1_view_4.png",
+    "size": 187533,
+    "sha256": "b0d0708f74ab87e654a3008f611d0685fb8e46fbba9d65cff1f7c5f98539f163"
+  },
+  {
+    "path": "assets/references/etalon1/views/Etalon1_view_5.png",
+    "size": 186013,
+    "sha256": "5ce439b7048984c3f1f433fdca135bb7caf7b6cdd325f98bda1d175b093c9395"
+  },
+  {
+    "path": "assets/references/etalon1/views/Etalon1_view_6.png",
+    "size": 184525,
+    "sha256": "9ea2df40a5ad51c772839976a40c9eccb0035b2c9a920efa6297ab0949e6f92f"
+  },
+  {
+    "path": "assets/references/etalon1/views/Etalon1_view_7.png",
+    "size": 181609,
+    "sha256": "8ce01d6c3529b1b040585a479b2459e59227ab2f27eea0021cf86fd038decd9d"
+  },
+  {
+    "path": "assets/references/etalon1/views/Etalon1_view_8.png",
+    "size": 175771,
+    "sha256": "3a83841ed08ac03e263688d1dc180ea6bdc6b5dd6f2a0d4e14b6fd8bfe1936b4"
+  },
+  {
+    "path": "configs/core/CameraLibrary.yaml",
+    "size": 624,
+    "sha256": "1206ae1b79c0bab58e96ff4ce71eb69bfa3f49164dc0ffe06df40e05c2626e45"
+  },
+  {
+    "path": "configs/core/MPI.yaml",
+    "size": 653,
+    "sha256": "e4d857eec56cea235dd372f6fcc9fb6d22e24c0d0860490181ed648e53cb3ef4"
+  },
+  {
+    "path": "configs/core/Manifest.yaml",
+    "size": 904,
+    "sha256": "c0052700e8c56bd10f71825ddcafd5acd39c987a18ea12a43d3e3a9e851321a9"
+  },
+  {
+    "path": "configs/core/QA_Profile.yaml",
+    "size": 821,
+    "sha256": "e4edadc011b6f19426793a2d4962b40a847362cd662d5a42e18fa1fa3699cde7"
+  },
+  {
+    "path": "configs/steps/GS001_InputValidation.yaml",
+    "size": 574,
+    "sha256": "f0ceaeab07deeb99ec2a08be02da0d13c3a6aaf5d127f03092b6d72ec60851a5"
+  },
+  {
+    "path": "configs/steps/GS002_CharacterLock.yaml",
+    "size": 740,
+    "sha256": "ea65d731cb1c53a00515ae88b6638c653b94b1a6365bb5918c9f8a2b9fd3fa84"
+  },
+  {
+    "path": "configs/steps/GS003_CameraSetup.yaml",
+    "size": 770,
+    "sha256": "ef54cb98d838a0cdc28dd16b13c166338c5d5cb4d8b8fd42c9d8d3a12c2323e6"
+  },
+  {
+    "path": "configs/steps/GS004_Generation.yaml",
+    "size": 942,
+    "sha256": "404faf4a4bd3fbbc8d457cf6019c201f2baca1868e93d949e8adaad0c19fbbd3"
+  },
+  {
+    "path": "configs/steps/GS005_QA.yaml",
+    "size": 797,
+    "sha256": "3ebd8ea0165062af5c738ed52c15fe4a324c5d5a3e43667865468d1ef1219ea2"
+  },
+  {
+    "path": "configs/steps/GS006_Export.yaml",
+    "size": 653,
+    "sha256": "4fcb5bad83b6fe1ad8fdf28f27b895d661f4964f260e84d70126ec25365484a3"
+  },
+  {
+    "path": "configs/steps/GS007_Package.yaml",
+    "size": 727,
+    "sha256": "c59aa8005cc0e027924a697ffb1170fb2a498f472eb2497b08e6930c267e2b50"
+  },
+  {
+    "path": "configs/steps/GS008_Report.yaml",
+    "size": 818,
+    "sha256": "956ac608b255ad2dbc14c7b1a515c45d10b33ce47ae25ac13572da5104813b4f"
+  },
+  {
+    "path": "docs/Engine_Library.md",
+    "size": 1742,
+    "sha256": "ab24881be86a6a48be43801fd618515105a69028725c8ac39f6cc86a0aee253f"
+  },
+  {
+    "path": "docs/MASTER_PROMPT.md",
+    "size": 1787,
+    "sha256": "7dfd29621e8f766c3a175b04d7c6c07145050a3f01a0508ae797ee4030bec175"
+  },
+  {
+    "path": "docs/STACK1_MIGRATION_REPORT.md",
+    "size": 1120,
+    "sha256": "3c27a8923764b6ff2e0c79a50fb66a35efef8ae5e3aa09ad63d23358df1b54a0"
+  },
+  {
+    "path": "projects/Soldier_AK47/References/Back.png",
+    "size": 189450,
+    "sha256": "25670131ef0944c6eb84c4f910b49895031c3e46407d071879608a84f27833cd"
+  },
+  {
+    "path": "projects/Soldier_AK47/References/Front.png",
+    "size": 191423,
+    "sha256": "be505422dc09026b1cbdd10dd56e0319993a644ce87ff63d13785b3ef744473c"
+  },
+  {
+    "path": "projects/Soldier_AK47/References/Left.png",
+    "size": 192078,
+    "sha256": "b8ecdb2d01b69844778154d49d516805806e6328fc97bedca17bf831b8f1b2e5"
+  },
+  {
+    "path": "projects/Soldier_AK47/References/REFERENCE_MAPPING.yaml",
+    "size": 226,
+    "sha256": "5ce51d7fd92bd97566fcd449ff1342885a34f9fe1f8a75178c33d824c547d2b6"
+  },
+  {
+    "path": "projects/Soldier_AK47/References/Right.png",
+    "size": 187533,
+    "sha256": "b0d0708f74ab87e654a3008f611d0685fb8e46fbba9d65cff1f7c5f98539f163"
+  },
+  {
+    "path": "projects/Soldier_AK47/iterations/iteration_01/Character_Profile/Character_Profile.yaml",
+    "size": 94,
+    "sha256": "835196af092ffac518543dd39a354847f7d2378c5e831dc90b847a34135103f5"
+  },
+  {
+    "path": "projects/Soldier_AK47/iterations/iteration_01/Production_Report/Production_Report.md",
+    "size": 89,
+    "sha256": "7750c083f54666d83488652f99cefe7fad01dabea5c72fc733d5b9038683bb2a"
+  },
+  {
+    "path": "projects/Soldier_AK47/iterations/iteration_01/Readme.md",
+    "size": 272,
+    "sha256": "498f996c2822c2a0f38a7bb73a7e5851df1c3989ed9fe0ea92bff067356f1ff3"
+  },
+  {
+    "path": "projects/Soldier_AK47/packages/Iteration_01_Character_Base.zip",
+    "size": 7280,
+    "sha256": "aad68a8c7a71fb1f340494f87f3ed9295f9175dd65d08156f82c0aacd44bc5fe"
+  },
+  {
+    "path": "pyproject.toml",
+    "size": 368,
+    "sha256": "30b6cb732580b24715c5a688c9383d84eb196abdb0fca676e343e64386f7ff53"
+  },
+  {
+    "path": "requirements.txt",
+    "size": 12,
+    "sha256": "71749243f84428fee225bfaa796dca5ef6c1e83a98f6d2a407df615b0390d6fb"
+  },
+  {
+    "path": "tests/test_smoke.py",
+    "size": 41,
+    "sha256": "0eb0103b4049793316ddde36f5d58d2d30c402db8a5bb33409465ec78c5f62cb"
+  }
+]

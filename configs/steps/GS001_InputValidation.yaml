@@ -1,0 +1,37 @@
+# AssetForge AI
+# GS001_InputValidation.yaml
+version: "1.0"
+status: "Frozen"
+
+generation_step:
+  id: GS001
+  name: Input Validation
+
+purpose:
+  Validate all required input references before production starts.
+
+required_inputs:
+  - Front.png
+  - Back.png
+  - Left.png
+  - Right.png
+
+validation:
+  file_exists: true
+  readable_image: true
+  supported_format:
+    - png
+    - jpg
+    - webp
+  minimum_count: 4
+
+output:
+  status: PASS
+  report: InputValidation_Report.md
+
+on_fail:
+  stop_iteration: true
+  reason: Missing or invalid references
+
+next_step:
+  GS002_CharacterLock

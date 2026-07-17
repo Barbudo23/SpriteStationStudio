@@ -1,0 +1,7 @@
+status: provisional
+mapping:
+  Front.png: Etalon1_view_1.png
+  Back.png: Etalon1_view_2.png
+  Left.png: Etalon1_view_3.png
+  Right.png: Etalon1_view_4.png
+note: Direction labels must be confirmed before production generation.

@@ -1,0 +1,43 @@
+# AssetForge AI
+# GS002_CharacterLock.yaml
+version: "1.0"
+status: "Frozen"
+
+generation_step:
+  id: GS002
+  name: Character Lock
+
+purpose:
+  Build an immutable character profile used by every subsequent generation step.
+
+locks:
+  identity:
+    face: true
+    hair: true
+    expression: true
+  equipment:
+    helmet: true
+    armor: true
+    vest: true
+    backpack: true
+    pouches: true
+    weapon: true
+    gloves: true
+    boots: true
+  appearance:
+    body_proportions: true
+    silhouette: true
+    color_palette: true
+    lighting: true
+    scale: true
+
+output:
+  profile: Character_Lock_Profile.yaml
+  status: PASS
+
+on_fail:
+  stop_iteration: true
+  reason: Character consistency cannot be guaranteed
+
+next_step:
+  GS003_CameraSetup

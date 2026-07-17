@@ -1,0 +1,43 @@
+# AssetForge AI
+# GS008_Report.yaml
+version: "1.0"
+status: "Frozen"
+
+generation_step:
+  id: GS008
+  name: Production Report
+
+purpose:
+  Finalize the production iteration, generate reports, update progress,
+  and hand control back to the Production Engine.
+
+inputs:
+  package: Iteration_Package.zip
+  package_metadata: Package_Metadata.yaml
+  qa_report: QA_Report.md
+  export_metadata: Export_Metadata.yaml
+
+reports:
+  production_report:
+    enabled: true
+  iteration_summary:
+    enabled: true
+  progress_update:
+    enabled: true
+
+progress:
+  update_iteration_status: COMPLETE
+  update_project_progress: true
+
+handoff:
+  next_iteration: automatic
+  read_manifest: true
+
+output:
+  report: Production_Report.md
+  summary: Iteration_Summary.md
+  status: COMPLETE
+
+on_complete:
+  notify_runner: true
+  archive_logs: true

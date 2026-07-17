@@ -1,0 +1,41 @@
+# AssetForge AI
+# GS007_Package.yaml
+version: "1.0"
+status: "Frozen"
+
+generation_step:
+  id: GS007
+  name: Package Assets
+
+purpose:
+  Assemble all exported assets into the production package for the current iteration.
+
+inputs:
+  export_directory: Export/
+  export_metadata: Export_Metadata.yaml
+
+package:
+  naming:
+    pattern: "Iteration_{iteration}_{package}.zip"
+  include:
+    - PNG/
+    - SpriteSheet/
+    - GIF/
+    - Production_Report.md
+    - Readme.md
+    - Export_Metadata.yaml
+
+validation:
+  package_complete: required
+  checksum: optional
+
+output:
+  package_file: Iteration_Package.zip
+  package_manifest: Package_Metadata.yaml
+
+on_fail:
+  stop_iteration: true
+  reason: Packaging failed
+
+next_step:
+  GS008_Report

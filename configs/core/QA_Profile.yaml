@@ -1,0 +1,52 @@
+# AssetForge AI
+# QA_Profile.yaml
+version: "1.0"
+status: "Frozen"
+
+profile:
+  name: "Commercial Game Asset"
+
+identity:
+  face: locked
+  hair: locked
+  helmet: locked
+  armor: locked
+  backpack: locked
+  weapon: locked
+  gloves: locked
+  boots: locked
+
+geometry:
+  body_proportions: locked
+  scale: locked
+  pivot: feet_center
+
+camera:
+  projection: locked
+  pitch: locked
+  yaw: manifest
+  framing: locked
+
+render:
+  lighting: locked
+  color_palette: locked
+  transparent_background: required
+
+animation:
+  seamless_loop: required
+  frame_order: validated
+  consistent_motion: required
+
+export:
+  png_sequence: required
+  sprite_sheet: required
+  gif_preview: required
+  unity_ready: required
+
+acceptance:
+  minimum_score: 95
+  failed_checks: 0
+
+result:
+  on_success: "Iteration Approved"
+  on_failure: "Rework Required"

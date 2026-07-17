@@ -1,0 +1,47 @@
+# AssetForge AI
+# Manifest.yaml
+version: "1.0"
+status: "Frozen"
+
+iteration:
+  id: 1
+  name: "Character Foundation"
+  progress: "10%"
+
+description: >
+  Build the base package for the character using the four reference images.
+  This package becomes the immutable foundation for all subsequent iterations.
+
+input:
+  required:
+    - Front.png
+    - Back.png
+    - Left.png
+    - Right.png
+
+tasks:
+  - Validate reference images
+  - Verify character consistency
+  - Register camera set
+  - Create character profile
+  - Prepare production metadata
+
+output:
+  package: "Iteration_01_Character_Base.zip"
+  contents:
+    - References/
+    - Character_Profile/
+    - Camera_Set/
+    - Production_Report/
+    - Readme.md
+
+qa:
+  identity_match: required
+  camera_registered: required
+  scale_locked: required
+  equipment_locked: required
+  ready_for_iteration_02: true
+
+next_iteration:
+  id: 2
+  package: "Walk.zip"

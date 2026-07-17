@@ -1,0 +1,51 @@
+# AssetForge AI
+# GS003_CameraSetup.yaml
+version: "1.0"
+status: "Frozen"
+
+generation_step:
+  id: GS003
+  name: Camera Setup
+
+purpose:
+  Apply the standard AssetForge camera configuration before any generation.
+
+input:
+  camera_library: CameraLibrary.yaml
+
+defaults:
+  projection: Isometric
+  pitch: 30
+  transparent_background: true
+
+camera_lock:
+  projection: true
+  pitch: true
+  yaw: true
+  framing: true
+  scale: true
+
+camera_set:
+  - CAM01
+  - CAM02
+  - CAM03
+  - CAM04
+  - CAM05
+  - CAM06
+  - CAM07
+  - CAM08
+
+validation:
+  camera_library_loaded: required
+  camera_lock_applied: required
+
+output:
+  active_camera_profile: ActiveCameraProfile.yaml
+  status: PASS
+
+on_fail:
+  stop_iteration: true
+  reason: Camera configuration failed
+
+next_step:
+  GS004_Generation

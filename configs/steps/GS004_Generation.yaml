@@ -1,0 +1,52 @@
+# AssetForge AI
+# GS004_Generation.yaml
+version: "1.0"
+status: "Frozen"
+
+generation_step:
+  id: GS004
+  name: Universal Generation Dispatcher
+
+purpose:
+  Execute the generation task defined by Manifest.yaml.
+
+inputs:
+  manifest: Manifest.yaml
+  mpi: MPI.yaml
+  character_profile: Character_Lock_Profile.yaml
+  camera_profile: ActiveCameraProfile.yaml
+
+dispatcher:
+  read_iteration: true
+  detect_animation: true
+  create_internal_generation_steps: true
+
+internal_generation_steps:
+  strategy: dynamic
+  examples:
+    - Front
+    - FrontRight
+    - Right
+    - BackRight
+    - Back
+    - BackLeft
+    - Left
+    - FrontLeft
+
+generation_rules:
+  preserve_identity: required
+  preserve_camera: required
+  preserve_scale: required
+  transparent_background: required
+
+output:
+  generated_assets: WorkingAssets/
+  metadata: Generation_Metadata.yaml
+  status: PASS
+
+on_fail:
+  stop_iteration: true
+  reason: Generation failed
+
+next_step:
+  GS005_QA

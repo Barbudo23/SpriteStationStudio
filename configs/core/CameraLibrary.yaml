@@ -1,0 +1,51 @@
+# AssetForge AI
+# CameraLibrary.yaml
+version: "1.0"
+status: "Frozen"
+
+defaults:
+  projection: Isometric
+  pitch: 30
+  background: Transparent
+  scale_locked: true
+  camera_locked: true
+
+cameras:
+
+  CAM01:
+    name: Front
+    yaw: 0
+
+  CAM02:
+    name: FrontRight
+    yaw: 45
+
+  CAM03:
+    name: Right
+    yaw: 90
+
+  CAM04:
+    name: BackRight
+    yaw: 135
+
+  CAM05:
+    name: Back
+    yaw: 180
+
+  CAM06:
+    name: BackLeft
+    yaw: 225
+
+  CAM07:
+    name: Left
+    yaw: 270
+
+  CAM08:
+    name: FrontLeft
+    yaw: 315
+
+rules:
+  preserve_pitch: true
+  preserve_scale: true
+  preserve_framing: true
+  preserve_projection: true

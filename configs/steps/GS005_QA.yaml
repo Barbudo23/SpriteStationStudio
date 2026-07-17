@@ -1,0 +1,44 @@
+# AssetForge AI
+# GS005_QA.yaml
+version: "1.0"
+status: "Frozen"
+
+generation_step:
+  id: GS005
+  name: Automated Quality Assurance
+
+purpose:
+  Validate generated assets against the AssetForge QA profile.
+
+inputs:
+  generated_assets: WorkingAssets/
+  qa_profile: QA_Profile.yaml
+  generation_metadata: Generation_Metadata.yaml
+
+checks:
+  identity:
+    face: required
+    equipment: required
+    silhouette: required
+  camera:
+    angle: locked
+    scale: locked
+    framing: locked
+  render:
+    lighting: locked
+    transparent_background: required
+  animation:
+    seamless_loop: required
+    frame_consistency: required
+
+decision:
+  pass:
+    status: APPROVED
+    next_step: GS006_Export
+  fail:
+    status: REWORK
+    action: ReturnToGS004
+
+output:
+  report: QA_Report.md
+  score: QA_Score.json

@@ -1,0 +1,42 @@
+# AssetForge AI
+# MPI.yaml
+version: "1.0"
+status: "Frozen"
+
+project:
+  name: "Character_Project"
+  version: "1.0"
+
+input:
+  references:
+    front: "Front.png"
+    back: "Back.png"
+    left: "Left.png"
+    right: "Right.png"
+
+iteration:
+  number: 1
+  progress: "10%"
+
+manifest:
+  file: "Manifest.yaml"
+
+generation:
+  target: "Character Foundation"
+
+camera_library: "CameraLibrary.yaml"
+qa_profile: "QA_Profile.yaml"
+
+export:
+  formats:
+    - PNG
+    - SpriteSheet
+    - GIF
+  package: "Iteration_01_Character_Base.zip"
+
+rules:
+  preserve_identity: true
+  preserve_scale: true
+  preserve_equipment: true
+  transparent_background: true
+  unity_ready: true
