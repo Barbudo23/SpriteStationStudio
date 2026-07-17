@@ -6,14 +6,20 @@ from pathlib import Path
 
 from assetforge.core.state import AssetForgeState
 from assetforge.exporters import AssetPackager
+from assetforge.workflow import WorkflowCheckpoint, WorkflowCheckpointStore
 
 
 class GS008Report:
     step_id = "GS008"
     name = "Production Report"
 
-    def __init__(self, packager: AssetPackager | None = None) -> None:
+    def __init__(
+        self,
+        packager: AssetPackager | None = None,
+        checkpoint_store: WorkflowCheckpointStore | None = None,
+    ) -> None:
         self._packager = packager or AssetPackager()
+        self._checkpoint_store = checkpoint_store or WorkflowCheckpointStore()
 
     def execute(self, state: AssetForgeState) -> AssetForgeState:
         state.current_step = self.step_id
@@ -67,6 +73,20 @@ class GS008Report:
             "production_report": str(production_report),
             "iteration_summary": str(iteration_summary),
         }
+        checkpoint = WorkflowCheckpoint(
+            status="COMPLETE",
+            completed_iteration=state.iteration,
+            next_iteration=state.metadata["next_iteration"],
+            project_progress=state.progress,
+            package_file=str(rebuilt.package_file),
+            package_sha256=rebuilt.checksum,
+            stack_revision=str(state.metadata.get("stack_revision", "unknown")),
+        )
+        try:
+            checkpoint_path = self._checkpoint_store.save(project_root, checkpoint)
+        except (OSError, ValueError) as error:
+            return self._fail(state, f"Workflow checkpoint failed: {error}")
+        state.metadata["workflow_checkpoint"] = str(checkpoint_path)
         for report in (str(production_report), str(iteration_summary)):
             state.add_report(report)
         state.log(

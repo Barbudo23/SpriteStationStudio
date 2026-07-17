@@ -62,6 +62,9 @@ def test_report_completes_iteration_and_rebuilds_final_package(tmp_path):
     assert result.metadata["iteration_status"] == "COMPLETE"
     assert result.metadata["next_iteration"] == 2
     assert result.metadata["reporting"]["status"] == "COMPLETE"
+    checkpoint_path = Path(result.metadata["workflow_checkpoint"])
+    assert checkpoint_path.is_file()
+    assert "completed_iteration: 1" in checkpoint_path.read_text(encoding="utf-8")
     assert "Status: COMPLETE" in report_path.read_text(encoding="utf-8")
     assert result.metadata["package"]["sha256"] != old_checksum
     assert result.metadata["package"]["sha256"] == sha256(package_path.read_bytes()).hexdigest()

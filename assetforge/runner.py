@@ -16,6 +16,10 @@ from assetforge.engine.gs007_package import GS007Package
 from assetforge.engine.gs008_report import GS008Report
 from assetforge.providers import MockProvider
 
+
+def success_message(stack_revision: str, provider: str) -> str:
+    return f"{stack_revision} completed successfully with provider: {provider}."
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run implemented AssetForge Stack 2 steps")
     parser.add_argument("--project-root", type=Path, default=Path("projects/Soldier_AK47"))
@@ -38,7 +42,7 @@ def main() -> int:
         metadata={
             "project_root": str(args.project_root),
             "provider": MockProvider(),
-            "stack_revision": "Stack_02_Rev00",
+            "stack_revision": "Stack_03_Rev00",
         },
     )
     result = Pipeline(
@@ -59,7 +63,7 @@ def main() -> int:
         for error in result.errors:
             print(f"ERROR: {error}")
         return 1
-    print(f"Stack 2 completed successfully with provider: {args.provider}.")
+    print(success_message(result.metadata["stack_revision"], args.provider))
     return 0
 
 if __name__ == "__main__":

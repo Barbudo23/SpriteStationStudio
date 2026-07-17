@@ -1,0 +1,17 @@
+status: PASS
+package: Iteration_01_Character_Base_Stack_03_Rev00.zip
+sha256: f633dddaafde42a5f64771a13202395d8c0f29ace1e15c53c1a18debc63f4619
+members:
+- PNG/AssetForge_View_01.png
+- PNG/AssetForge_View_02.png
+- PNG/AssetForge_View_03.png
+- PNG/AssetForge_View_04.png
+- PNG/AssetForge_View_05.png
+- PNG/AssetForge_View_06.png
+- PNG/AssetForge_View_07.png
+- PNG/AssetForge_View_08.png
+- SpriteSheet/AssetForge_SpriteSheet.png
+- GIF/AssetForge_Preview.gif
+- Export_Metadata.yaml
+- Production_Report.md
+- Readme.md
