@@ -12,6 +12,15 @@ pip install -e .
 python -m assetforge --project-root projects/Soldier_AK47 --provider mock
 ```
 
+Show the current workflow state without generating assets:
+
+```bash
+python -m assetforge --project-root projects/Soldier_AK47 --status
+```
+
+An already completed iteration is skipped by default. Use `--force` only for an
+intentional local rebuild.
+
 ## Current implementation
 
 - Core runtime: configuration loader, state, pipeline.
