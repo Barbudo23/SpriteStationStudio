@@ -9,7 +9,7 @@ from pathlib import Path
 import shutil
 from typing import Any, Mapping
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageOps
 import yaml
 
 
@@ -41,6 +41,13 @@ class CodexBatchPlan:
     status: str
     plan: Path
     jobs: tuple[CodexJob, ...]
+
+
+@dataclass(frozen=True)
+class CodexBatchQAResult:
+    status: str
+    report: Path
+    contact_sheet: Path
 
 
 class CodexBridge:
@@ -226,7 +233,7 @@ class CodexBridge:
         review_required.append(camera_id)
         plan.update(
             {
-                "status": "IN_PROGRESS",
+                "status": "READY_FOR_REVIEW" if not pending else "IN_PROGRESS",
                 "pending_cameras": pending,
                 "review_required_cameras": review_required,
                 "generation_started": True,
@@ -238,6 +245,102 @@ class CodexBridge:
             encoding="utf-8",
         )
         return CodexImportResult(status="REVIEW_REQUIRED", asset=job.output, report=report)
+
+    def evaluate_batch(
+        self,
+        *,
+        project_root: Path,
+        iteration: int,
+        camera_ids: tuple[str, ...],
+    ) -> CodexBatchQAResult:
+        """Run structural QA and produce a visual contact sheet for human review."""
+
+        plan_path = (
+            project_root / "codex_jobs" / f"iteration_{iteration:02d}" / "Batch_Plan.yaml"
+        )
+        if not plan_path.is_file():
+            raise FileNotFoundError(f"Codex batch plan not found: {plan_path}")
+        plan = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
+        if not isinstance(plan, dict) or plan.get("pending_cameras"):
+            raise ValueError("All Codex camera outputs are required before batch QA.")
+
+        output_root = project_root / "canary" / f"iteration_{iteration:02d}"
+        assets = tuple(output_root / f"{camera_id}_codex.png" for camera_id in camera_ids)
+        missing = [path for path in assets if not path.is_file()]
+        if missing:
+            raise FileNotFoundError(f"Codex batch asset not found: {missing[0]}")
+
+        dimensions: list[list[int]] = []
+        subject_heights: list[int] = []
+        for asset in assets:
+            dimensions.append(self._validate_alpha_png(asset))
+            with Image.open(asset) as image:
+                bbox = image.getchannel("A").getbbox()
+                if bbox is None:
+                    raise ValueError(f"Codex batch asset has no visible subject: {asset}")
+                subject_heights.append(bbox[3] - bbox[1])
+        uniform_dimensions = len({tuple(item) for item in dimensions}) == 1
+        scale_ratio = max(subject_heights) / min(subject_heights)
+        scale_consistent = scale_ratio <= 1.20
+        checks = {
+            "view_coverage": len(assets) == len(camera_ids) == 8,
+            "uniform_dimensions": uniform_dimensions,
+            "alpha_and_corners": True,
+            "scale_ratio_at_most_1_20": scale_consistent,
+        }
+        status = "PASS" if all(checks.values()) else "FAIL"
+        contact_sheet = output_root / "Iteration_02_Contact_Sheet.png"
+        self._write_contact_sheet(assets, camera_ids, contact_sheet)
+        report = output_root / "Batch_QA.yaml"
+        report.write_text(
+            yaml.safe_dump(
+                {
+                    "status": status,
+                    "iteration": iteration,
+                    "provider": "codex-built-in",
+                    "camera_ids": list(camera_ids),
+                    "checks": checks,
+                    "dimensions": dimensions[0] if uniform_dimensions else dimensions,
+                    "subject_heights": dict(zip(camera_ids, subject_heights)),
+                    "scale_ratio": round(scale_ratio, 4),
+                    "contact_sheet": str(contact_sheet),
+                    "human_review_required": True,
+                    "workflow_state_advanced": False,
+                },
+                sort_keys=False,
+            ),
+            encoding="utf-8",
+        )
+        plan["status"] = "READY_FOR_REVIEW" if status == "PASS" else "QA_FAILED"
+        plan["structural_qa"] = status
+        plan["qa_report"] = str(report)
+        plan["contact_sheet"] = str(contact_sheet)
+        plan["workflow_state_advanced"] = False
+        plan_path.write_text(yaml.safe_dump(plan, sort_keys=False), encoding="utf-8")
+        return CodexBatchQAResult(status=status, report=report, contact_sheet=contact_sheet)
+
+    @staticmethod
+    def _write_contact_sheet(
+        assets: tuple[Path, ...],
+        camera_ids: tuple[str, ...],
+        output: Path,
+    ) -> None:
+        cell_width, cell_height = 300, 400
+        sheet = Image.new("RGB", (cell_width * 4, cell_height * 2), (32, 32, 32))
+        draw = ImageDraw.Draw(sheet)
+        for index, (asset, camera_id) in enumerate(zip(assets, camera_ids)):
+            with Image.open(asset) as image:
+                rgba = image.convert("RGBA")
+                thumbnail = ImageOps.contain(rgba, (cell_width - 20, cell_height - 40))
+            column, row = index % 4, index // 4
+            x = column * cell_width + (cell_width - thumbnail.width) // 2
+            y = row * cell_height + 30 + (cell_height - 40 - thumbnail.height) // 2
+            background = Image.new("RGBA", thumbnail.size, (96, 96, 96, 255))
+            background.alpha_composite(thumbnail)
+            sheet.paste(background.convert("RGB"), (x, y))
+            draw.text((column * cell_width + 10, row * cell_height + 8), camera_id, fill="white")
+        output.parent.mkdir(parents=True, exist_ok=True)
+        sheet.save(output, format="PNG")
 
     @staticmethod
     def _validate_alpha_png(source_image: Path) -> list[int]:

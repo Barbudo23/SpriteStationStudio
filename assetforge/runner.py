@@ -137,6 +137,11 @@ def main() -> int:
         help="Prepare remaining camera jobs after canary approval without generating images.",
     )
     parser.add_argument(
+        "--evaluate-codex-batch",
+        action="store_true",
+        help="Run structural QA and create a contact sheet after all camera imports.",
+    )
+    parser.add_argument(
         "--force",
         action="store_true",
         help="Explicitly rebuild an iteration already recorded as complete.",
@@ -248,10 +253,18 @@ def main() -> int:
         return 0
 
     if provider_name == "codex":
-        if args.approve_canary and args.prepare_codex_batch:
-            print("ERROR: Choose either --approve-canary or --prepare-codex-batch.")
+        codex_actions = sum(
+            bool(value)
+            for value in (
+                args.approve_canary,
+                args.prepare_codex_batch,
+                args.evaluate_codex_batch,
+            )
+        )
+        if codex_actions > 1:
+            print("ERROR: Choose one Codex batch action at a time.")
             return 1
-        if not args.canary and not args.approve_canary and not args.prepare_codex_batch:
+        if not args.canary and codex_actions == 0:
             print("BLOCKED: Codex Bridge currently supports one-view canary mode only.")
             return 1
         try:
@@ -278,6 +291,18 @@ def main() -> int:
                 print(
                     f"{batch.status}: prepared {len(batch.jobs)} remaining camera jobs. "
                     f"Batch plan: {batch.plan}. No generation was started."
+                )
+                return 0
+            if args.evaluate_codex_batch:
+                camera_ids = tuple(configs["CameraLibrary.yaml"]["cameras"])
+                qa = bridge.evaluate_batch(
+                    project_root=args.project_root,
+                    iteration=manifest_iteration,
+                    camera_ids=camera_ids,
+                )
+                print(
+                    f"STRUCTURAL QA {qa.status}: report={qa.report}; "
+                    f"contact_sheet={qa.contact_sheet}; human review is still required."
                 )
                 return 0
             job = bridge.prepare(

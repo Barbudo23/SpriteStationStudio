@@ -1,0 +1,33 @@
+status: PASS
+iteration: 2
+provider: codex-built-in
+camera_ids:
+- CAM01
+- CAM02
+- CAM03
+- CAM04
+- CAM05
+- CAM06
+- CAM07
+- CAM08
+checks:
+  view_coverage: true
+  uniform_dimensions: true
+  alpha_and_corners: true
+  scale_ratio_at_most_1_20: true
+dimensions:
+- 1086
+- 1448
+subject_heights:
+  CAM01: 1173
+  CAM02: 1121
+  CAM03: 1093
+  CAM04: 1129
+  CAM05: 1006
+  CAM06: 1067
+  CAM07: 1048
+  CAM08: 1101
+scale_ratio: 1.166
+contact_sheet: projects\Soldier_AK47\canary\iteration_02\Iteration_02_Contact_Sheet.png
+human_review_required: true
+workflow_state_advanced: false

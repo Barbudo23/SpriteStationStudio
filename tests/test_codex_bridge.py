@@ -183,3 +183,47 @@ def test_codex_batch_import_preserves_canary_and_updates_plan(tmp_path):
     assert plan["review_required_cameras"] == ["CAM02"]
     assert "CAM02" not in plan["pending_cameras"]
     assert canary_report.read_bytes() == canary_before
+
+
+def test_codex_batch_qa_requires_all_views_and_creates_contact_sheet(tmp_path):
+    project_root, configs, bridge = make_imported_canary(tmp_path)
+    bridge.approve_canary(
+        project_root=project_root,
+        iteration=2,
+        approved_at="2026-07-18T12:00:00+00:00",
+    )
+    batch = bridge.prepare_batch(project_root=project_root, iteration=2, configs=configs)
+    source = tmp_path / "batch-camera.png"
+    image = Image.new("RGBA", (8, 8), (0, 0, 0, 0))
+    for x in range(2, 6):
+        for y in range(1, 7):
+            image.putpixel((x, y), (80, 90, 60, 255))
+    image.save(source)
+    for index, job in enumerate(batch.jobs, start=2):
+        bridge.import_batch_result(
+            job=job,
+            source_image=source,
+            project_root=project_root,
+            iteration=2,
+            camera_id=f"CAM{index:02d}",
+        )
+
+    result = bridge.evaluate_batch(
+        project_root=project_root,
+        iteration=2,
+        camera_ids=tuple(f"CAM{index:02d}" for index in range(1, 9)),
+    )
+
+    report = yaml.safe_load(result.report.read_text(encoding="utf-8"))
+    plan = yaml.safe_load(batch.plan.read_text(encoding="utf-8"))
+    assert result.status == "PASS"
+    assert result.contact_sheet.is_file()
+    assert report["checks"] == {
+        "view_coverage": True,
+        "uniform_dimensions": True,
+        "alpha_and_corners": True,
+        "scale_ratio_at_most_1_20": True,
+    }
+    assert report["human_review_required"] is True
+    assert plan["status"] == "READY_FOR_REVIEW"
+    assert plan["workflow_state_advanced"] is False

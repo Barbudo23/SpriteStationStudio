@@ -1,4 +1,4 @@
-status: IN_PROGRESS
+status: READY_FOR_REVIEW
 provider: codex-built-in
 iteration: 2
 approved_canary: CAM01
@@ -16,3 +16,6 @@ review_required_cameras:
 - CAM06
 - CAM07
 - CAM08
+structural_qa: PASS
+qa_report: projects\Soldier_AK47\canary\iteration_02\Batch_QA.yaml
+contact_sheet: projects\Soldier_AK47\canary\iteration_02\Iteration_02_Contact_Sheet.png

@@ -21,3 +21,5 @@ Initial release.
 - Approved Iteration 02 CAM01 canary and prepared CAM02–CAM08 jobs without generation.
 - Added non-destructive batch-camera import and generated CAM02 for human review.
 - Persisted scoped Codex generation authorization and generated CAM03 for human review.
+- Generated CAM04–CAM08, completed all eight directions, and added structural batch QA
+  with a contact sheet and explicit READY_FOR_REVIEW gate.
