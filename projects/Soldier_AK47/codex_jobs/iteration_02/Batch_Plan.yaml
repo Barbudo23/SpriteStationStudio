@@ -4,8 +4,7 @@ iteration: 2
 approved_canary: CAM01
 completed_cameras:
 - CAM01
-pending_cameras:
-- CAM08
+pending_cameras: []
 total_cameras: 8
 generation_started: true
 workflow_state_advanced: false
@@ -16,3 +15,4 @@ review_required_cameras:
 - CAM05
 - CAM06
 - CAM07
+- CAM08
