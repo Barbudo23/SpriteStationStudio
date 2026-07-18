@@ -2,3 +2,7 @@ version: "1.0"
 active_provider: codex
 label: Codex built-in generator
 credentials_stored_here: false
+codex_reference_upload_authorized: false
+codex_upload_scope: configured project references for prepared jobs
+human_review_required: true
+max_images_per_run: 1

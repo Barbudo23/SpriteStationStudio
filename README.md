@@ -37,10 +37,14 @@ setting directly:
 ```powershell
 python -m assetforge --show-provider
 python -m assetforge --set-provider codex
+python -m assetforge --authorize-codex-generation
 ```
 
 `--provider` remains a one-run override and does not change the saved setting. The
 technical `mock` provider is available through this override for offline tests.
+Codex upload permission is stored locally, is limited to configured project references
+and prepared jobs, generates at most one image per run, and never removes human review.
+Revoke it with `python -m assetforge --revoke-codex-generation`.
 
 ## First OpenAI image (safe one-view canary)
 

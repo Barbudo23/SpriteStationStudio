@@ -21,6 +21,7 @@ MENU_CHOICES = {"1": "openai", "2": "codex", "3": "closeai"}
 @dataclass(frozen=True)
 class ProviderSettings:
     active_provider: str = "codex"
+    codex_reference_upload_authorized: bool = False
 
     def __post_init__(self) -> None:
         if self.active_provider not in PRODUCTION_PROVIDERS:
@@ -41,7 +42,12 @@ class ProviderSettingsStore:
         data = yaml.safe_load(self.path.read_text(encoding="utf-8"))
         if not isinstance(data, Mapping):
             raise ValueError("Provider settings must contain a YAML mapping.")
-        return ProviderSettings(active_provider=str(data.get("active_provider", "codex")))
+        return ProviderSettings(
+            active_provider=str(data.get("active_provider", "codex")),
+            codex_reference_upload_authorized=bool(
+                data.get("codex_reference_upload_authorized", False)
+            ),
+        )
 
     def save(self, settings: ProviderSettings) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -50,6 +56,12 @@ class ProviderSettingsStore:
             "active_provider": settings.active_provider,
             "label": PROVIDER_LABELS[settings.active_provider],
             "credentials_stored_here": False,
+            "codex_reference_upload_authorized": (
+                settings.codex_reference_upload_authorized
+            ),
+            "codex_upload_scope": "configured project references for prepared jobs",
+            "human_review_required": True,
+            "max_images_per_run": 1,
         }
         temporary_path = self.path.with_suffix(self.path.suffix + ".tmp")
         temporary_path.write_text(

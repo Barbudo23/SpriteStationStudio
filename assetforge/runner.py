@@ -84,6 +84,17 @@ def main() -> int:
         action="store_true",
         help="Show the active application provider and exit.",
     )
+    codex_permission = parser.add_mutually_exclusive_group()
+    codex_permission.add_argument(
+        "--authorize-codex-generation",
+        action="store_true",
+        help="Persist permission to upload configured references to Codex generation.",
+    )
+    codex_permission.add_argument(
+        "--revoke-codex-generation",
+        action="store_true",
+        help="Revoke persisted Codex reference-upload permission.",
+    )
     parser.add_argument(
         "--provider-settings",
         type=Path,
@@ -149,21 +160,43 @@ def main() -> int:
         if args.provider_menu:
             print(provider_menu_text(provider_settings.active_provider))
             selected = provider_from_menu_choice(input("Choose provider [1/2/3]: "))
-            provider_settings = ProviderSettings(selected)
+            provider_settings = ProviderSettings(
+                selected,
+                provider_settings.codex_reference_upload_authorized,
+            )
             provider_store.save(provider_settings)
             print(f"ACTIVE PROVIDER: {PROVIDER_LABELS[selected]} ({selected}).")
             return 0
         if args.set_provider:
-            provider_settings = ProviderSettings(args.set_provider)
+            provider_settings = ProviderSettings(
+                args.set_provider,
+                provider_settings.codex_reference_upload_authorized,
+            )
             provider_store.save(provider_settings)
             print(
                 f"ACTIVE PROVIDER: {PROVIDER_LABELS[args.set_provider]} "
                 f"({args.set_provider})."
             )
             return 0
+        if args.authorize_codex_generation or args.revoke_codex_generation:
+            authorized = bool(args.authorize_codex_generation)
+            provider_settings = ProviderSettings(
+                provider_settings.active_provider,
+                authorized,
+            )
+            provider_store.save(provider_settings)
+            state = "AUTHORIZED" if authorized else "REVOKED"
+            print(f"CODEX REFERENCE UPLOAD: {state}.")
+            return 0
         if args.show_provider:
             active = provider_settings.active_provider
             print(f"ACTIVE PROVIDER: {PROVIDER_LABELS[active]} ({active}).")
+            state = (
+                "AUTHORIZED"
+                if provider_settings.codex_reference_upload_authorized
+                else "NOT AUTHORIZED"
+            )
+            print(f"CODEX REFERENCE UPLOAD: {state}.")
             return 0
     except (EOFError, OSError, ValueError, TypeError) as error:
         print(f"ERROR: Provider switch failed: {error}")
