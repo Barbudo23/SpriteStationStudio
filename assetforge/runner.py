@@ -254,12 +254,21 @@ def main() -> int:
                 camera_id=args.canary_camera,
             )
             if args.codex_import:
-                imported = bridge.import_result(
-                    job=job,
-                    source_image=args.codex_import,
-                    iteration=manifest_iteration,
-                    camera_id=args.canary_camera,
-                )
+                if args.canary_camera == "CAM01":
+                    imported = bridge.import_result(
+                        job=job,
+                        source_image=args.codex_import,
+                        iteration=manifest_iteration,
+                        camera_id=args.canary_camera,
+                    )
+                else:
+                    imported = bridge.import_batch_result(
+                        job=job,
+                        source_image=args.codex_import,
+                        project_root=args.project_root,
+                        iteration=manifest_iteration,
+                        camera_id=args.canary_camera,
+                    )
                 print(
                     f"{imported.status}: imported {imported.asset}. "
                     f"Review record: {imported.report}. Workflow state was not advanced."

@@ -140,25 +140,7 @@ class CodexBridge:
     ) -> CodexImportResult:
         if not source_image.is_file():
             raise FileNotFoundError(f"Codex result not found: {source_image}")
-        with Image.open(source_image) as image:
-            image.load()
-            if image.format != "PNG":
-                raise ValueError("Codex result must be a PNG.")
-            if image.mode != "RGBA":
-                raise ValueError("Codex result must contain an RGBA alpha channel.")
-            alpha = image.getchannel("A")
-            minimum_alpha, maximum_alpha = alpha.getextrema()
-            if minimum_alpha != 0 or maximum_alpha == 0:
-                raise ValueError("Codex result must contain both transparent and opaque pixels.")
-            corners = (
-                alpha.getpixel((0, 0)),
-                alpha.getpixel((image.width - 1, 0)),
-                alpha.getpixel((0, image.height - 1)),
-                alpha.getpixel((image.width - 1, image.height - 1)),
-            )
-            if any(value > 8 for value in corners):
-                raise ValueError("Codex result corners must be transparent.")
-            dimensions = [image.width, image.height]
+        dimensions = self._validate_alpha_png(source_image)
 
         job.output.parent.mkdir(parents=True, exist_ok=True)
         if source_image.resolve() != job.output.resolve():
@@ -188,6 +170,96 @@ class CodexBridge:
             asset=job.output,
             report=report,
         )
+
+    def import_batch_result(
+        self,
+        *,
+        job: CodexJob,
+        source_image: Path,
+        project_root: Path,
+        iteration: int,
+        camera_id: str,
+    ) -> CodexImportResult:
+        """Import a non-canary camera without overwriting the canary review record."""
+
+        if not source_image.is_file():
+            raise FileNotFoundError(f"Codex result not found: {source_image}")
+        dimensions = self._validate_alpha_png(source_image)
+        plan_path = (
+            project_root / "codex_jobs" / f"iteration_{iteration:02d}" / "Batch_Plan.yaml"
+        )
+        if not plan_path.is_file():
+            raise FileNotFoundError(f"Codex batch plan not found: {plan_path}")
+        plan = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
+        if not isinstance(plan, dict) or plan.get("status") not in {"READY", "IN_PROGRESS"}:
+            raise ValueError("Codex batch plan is not ready for imports.")
+        pending = list(plan.get("pending_cameras", []))
+        if camera_id not in pending:
+            raise ValueError(f"Camera {camera_id} is not pending in the Codex batch plan.")
+
+        job.output.parent.mkdir(parents=True, exist_ok=True)
+        if source_image.resolve() != job.output.resolve():
+            if job.output.exists():
+                raise FileExistsError(f"Codex output already exists: {job.output}")
+            shutil.copy2(source_image, job.output)
+        report = job.output.parent / f"{camera_id}_Result.yaml"
+        report.write_text(
+            yaml.safe_dump(
+                {
+                    "status": "REVIEW_REQUIRED",
+                    "iteration": iteration,
+                    "camera_id": camera_id,
+                    "provider": "codex-built-in",
+                    "asset": str(job.output),
+                    "request": str(job.request),
+                    "dimensions": dimensions,
+                    "alpha_validated": True,
+                    "asset_sha256": sha256(job.output.read_bytes()).hexdigest(),
+                    "workflow_state_advanced": False,
+                },
+                sort_keys=False,
+            ),
+            encoding="utf-8",
+        )
+        pending.remove(camera_id)
+        review_required = list(plan.get("review_required_cameras", []))
+        review_required.append(camera_id)
+        plan.update(
+            {
+                "status": "IN_PROGRESS",
+                "pending_cameras": pending,
+                "review_required_cameras": review_required,
+                "generation_started": True,
+                "workflow_state_advanced": False,
+            }
+        )
+        plan_path.write_text(
+            yaml.safe_dump(plan, sort_keys=False),
+            encoding="utf-8",
+        )
+        return CodexImportResult(status="REVIEW_REQUIRED", asset=job.output, report=report)
+
+    @staticmethod
+    def _validate_alpha_png(source_image: Path) -> list[int]:
+        with Image.open(source_image) as image:
+            image.load()
+            if image.format != "PNG":
+                raise ValueError("Codex result must be a PNG.")
+            if image.mode != "RGBA":
+                raise ValueError("Codex result must contain an RGBA alpha channel.")
+            alpha = image.getchannel("A")
+            minimum_alpha, maximum_alpha = alpha.getextrema()
+            if minimum_alpha != 0 or maximum_alpha == 0:
+                raise ValueError("Codex result must contain both transparent and opaque pixels.")
+            corners = (
+                alpha.getpixel((0, 0)),
+                alpha.getpixel((image.width - 1, 0)),
+                alpha.getpixel((0, image.height - 1)),
+                alpha.getpixel((image.width - 1, image.height - 1)),
+            )
+            if any(value > 8 for value in corners):
+                raise ValueError("Codex result corners must be transparent.")
+            return [image.width, image.height]
 
     def approve_canary(
         self,

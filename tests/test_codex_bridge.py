@@ -147,3 +147,39 @@ def test_codex_batch_prepares_only_remaining_seven_cameras(tmp_path):
     assert plan["pending_cameras"] == [f"CAM{index:02d}" for index in range(2, 9)]
     assert plan["generation_started"] is False
     assert plan["workflow_state_advanced"] is False
+
+
+def test_codex_batch_import_preserves_canary_and_updates_plan(tmp_path):
+    project_root, configs, bridge = make_imported_canary(tmp_path)
+    bridge.approve_canary(
+        project_root=project_root,
+        iteration=2,
+        approved_at="2026-07-18T12:00:00+00:00",
+    )
+    batch = bridge.prepare_batch(project_root=project_root, iteration=2, configs=configs)
+    canary_report = project_root / "canary" / "iteration_02" / "Canary_Result.yaml"
+    canary_before = canary_report.read_bytes()
+    source = tmp_path / "cam02.png"
+    image = Image.new("RGBA", (8, 8), (0, 0, 0, 0))
+    for x in range(2, 6):
+        for y in range(1, 7):
+            image.putpixel((x, y), (80, 90, 60, 255))
+    image.save(source)
+
+    result = bridge.import_batch_result(
+        job=batch.jobs[0],
+        source_image=source,
+        project_root=project_root,
+        iteration=2,
+        camera_id="CAM02",
+    )
+
+    plan = yaml.safe_load(batch.plan.read_text(encoding="utf-8"))
+    report = yaml.safe_load(result.report.read_text(encoding="utf-8"))
+    assert result.status == "REVIEW_REQUIRED"
+    assert result.report.name == "CAM02_Result.yaml"
+    assert report["camera_id"] == "CAM02"
+    assert plan["status"] == "IN_PROGRESS"
+    assert plan["review_required_cameras"] == ["CAM02"]
+    assert "CAM02" not in plan["pending_cameras"]
+    assert canary_report.read_bytes() == canary_before

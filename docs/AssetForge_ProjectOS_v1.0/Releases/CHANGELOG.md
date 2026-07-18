@@ -19,3 +19,4 @@ Initial release.
 - Added persistent provider selection without storing credentials.
 - Added Codex Bridge generation jobs, canary import, explicit approval, and batch planning.
 - Approved Iteration 02 CAM01 canary and prepared CAM02–CAM08 jobs without generation.
+- Added non-destructive batch-camera import and generated CAM02 for human review.
