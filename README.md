@@ -31,6 +31,13 @@ python -m assetforge --project-root projects/Soldier_AK47 \
   --manifest configs/iterations/Iteration_02_Walk.yaml --provider mock
 ```
 
+Inspect the complete ten-iteration plan and run the next locally approved entry:
+
+```bash
+python -m assetforge --project-root projects/Soldier_AK47 --plan
+python -m assetforge --project-root projects/Soldier_AK47 --next
+```
+
 ## Current implementation
 
 - Core runtime: configuration loader, state, pipeline.

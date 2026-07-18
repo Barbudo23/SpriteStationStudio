@@ -18,6 +18,8 @@ from assetforge.providers import MockProvider
 from assetforge.workflow import (
     IterationManifest,
     IterationManifestLoader,
+    ManifestAwaitingApprovalError,
+    ManifestCatalog,
     ProductionWorkflowGuard,
     WorkflowAction,
     WorkflowCheckpointStore,
@@ -31,10 +33,22 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run implemented AssetForge Stack 2 steps")
     parser.add_argument("--project-root", type=Path, default=Path("projects/Soldier_AK47"))
     parser.add_argument("--config-root", type=Path, default=Path("configs/core"))
-    parser.add_argument(
+    manifest_group = parser.add_mutually_exclusive_group()
+    manifest_group.add_argument(
         "--manifest",
         type=Path,
         help="Iteration manifest YAML. Defaults to configs/core/Manifest.yaml.",
+    )
+    manifest_group.add_argument(
+        "--next",
+        action="store_true",
+        help="Run the next approved manifest from the local catalog.",
+    )
+    parser.add_argument(
+        "--manifest-root",
+        type=Path,
+        default=Path("configs/iterations"),
+        help="Directory containing approved iteration manifests.",
     )
     parser.add_argument(
         "--provider",
@@ -52,25 +66,40 @@ def main() -> int:
         action="store_true",
         help="Show the persisted workflow checkpoint without running the pipeline.",
     )
+    parser.add_argument(
+        "--plan",
+        action="store_true",
+        help="Show all ten iteration slots and local manifest readiness.",
+    )
     args = parser.parse_args()
 
     configs = ConfigLoader(args.config_root).load_all()
-    try:
-        if args.manifest:
-            selected_manifest = IterationManifestLoader().load(args.manifest)
-            configs["Manifest.yaml"] = dict(selected_manifest.data)
-        else:
-            selected_manifest = IterationManifest.from_mapping(configs["Manifest.yaml"])
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        print(f"ERROR: Invalid iteration manifest: {error}")
-        return 1
-    manifest_iteration = selected_manifest.iteration
     checkpoint_store = WorkflowCheckpointStore()
     try:
         checkpoint = checkpoint_store.load(args.project_root)
     except (OSError, ValueError, KeyError) as error:
         print(f"ERROR: Invalid workflow checkpoint: {error}")
         return 1
+    try:
+        catalog = ManifestCatalog.discover(
+            args.config_root / "Manifest.yaml",
+            args.manifest_root,
+        )
+        if args.next:
+            selected_manifest = catalog.next_entry(checkpoint).manifest
+            configs["Manifest.yaml"] = dict(selected_manifest.data)
+        elif args.manifest:
+            selected_manifest = IterationManifestLoader().load(args.manifest)
+            configs["Manifest.yaml"] = dict(selected_manifest.data)
+        else:
+            selected_manifest = IterationManifest.from_mapping(configs["Manifest.yaml"])
+    except ManifestAwaitingApprovalError as error:
+        print(f"BLOCKED: {error}")
+        return 1
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f"ERROR: Invalid iteration manifest: {error}")
+        return 1
+    manifest_iteration = selected_manifest.iteration
     if args.status:
         if checkpoint is None:
             print("Workflow has not started.")
@@ -81,6 +110,11 @@ def main() -> int:
                 f"next={checkpoint.next_iteration if checkpoint.next_iteration else 'none'}; "
                 f"stack={checkpoint.stack_revision}."
             )
+        return 0
+    if args.plan:
+        print("ID  STATUS             NAME")
+        for line in catalog.describe(checkpoint):
+            print(line)
         return 0
 
     decision = ProductionWorkflowGuard().evaluate(
