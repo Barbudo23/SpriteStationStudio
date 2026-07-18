@@ -1,58 +1,73 @@
-# AssetForge — Stack 02 Rev00
+# AssetForge — Stack 03 Rev00
 
-This archive is the single working repository for subsequent development.
+Local AI asset-production pipeline. The complete GS001–GS008 workflow is implemented,
+with a deterministic mock provider for safe testing and an official OpenAI GPT Image 2
+provider for production canary images.
 
 ## Quick start
 
-```bash
+```powershell
 python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/macOS: source .venv/bin/activate
-pip install -e .
-python -m assetforge --project-root projects/Soldier_AK47 --provider mock
-```
-
-Show the current workflow state without generating assets:
-
-```bash
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
 python -m assetforge --project-root projects/Soldier_AK47 --status
 ```
 
-An already completed iteration is skipped by default. Use `--force` only for an
-intentional local rebuild.
+## First OpenAI image (safe one-view canary)
 
-MockProvider checkpoints and reports are marked `SIMULATED`; they prove pipeline
-behavior but never claim that technical fixture images are production assets.
+1. Copy `.env.example` to a new file named `.env`.
+2. Open `.env` and put your OpenAI API key after `OPENAI_API_KEY=`.
+3. Do not send the key in chat and do not commit `.env`; Git ignores it.
+4. Start exactly one low-quality test image:
 
-Run the next approved manifest after the checkpoint permits it:
-
-```bash
-python -m assetforge --project-root projects/Soldier_AK47 \
-  --manifest configs/iterations/Iteration_02_Walk.yaml --provider mock
+```powershell
+python -m assetforge `
+  --project-root projects/Soldier_AK47 `
+  --manifest configs/iterations/Iteration_02_Walk.yaml `
+  --provider openai `
+  --canary `
+  --canary-camera CAM01
 ```
 
-Inspect the complete ten-iteration plan and run the next locally approved entry:
+The image and `Canary_Result.yaml` are written under
+`projects/Soldier_AK47/canary/iteration_02/`. The result is marked
+`REVIEW_REQUIRED`, and `Workflow_State.yaml` is not advanced. Full eight-view OpenAI
+generation remains blocked until the canary review workflow is implemented and approved.
 
-```bash
+The provider accepts only the official `https://api.openai.com/v1` endpoint. Defaults
+are `gpt-image-2`, quality `low`, size `1024x1024`, a 180-second timeout, and two SDK
+retries. These values can be changed in the local `.env` file.
+
+## Local simulation
+
+```powershell
+python -m assetforge --project-root projects/Soldier_AK47 --provider mock
 python -m assetforge --project-root projects/Soldier_AK47 --plan
 python -m assetforge --project-root projects/Soldier_AK47 --next
 ```
 
+An already completed iteration is skipped by default. Use `--force` only for an
+intentional local rebuild. Mock outputs and checkpoints are marked `SIMULATED`; they
+test pipeline behavior but are not production art.
+
 ## Current implementation
 
-- Core runtime: configuration loader, state, pipeline.
-- Implemented engine steps: GS001 through GS008.
-- Provider-independent `BaseProvider` contract and deterministic `MockProvider`.
-- Stack 02 runs the complete GS001–GS008 pipeline with a deterministic mock provider.
-- Etalon1 references are stored under `assets/references/etalon1/`.
-- Iteration 01 is preserved under `projects/Soldier_AK47/`.
+- GS001–GS008 engine and local checkpoint/guard workflow.
+- Approved-manifest catalog and ten-iteration plan.
+- Provider-independent `BaseProvider` contract.
+- Deterministic `MockProvider` for offline tests.
+- Official OpenAI GPT Image 2 multi-reference provider.
+- One-view paid-provider canary with mandatory human review status.
+- PNG, sprite sheet, GIF, ZIP, report, and checksum export pipeline.
 
 ## Important
 
-The Front/Back/Left/Right alias mapping is provisional because source filenames do not encode direction. Confirm it before production generation.
+The Front/Back/Left/Right alias mapping is provisional because the original source
+filenames did not encode direction. Confirm it visually before production generation.
 
-## Release build
+## Tests and release
 
-```bash
-python scripts/build_release.py --stack Stack_02_Rev00
+```powershell
+python -m pytest -q
+python scripts/build_release.py --stack Stack_03_Rev00
 ```

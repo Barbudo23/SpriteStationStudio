@@ -3,6 +3,9 @@
 from __future__ import annotations
 import argparse
 from pathlib import Path
+
+from dotenv import load_dotenv
+
 from assetforge.core.config_loader import ConfigLoader
 from assetforge.core.pipeline import Pipeline
 from assetforge.core.state import AssetForgeState
@@ -14,8 +17,9 @@ from assetforge.engine.gs005_qa import GS005QA
 from assetforge.engine.gs006_export import GS006Export
 from assetforge.engine.gs007_package import GS007Package
 from assetforge.engine.gs008_report import GS008Report
-from assetforge.providers import MockProvider
+from assetforge.providers import MockProvider, OpenAIImageConfig, OpenAIImageProvider
 from assetforge.workflow import (
+    CanaryRunner,
     IterationManifest,
     IterationManifestLoader,
     ManifestAwaitingApprovalError,
@@ -52,9 +56,19 @@ def main() -> int:
     )
     parser.add_argument(
         "--provider",
-        choices=("mock",),
+        choices=("mock", "openai"),
         default="mock",
-        help="Generation provider (Stack 2 currently supplies the deterministic mock).",
+        help="Generation provider. OpenAI is initially restricted to one-view canary mode.",
+    )
+    parser.add_argument(
+        "--canary",
+        action="store_true",
+        help="Generate exactly one view for human review without advancing workflow state.",
+    )
+    parser.add_argument(
+        "--canary-camera",
+        default="CAM01",
+        help="Camera ID for the one-view canary (default: CAM01).",
     )
     parser.add_argument(
         "--force",
@@ -72,6 +86,7 @@ def main() -> int:
         help="Show all ten iteration slots and local manifest readiness.",
     )
     args = parser.parse_args()
+    load_dotenv(dotenv_path=Path(".env"), override=False)
 
     configs = ConfigLoader(args.config_root).load_all()
     checkpoint_store = WorkflowCheckpointStore()
@@ -115,6 +130,34 @@ def main() -> int:
         print("ID  STATUS             NAME")
         for line in catalog.describe(checkpoint):
             print(line)
+        return 0
+
+    if args.provider == "openai" and not args.canary:
+        print(
+            "BLOCKED: OpenAI full-batch generation is disabled until a canary image "
+            "has passed human review. Run with --provider openai --canary."
+        )
+        return 1
+    if args.canary:
+        try:
+            if args.provider == "openai":
+                provider = OpenAIImageProvider(OpenAIImageConfig.from_env())
+            else:
+                provider = MockProvider()
+            canary = CanaryRunner().run(
+                project_root=args.project_root,
+                iteration=manifest_iteration,
+                configs=configs,
+                provider=provider,
+                camera_id=args.canary_camera,
+            )
+        except (OSError, RuntimeError, ValueError) as error:
+            print(f"ERROR: Canary generation failed: {error}")
+            return 1
+        print(
+            f"{canary.status}: generated one {args.canary_camera} image at {canary.asset}. "
+            f"Review record: {canary.report}. Workflow state was not advanced."
+        )
         return 0
 
     decision = ProductionWorkflowGuard().evaluate(
