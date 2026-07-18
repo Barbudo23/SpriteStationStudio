@@ -1,0 +1,45 @@
+status: AWAITING_CODEX
+provider: codex-built-in
+iteration: 2
+camera_id: CAM01
+camera:
+  name: Front
+  yaw: 0
+reference_images:
+- path: projects\Soldier_AK47\References\Front.png
+  role: 'back-left walking reference (Russian label: back-left, isometric 30 degrees)'
+- path: projects\Soldier_AK47\References\Back.png
+  role: 'back-right walking reference (Russian label: back-right, isometric 30 degrees)'
+- path: projects\Soldier_AK47\References\Left.png
+  role: 'front-right walking reference (Russian label: face-right, isometric 30 degrees)'
+- path: projects\Soldier_AK47\References\Right.png
+  role: 'front-left walking reference (Russian label: face-left, isometric 30 degrees)'
+prompt: 'Use case: identity-preserve
+
+  Asset type: Unity-ready isometric character animation frame
+
+  Primary request: Create Produce the first reusable walk-cycle package from the locked
+  character, camera profile, scale, equipment, and reference set established in Iteration
+  01., camera Front, yaw 0 degrees, isometric pitch 30 degrees.
+
+  Input images: Image 1 back-left; Image 2 back-right; Image 3 front-right; Image
+  4 front-left. Treat them as identity and equipment references only.
+
+  Subject: the same adult male soldier walking with the same AK-pattern rifle, dark
+  olive camouflage, hooded tactical jacket, vest, pouches, knee pads, boots, grenades,
+  face, hair, beard, and body proportions.
+
+  Composition/framing: one full-body character, centered, consistent scale, entire
+  weapon and both boots visible, no crop.
+
+  Scene/backdrop: perfectly flat solid #ff00ff chroma-key background. The background
+  must be uniform with no shadow, gradient, texture, floor, or reflection.
+
+  Constraints: preserve identity, clothing, equipment placement, weapon design, walking
+  pose continuity, and isometric game-art rendering. Do not copy Russian headings,
+  GIF icons, filenames, white panels, or any other text from references.
+
+  Avoid: additional people, duplicated limbs or gear, watermark, text, logo, cast
+  shadow, contact shadow, and #ff00ff anywhere on the character.'
+expected_output: projects\Soldier_AK47\canary\iteration_02\CAM01_codex.png
+workflow_state_advanced: false

@@ -1,6 +1,7 @@
 """Production workflow orchestration services."""
 
 from assetforge.workflow.canary import CanaryResult, CanaryRunner
+from assetforge.workflow.codex_bridge import CodexBridge, CodexImportResult, CodexJob
 from assetforge.workflow.checkpoint import WorkflowCheckpoint, WorkflowCheckpointStore
 from assetforge.workflow.catalog import (
     ManifestAwaitingApprovalError,
@@ -13,6 +14,9 @@ from assetforge.workflow.manifest import IterationManifest, IterationManifestLoa
 __all__ = [
     "CanaryResult",
     "CanaryRunner",
+    "CodexBridge",
+    "CodexImportResult",
+    "CodexJob",
     "ProductionWorkflowGuard",
     "IterationManifest",
     "IterationManifestLoader",
