@@ -1,4 +1,4 @@
-status: REVIEW_REQUIRED
+status: APPROVED
 iteration: 2
 camera_id: CAM08
 provider: codex-built-in
@@ -10,3 +10,5 @@ dimensions:
 alpha_validated: true
 asset_sha256: 9281d040fced7774df1f0e3cac33fb9b0b43fc12e14b0ee4bbd15da63423a313
 workflow_state_advanced: false
+approved_by: project-owner
+approved_at: '2026-07-18T07:54:50+00:00'

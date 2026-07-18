@@ -2,6 +2,7 @@
 
 from assetforge.workflow.canary import CanaryResult, CanaryRunner
 from assetforge.workflow.codex_bridge import (
+    CodexBatchApproval,
     CodexBatchPlan,
     CodexBatchQAResult,
     CodexBridge,
@@ -21,6 +22,7 @@ __all__ = [
     "CanaryResult",
     "CanaryRunner",
     "CodexBridge",
+    "CodexBatchApproval",
     "CodexBatchPlan",
     "CodexBatchQAResult",
     "CodexImportResult",

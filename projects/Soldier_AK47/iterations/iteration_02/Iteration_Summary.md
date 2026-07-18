@@ -1,6 +1,6 @@
 # Iteration 02 Summary
 
-Status: SIMULATED
+Status: COMPLETE
 
 Project progress: 20%
 

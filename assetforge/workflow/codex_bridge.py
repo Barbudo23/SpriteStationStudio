@@ -50,6 +50,13 @@ class CodexBatchQAResult:
     contact_sheet: Path
 
 
+@dataclass(frozen=True)
+class CodexBatchApproval:
+    status: str
+    plan: Path
+    approved_cameras: tuple[str, ...]
+
+
 class CodexBridge:
     """Prepare a generation request and safely import one Codex-generated PNG."""
 
@@ -318,6 +325,83 @@ class CodexBridge:
         plan["workflow_state_advanced"] = False
         plan_path.write_text(yaml.safe_dump(plan, sort_keys=False), encoding="utf-8")
         return CodexBatchQAResult(status=status, report=report, contact_sheet=contact_sheet)
+
+    def approve_batch(
+        self,
+        *,
+        project_root: Path,
+        iteration: int,
+        camera_ids: tuple[str, ...],
+        approved_by: str = "project-owner",
+        approved_at: str | None = None,
+    ) -> CodexBatchApproval:
+        """Record the human review gate for all eight camera assets."""
+
+        reviewer = approved_by.strip()
+        if not reviewer:
+            raise ValueError("Batch approver must not be empty.")
+        timestamp = approved_at or datetime.now(timezone.utc).isoformat(timespec="seconds")
+        job_root = project_root / "codex_jobs" / f"iteration_{iteration:02d}"
+        plan_path = job_root / "Batch_Plan.yaml"
+        qa_path = project_root / "canary" / f"iteration_{iteration:02d}" / "Batch_QA.yaml"
+        if not plan_path.is_file() or not qa_path.is_file():
+            raise FileNotFoundError("Codex batch plan and QA report are required for approval.")
+        plan = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
+        qa = yaml.safe_load(qa_path.read_text(encoding="utf-8"))
+        if not isinstance(plan, dict) or plan.get("status") != "READY_FOR_REVIEW":
+            raise ValueError("Codex batch must be READY_FOR_REVIEW before approval.")
+        if not isinstance(qa, dict) or qa.get("status") != "PASS":
+            raise ValueError("Codex batch structural QA must pass before approval.")
+
+        output_root = project_root / "canary" / f"iteration_{iteration:02d}"
+        for camera_id in camera_ids:
+            report_path = (
+                output_root / "Canary_Result.yaml"
+                if camera_id == "CAM01"
+                else output_root / f"{camera_id}_Result.yaml"
+            )
+            if not report_path.is_file():
+                raise FileNotFoundError(f"Codex camera report not found: {report_path}")
+            report = yaml.safe_load(report_path.read_text(encoding="utf-8"))
+            if not isinstance(report, dict) or report.get("status") not in {
+                "REVIEW_REQUIRED",
+                "APPROVED",
+            }:
+                raise ValueError(f"Codex camera {camera_id} is not reviewable.")
+            asset = Path(str(report.get("asset", "")))
+            if not asset.is_file():
+                raise FileNotFoundError(f"Codex camera asset not found: {asset}")
+            report.update(
+                {
+                    "status": "APPROVED",
+                    "approved_by": reviewer,
+                    "approved_at": timestamp,
+                    "asset_sha256": sha256(asset.read_bytes()).hexdigest(),
+                    "workflow_state_advanced": False,
+                }
+            )
+            report_path.write_text(
+                yaml.safe_dump(report, sort_keys=False, allow_unicode=True),
+                encoding="utf-8",
+            )
+
+        plan.update(
+            {
+                "status": "APPROVED",
+                "completed_cameras": list(camera_ids),
+                "pending_cameras": [],
+                "review_required_cameras": [],
+                "approved_by": reviewer,
+                "approved_at": timestamp,
+                "workflow_state_advanced": False,
+            }
+        )
+        plan_path.write_text(yaml.safe_dump(plan, sort_keys=False), encoding="utf-8")
+        return CodexBatchApproval(
+            status="APPROVED",
+            plan=plan_path,
+            approved_cameras=camera_ids,
+        )
 
     @staticmethod
     def _write_contact_sheet(

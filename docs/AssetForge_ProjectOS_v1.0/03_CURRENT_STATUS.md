@@ -1,13 +1,12 @@
 # Current Status
 
-Stack_04_Rev00 is in local development.
+Stack_04_Rev00 is complete locally.
 
-- Stack 02 executable GS001–GS008 pipeline: complete.
-- Stack 03 persistent checkpoints and manifest resume: complete.
-- Provider selection: OpenAI, Codex Bridge, or CloseAI.
-- Iteration 02 Codex CAM01 canary: approved.
-- Iteration 02 CAM01–CAM08: generated and alpha-validated.
-- Structural batch QA: PASS; contact sheet created.
-- CAM01 is approved; CAM02–CAM08 await human batch review.
-- Batch status: READY_FOR_REVIEW; production checkpoint not advanced.
-- Production checkpoint remains SIMULATED until all views pass review and packaging.
+- GS001-GS008 production pipeline: complete.
+- Provider selection: OpenAI API, Codex Bridge, or CloseAI API.
+- Iteration 02 CAM01-CAM08: generated with Codex, alpha-validated, structurally checked, and explicitly approved by the project owner.
+- Production QA: PASS, score 100.00.
+- Production export: 8 PNG frames, sprite sheet, and GIF preview.
+- Package: `Iteration_02_Walk_Stack_04_Rev00.zip` (13 files).
+- Checkpoint: Iteration 02 COMPLETE, production mode, project progress 20%.
+- Next boundary: Iteration 03 is blocked until its manifest is explicitly approved.

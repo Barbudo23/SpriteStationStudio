@@ -227,3 +227,40 @@ def test_codex_batch_qa_requires_all_views_and_creates_contact_sheet(tmp_path):
     assert report["human_review_required"] is True
     assert plan["status"] == "READY_FOR_REVIEW"
     assert plan["workflow_state_advanced"] is False
+
+
+def test_codex_batch_approval_records_all_human_review_decisions(tmp_path):
+    project_root, configs, bridge = make_imported_canary(tmp_path)
+    bridge.approve_canary(project_root=project_root, iteration=2)
+    batch = bridge.prepare_batch(project_root=project_root, iteration=2, configs=configs)
+    source = tmp_path / "batch-camera.png"
+    image = Image.new("RGBA", (8, 8), (0, 0, 0, 0))
+    for x in range(2, 6):
+        for y in range(1, 7):
+            image.putpixel((x, y), (80, 90, 60, 255))
+    image.save(source)
+    for index, job in enumerate(batch.jobs, start=2):
+        bridge.import_batch_result(
+            job=job, source_image=source, project_root=project_root,
+            iteration=2, camera_id=f"CAM{index:02d}",
+        )
+    camera_ids = tuple(f"CAM{index:02d}" for index in range(1, 9))
+    bridge.evaluate_batch(project_root=project_root, iteration=2, camera_ids=camera_ids)
+
+    result = bridge.approve_batch(
+        project_root=project_root, iteration=2, camera_ids=camera_ids,
+        approved_by="project-owner", approved_at="2026-07-18T12:00:00+00:00",
+    )
+
+    plan = yaml.safe_load(result.plan.read_text(encoding="utf-8"))
+    assert result.status == "APPROVED"
+    assert plan["status"] == "APPROVED"
+    assert plan["review_required_cameras"] == []
+    for camera_id in camera_ids:
+        name = "Canary_Result.yaml" if camera_id == "CAM01" else f"{camera_id}_Result.yaml"
+        report = yaml.safe_load(
+            (project_root / "canary" / "iteration_02" / name).read_text(encoding="utf-8")
+        )
+        assert report["status"] == "APPROVED"
+        assert report["approved_by"] == "project-owner"
+        assert len(report["asset_sha256"]) == 64

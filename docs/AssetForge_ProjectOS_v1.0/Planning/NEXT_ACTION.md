@@ -1,5 +1,5 @@
 # NEXT ACTION
 
-Stack_04_Rev00: obtain human approval for the completed CAM01–CAM08 contact sheet,
-then assemble the production Iteration 02 package and advance its checkpoint. Do not
-approve Iteration 03 until the eight-view package passes that review gate.
+Review and explicitly approve the Iteration 03 manifest. Until that approval exists,
+do not start generation or advance the production checkpoint beyond the completed
+Iteration 02 package.

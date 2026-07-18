@@ -25,7 +25,12 @@ from assetforge.engine.gs005_qa import GS005QA
 from assetforge.engine.gs006_export import GS006Export
 from assetforge.engine.gs007_package import GS007Package
 from assetforge.engine.gs008_report import GS008Report
-from assetforge.providers import MockProvider, OpenAIImageConfig, OpenAIImageProvider
+from assetforge.providers import (
+    CodexReviewedProvider,
+    MockProvider,
+    OpenAIImageConfig,
+    OpenAIImageProvider,
+)
 from assetforge.workflow import (
     CanaryRunner,
     CodexBridge,
@@ -142,6 +147,16 @@ def main() -> int:
         help="Run structural QA and create a contact sheet after all camera imports.",
     )
     parser.add_argument(
+        "--approve-codex-batch",
+        action="store_true",
+        help="Record explicit human approval of all structurally validated Codex views.",
+    )
+    parser.add_argument(
+        "--finalize-codex-batch",
+        action="store_true",
+        help="Run the production pipeline using the explicitly approved Codex views.",
+    )
+    parser.add_argument(
         "--force",
         action="store_true",
         help="Explicitly rebuild an iteration already recorded as complete.",
@@ -252,6 +267,7 @@ def main() -> int:
             print(line)
         return 0
 
+    production_provider = None
     if provider_name == "codex":
         codex_actions = sum(
             bool(value)
@@ -259,6 +275,8 @@ def main() -> int:
                 args.approve_canary,
                 args.prepare_codex_batch,
                 args.evaluate_codex_batch,
+                args.approve_codex_batch,
+                args.finalize_codex_batch,
             )
         )
         if codex_actions > 1:
@@ -305,41 +323,61 @@ def main() -> int:
                     f"contact_sheet={qa.contact_sheet}; human review is still required."
                 )
                 return 0
-            job = bridge.prepare(
-                project_root=args.project_root,
-                iteration=manifest_iteration,
-                configs=configs,
-                camera_id=args.canary_camera,
-            )
-            if args.codex_import:
-                if args.canary_camera == "CAM01":
-                    imported = bridge.import_result(
-                        job=job,
-                        source_image=args.codex_import,
-                        iteration=manifest_iteration,
-                        camera_id=args.canary_camera,
-                    )
-                else:
-                    imported = bridge.import_batch_result(
-                        job=job,
-                        source_image=args.codex_import,
-                        project_root=args.project_root,
-                        iteration=manifest_iteration,
-                        camera_id=args.canary_camera,
-                    )
+            if args.approve_codex_batch:
+                camera_ids = tuple(configs["CameraLibrary.yaml"]["cameras"])
+                approval = bridge.approve_batch(
+                    project_root=args.project_root,
+                    iteration=manifest_iteration,
+                    camera_ids=camera_ids,
+                    approved_by=args.approved_by,
+                )
                 print(
-                    f"{imported.status}: imported {imported.asset}. "
-                    f"Review record: {imported.report}. Workflow state was not advanced."
+                    f"{approval.status}: approved {len(approval.approved_cameras)} "
+                    f"Codex views. Batch plan: {approval.plan}."
+                )
+                return 0
+            if args.finalize_codex_batch:
+                production_provider = CodexReviewedProvider(
+                    args.project_root,
+                    manifest_iteration,
                 )
             else:
-                print(
-                    f"AWAITING_CODEX: request prepared at {job.request}. "
-                    f"Expected output: {job.output}. Workflow state was not advanced."
+                job = bridge.prepare(
+                    project_root=args.project_root,
+                    iteration=manifest_iteration,
+                    configs=configs,
+                    camera_id=args.canary_camera,
                 )
+                if args.codex_import:
+                    if args.canary_camera == "CAM01":
+                        imported = bridge.import_result(
+                            job=job,
+                            source_image=args.codex_import,
+                            iteration=manifest_iteration,
+                            camera_id=args.canary_camera,
+                        )
+                    else:
+                        imported = bridge.import_batch_result(
+                            job=job,
+                            source_image=args.codex_import,
+                            project_root=args.project_root,
+                            iteration=manifest_iteration,
+                            camera_id=args.canary_camera,
+                        )
+                    print(
+                        f"{imported.status}: imported {imported.asset}. "
+                        f"Review record: {imported.report}. Workflow state was not advanced."
+                    )
+                else:
+                    print(
+                        f"AWAITING_CODEX: request prepared at {job.request}. "
+                        f"Expected output: {job.output}. Workflow state was not advanced."
+                    )
         except (OSError, ValueError, KeyError, TypeError) as error:
             print(f"ERROR: Codex Bridge failed: {error}")
             return 1
-        return 0
+        if not args.finalize_codex_batch:
+            return 0
 
     if provider_name in {"openai", "closeai"} and args.probe_provider:
         try:
@@ -390,7 +428,7 @@ def main() -> int:
     decision = ProductionWorkflowGuard().evaluate(
         manifest_iteration,
         checkpoint,
-        force=args.force,
+        force=args.force or args.finalize_codex_batch,
     )
     print(decision.message)
     if decision.action == WorkflowAction.ALREADY_COMPLETE:
@@ -404,7 +442,7 @@ def main() -> int:
         configs=configs,
         metadata={
             "project_root": str(args.project_root),
-            "provider": MockProvider(),
+            "provider": production_provider or MockProvider(),
             "stack_revision": "Stack_04_Rev00",
         },
     )

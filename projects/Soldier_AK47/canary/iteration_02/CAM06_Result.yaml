@@ -1,4 +1,4 @@
-status: REVIEW_REQUIRED
+status: APPROVED
 iteration: 2
 camera_id: CAM06
 provider: codex-built-in
@@ -10,3 +10,5 @@ dimensions:
 alpha_validated: true
 asset_sha256: a0ce7bab1fb4186db2861d294a34045db34553d91f363d69c71b9b478f54ccf5
 workflow_state_advanced: false
+approved_by: project-owner
+approved_at: '2026-07-18T07:54:50+00:00'

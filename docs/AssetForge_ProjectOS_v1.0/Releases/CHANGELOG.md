@@ -13,7 +13,7 @@ Initial release.
 - Added persistent workflow checkpoints and guarded resume.
 - Added approved-manifest catalog and ten-iteration status planning.
 
-## Stack_04_Rev00 (in development)
+## Stack_04_Rev00
 
 - Added guarded OpenAI and CloseAI image-provider integrations.
 - Added persistent provider selection without storing credentials.
@@ -23,3 +23,7 @@ Initial release.
 - Persisted scoped Codex generation authorization and generated CAM03 for human review.
 - Generated CAM04–CAM08, completed all eight directions, and added structural batch QA
   with a contact sheet and explicit READY_FOR_REVIEW gate.
+- Added an explicit eight-view batch approval gate and a reviewed-local-asset provider.
+- Approved CAM01-CAM08, completed production QA at 100%, exported PNG/SpriteSheet/GIF,
+  and packaged Iteration 02 as a 13-file production release.
+- Advanced the production checkpoint to Iteration 02 COMPLETE at 20% project progress.

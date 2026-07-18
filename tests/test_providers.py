@@ -7,11 +7,13 @@ import pytest
 from PIL import Image
 
 from assetforge.providers import (
+    CodexReviewedProvider,
     GenerationRequest,
     MockProvider,
     OpenAIImageConfig,
     OpenAIImageProvider,
 )
+import yaml
 
 
 def test_generation_request_rejects_empty_prompt():
@@ -34,6 +36,32 @@ def test_mock_provider_is_deterministic_and_provider_neutral():
     assert provider.is_simulation is True
     assert first.assets[0].startswith("mock://generation/")
     assert first.metadata["deterministic"] is True
+
+
+def test_codex_reviewed_provider_returns_only_approved_local_asset(tmp_path):
+    project = tmp_path / "project"
+    output = project / "canary" / "iteration_02"
+    jobs = project / "codex_jobs" / "iteration_02"
+    output.mkdir(parents=True)
+    jobs.mkdir(parents=True)
+    asset = output / "CAM01_codex.png"
+    Image.new("RGBA", (2, 2), (1, 2, 3, 255)).save(asset)
+    (jobs / "Batch_Plan.yaml").write_text(
+        yaml.safe_dump({"status": "APPROVED"}), encoding="utf-8"
+    )
+    (output / "Canary_Result.yaml").write_text(
+        yaml.safe_dump({"status": "APPROVED", "asset": str(asset), "approved_by": "owner"}),
+        encoding="utf-8",
+    )
+
+    provider = CodexReviewedProvider(project, 2)
+    result = provider.generate(
+        GenerationRequest(prompt="front view", parameters={"camera_id": "CAM01"})
+    )
+
+    assert result.assets == (str(asset),)
+    assert result.provider == "codex-reviewed"
+    assert provider.is_simulation is False
 
 
 class FakeImages:
