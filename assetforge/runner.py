@@ -8,6 +8,14 @@ from dotenv import load_dotenv
 
 from assetforge.core.config_loader import ConfigLoader
 from assetforge.core.pipeline import Pipeline
+from assetforge.core.provider_settings import (
+    PRODUCTION_PROVIDERS,
+    PROVIDER_LABELS,
+    ProviderSettings,
+    ProviderSettingsStore,
+    provider_from_menu_choice,
+    provider_menu_text,
+)
 from assetforge.core.state import AssetForgeState
 from assetforge.engine.gs001_input_validation import GS001InputValidation
 from assetforge.engine.gs002_character_lock import GS002CharacterLock
@@ -35,7 +43,7 @@ def success_message(stack_revision: str, provider: str) -> str:
     return f"{stack_revision} completed successfully with provider: {provider}."
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run implemented AssetForge Stack 2 steps")
+    parser = argparse.ArgumentParser(description="Run AssetForge Stack 3 workflows")
     parser.add_argument("--project-root", type=Path, default=Path("projects/Soldier_AK47"))
     parser.add_argument("--config-root", type=Path, default=Path("configs/core"))
     manifest_group = parser.add_mutually_exclusive_group()
@@ -58,8 +66,29 @@ def main() -> int:
     parser.add_argument(
         "--provider",
         choices=("mock", "openai", "closeai", "codex"),
-        default="mock",
-        help="Generation provider. OpenAI is initially restricted to one-view canary mode.",
+        help="Temporary provider override. Otherwise the saved setting is used.",
+    )
+    provider_switch = parser.add_mutually_exclusive_group()
+    provider_switch.add_argument(
+        "--provider-menu",
+        action="store_true",
+        help="Open the interactive 1/2/3 provider switcher.",
+    )
+    provider_switch.add_argument(
+        "--set-provider",
+        choices=PRODUCTION_PROVIDERS,
+        help="Save the active application provider.",
+    )
+    provider_switch.add_argument(
+        "--show-provider",
+        action="store_true",
+        help="Show the active application provider and exit.",
+    )
+    parser.add_argument(
+        "--provider-settings",
+        type=Path,
+        default=Path("configs/local/Provider.yaml"),
+        help="Non-secret persistent provider setting.",
     )
     parser.add_argument(
         "--canary",
@@ -99,6 +128,33 @@ def main() -> int:
     args = parser.parse_args()
     load_dotenv(dotenv_path=Path(".env"), override=False)
 
+    provider_store = ProviderSettingsStore(args.provider_settings)
+    try:
+        provider_settings = provider_store.load()
+        if args.provider_menu:
+            print(provider_menu_text(provider_settings.active_provider))
+            selected = provider_from_menu_choice(input("Choose provider [1/2/3]: "))
+            provider_settings = ProviderSettings(selected)
+            provider_store.save(provider_settings)
+            print(f"ACTIVE PROVIDER: {PROVIDER_LABELS[selected]} ({selected}).")
+            return 0
+        if args.set_provider:
+            provider_settings = ProviderSettings(args.set_provider)
+            provider_store.save(provider_settings)
+            print(
+                f"ACTIVE PROVIDER: {PROVIDER_LABELS[args.set_provider]} "
+                f"({args.set_provider})."
+            )
+            return 0
+        if args.show_provider:
+            active = provider_settings.active_provider
+            print(f"ACTIVE PROVIDER: {PROVIDER_LABELS[active]} ({active}).")
+            return 0
+    except (EOFError, OSError, ValueError, TypeError) as error:
+        print(f"ERROR: Provider switch failed: {error}")
+        return 1
+    provider_name = args.provider or provider_settings.active_provider
+
     configs = ConfigLoader(args.config_root).load_all()
     checkpoint_store = WorkflowCheckpointStore()
     try:
@@ -134,7 +190,7 @@ def main() -> int:
                 f"Iteration {checkpoint.completed_iteration:02d}: {checkpoint.status}; "
                 f"mode={checkpoint.mode}; progress={checkpoint.project_progress:.0%}; "
                 f"next={checkpoint.next_iteration if checkpoint.next_iteration else 'none'}; "
-                f"stack={checkpoint.stack_revision}."
+                f"stack={checkpoint.stack_revision}; provider={provider_name}."
             )
         return 0
     if args.plan:
@@ -143,7 +199,7 @@ def main() -> int:
             print(line)
         return 0
 
-    if args.provider == "codex":
+    if provider_name == "codex":
         if not args.canary:
             print("BLOCKED: Codex Bridge currently supports one-view canary mode only.")
             return 1
@@ -176,11 +232,11 @@ def main() -> int:
             return 1
         return 0
 
-    if args.provider in {"openai", "closeai"} and args.probe_provider:
+    if provider_name in {"openai", "closeai"} and args.probe_provider:
         try:
             config = (
                 OpenAIImageConfig.from_env()
-                if args.provider == "openai"
+                if provider_name == "openai"
                 else OpenAIImageConfig.from_closeai_env()
             )
             models = OpenAIImageProvider(config).probe_image_models()
@@ -189,18 +245,18 @@ def main() -> int:
             return 1
         print("Image models: " + (", ".join(models) if models else "none reported"))
         return 0
-    if args.provider in {"openai", "closeai"} and not args.canary:
+    if provider_name in {"openai", "closeai"} and not args.canary:
         print(
             "BLOCKED: paid full-batch generation is disabled until a canary image "
-            f"has passed human review. Run with --provider {args.provider} --canary."
+            f"has passed human review. Run with --provider {provider_name} --canary."
         )
         return 1
     if args.canary:
         try:
-            if args.provider in {"openai", "closeai"}:
+            if provider_name in {"openai", "closeai"}:
                 config = (
                     OpenAIImageConfig.from_env()
-                    if args.provider == "openai"
+                    if provider_name == "openai"
                     else OpenAIImageConfig.from_closeai_env()
                 )
                 provider = OpenAIImageProvider(config)
@@ -261,7 +317,7 @@ def main() -> int:
         for error in result.errors:
             print(f"ERROR: {error}")
         return 1
-    print(success_message(result.metadata["stack_revision"], args.provider))
+    print(success_message(result.metadata["stack_revision"], provider_name))
     return 0
 
 if __name__ == "__main__":

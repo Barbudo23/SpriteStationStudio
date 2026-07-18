@@ -8,3 +8,4 @@ build/
 .env.*
 !.env.example
 projects/*/codex_jobs/**/*_chroma.png
+configs/local/Provider.yaml

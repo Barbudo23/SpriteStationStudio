@@ -13,6 +13,35 @@ python -m pip install -e ".[dev]"
 python -m assetforge --project-root projects/Soldier_AK47 --status
 ```
 
+## Provider switcher
+
+Open the saved application switcher:
+
+```powershell
+python -m assetforge --provider-menu
+```
+
+On Windows, you can instead double-click `AssetForge_Provider_Switcher.cmd` in the
+project folder.
+
+Choose one option and press Enter:
+
+1. Original OpenAI API
+2. Codex built-in generator
+3. CloseAI API
+
+The selection is saved in `configs/local/Provider.yaml`; API keys remain only in the
+ignored local `.env` file. Codex is initially active. You can also check or change the
+setting directly:
+
+```powershell
+python -m assetforge --show-provider
+python -m assetforge --set-provider codex
+```
+
+`--provider` remains a one-run override and does not change the saved setting. The
+technical `mock` provider is available through this override for offline tests.
+
 ## First OpenAI image (safe one-view canary)
 
 1. Copy `.env.example` to a new file named `.env`.
