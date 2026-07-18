@@ -1,8 +1,8 @@
 status: COMPLETE
-completed_iteration: 3
-next_iteration: 4
-project_progress: 0.3
-package_file: projects\Soldier_AK47\packages\Iteration_03_Idle_Stack_04_Rev00.zip
-package_sha256: c218100a713271ce5ab2f514377347e6b6405e3e67fc0b5167a5776f1418ac1e
+completed_iteration: 4
+next_iteration: 5
+project_progress: 0.4
+package_file: projects\Soldier_AK47\packages\Iteration_04_Run_Stack_04_Rev00.zip
+package_sha256: e5b2ed1811524223fdfdd59af11a373c8323375fdd707f5d22ec9f585ab4e1d1
 stack_revision: Stack_04_Rev00
 mode: production

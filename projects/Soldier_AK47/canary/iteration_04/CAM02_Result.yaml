@@ -1,0 +1,14 @@
+status: APPROVED
+iteration: 4
+camera_id: CAM02
+provider: codex-built-in
+asset: projects\Soldier_AK47\canary\iteration_04\CAM02_codex.png
+request: projects\Soldier_AK47\codex_jobs\iteration_04\CAM02\Request.yaml
+dimensions:
+- 1086
+- 1448
+alpha_validated: true
+asset_sha256: bfb4c3ecb267a609871767f574a61667393297a4ce3eba81a1f5a7fc26b99f36
+workflow_state_advanced: false
+approved_by: project-owner
+approved_at: '2026-07-18T14:01:16+00:00'

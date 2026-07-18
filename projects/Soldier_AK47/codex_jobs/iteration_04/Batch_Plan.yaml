@@ -1,0 +1,23 @@
+status: APPROVED
+provider: codex-built-in
+iteration: 4
+approved_canary: CAM01
+completed_cameras:
+- CAM01
+- CAM02
+- CAM03
+- CAM04
+- CAM05
+- CAM06
+- CAM07
+- CAM08
+pending_cameras: []
+total_cameras: 8
+generation_started: true
+workflow_state_advanced: false
+review_required_cameras: []
+structural_qa: PASS
+qa_report: projects\Soldier_AK47\canary\iteration_04\Batch_QA.yaml
+contact_sheet: projects\Soldier_AK47\canary\iteration_04\Iteration_04_Contact_Sheet.png
+approved_by: project-owner
+approved_at: '2026-07-18T14:01:16+00:00'

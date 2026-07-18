@@ -26,3 +26,9 @@
 - Generated and approved all eight Idle directions, completed production QA at 100%,
   and packaged Iteration 03 as a 13-file production release.
 - Advanced the production checkpoint to Iteration 03 COMPLETE at 30% project progress.
+- Added a Russian-language Windows console launcher for status, planning, and provider selection.
+- Added the approved Iteration 04 Run manifest and prepared a resumable Codex batch.
+- Generated and approved all eight Run directions, applied a reviewed scale correction
+  to CAM03, and passed structural QA with a 1.1958 scale ratio.
+- Packaged Iteration 04 as a 13-file production release and advanced the checkpoint
+  to Iteration 04 COMPLETE at 40% project progress.

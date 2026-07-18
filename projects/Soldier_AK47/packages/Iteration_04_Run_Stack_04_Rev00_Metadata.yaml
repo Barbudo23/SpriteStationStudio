@@ -1,0 +1,17 @@
+status: PASS
+package: Iteration_04_Run_Stack_04_Rev00.zip
+sha256: e5b2ed1811524223fdfdd59af11a373c8323375fdd707f5d22ec9f585ab4e1d1
+members:
+- PNG/AssetForge_View_01.png
+- PNG/AssetForge_View_02.png
+- PNG/AssetForge_View_03.png
+- PNG/AssetForge_View_04.png
+- PNG/AssetForge_View_05.png
+- PNG/AssetForge_View_06.png
+- PNG/AssetForge_View_07.png
+- PNG/AssetForge_View_08.png
+- SpriteSheet/AssetForge_SpriteSheet.png
+- GIF/AssetForge_Preview.gif
+- Export_Metadata.yaml
+- Production_Report.md
+- Readme.md
