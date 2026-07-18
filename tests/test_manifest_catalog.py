@@ -32,7 +32,7 @@ def checkpoint(iteration: int) -> WorkflowCheckpoint:
 
 def test_catalog_discovers_only_approved_local_manifests():
     catalog = project_catalog()
-    assert [entry.manifest.iteration for entry in catalog.entries] == [1, 2, 3, 4]
+    assert [entry.manifest.iteration for entry in catalog.entries] == [1, 2, 3, 4, 5]
 
 
 def test_catalog_selects_iteration_two_after_iteration_one():
@@ -41,14 +41,15 @@ def test_catalog_selects_iteration_two_after_iteration_one():
     assert entry.manifest.name == "Walk"
 
 
-def test_catalog_blocks_when_next_manifest_is_not_approved():
-    with pytest.raises(ManifestAwaitingApprovalError, match="awaiting an approved manifest"):
-        project_catalog().next_entry(checkpoint(4))
+def test_catalog_selects_iteration_five_after_iteration_four():
+    entry = project_catalog().next_entry(checkpoint(4))
+    assert entry.manifest.iteration == 5
+    assert entry.manifest.name == "Aim"
 
 
-def test_catalog_does_not_discover_manifest_awaiting_approval():
+def test_catalog_does_not_discover_unconfigured_iteration_six():
     catalog = project_catalog()
-    assert catalog.get(5) is None
+    assert catalog.get(6) is None
 
 
 def test_catalog_plan_marks_approved_next_manifest():
@@ -57,7 +58,7 @@ def test_catalog_plan_marks_approved_next_manifest():
     assert lines[1].startswith("02  SIMULATED")
     assert lines[2].startswith("03  APPROVED")
     assert lines[3].startswith("04  APPROVED")
-    assert lines[4].startswith("05  NOT_CONFIGURED")
+    assert lines[4].startswith("05  APPROVED")
 
 
 def test_catalog_selects_iteration_four_after_iteration_three():

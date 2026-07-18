@@ -1,6 +1,5 @@
 # NEXT ACTION
 
-Review `configs/iterations/Iteration_05_Aim.yaml` and explicitly approve it. The
-validated draft is marked `Awaiting Approval`, and the manifest catalog now ignores
-all non-approved iteration manifests. Until approval exists, do not start generation
-or advance the production checkpoint beyond the completed Iteration 04 Run package.
+Review and explicitly approve the transparent Iteration 05 Aim CAM01 canary. Until
+that approval exists, do not prepare the remaining camera jobs or advance the
+production checkpoint beyond the completed Iteration 04 Run package.

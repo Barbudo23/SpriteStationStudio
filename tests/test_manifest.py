@@ -17,7 +17,7 @@ def test_iteration_two_manifest_is_valid_and_approved():
     assert manifest.next_iteration == 3
 
 
-def test_iteration_five_draft_manifest_is_valid_but_awaiting_approval():
+def test_iteration_five_manifest_is_valid_and_approved():
     root = Path(__file__).parents[1]
     manifest = IterationManifestLoader().load(
         root / "configs" / "iterations" / "Iteration_05_Aim.yaml"
@@ -27,7 +27,7 @@ def test_iteration_five_draft_manifest_is_valid_but_awaiting_approval():
     assert manifest.progress == 0.5
     assert manifest.package == "Iteration_05_Aim.zip"
     assert manifest.next_iteration == 6
-    assert manifest.data["status"] == "Awaiting Approval"
+    assert manifest.data["status"] == "Approved"
 
 
 def test_manifest_rejects_progress_that_does_not_match_iteration():

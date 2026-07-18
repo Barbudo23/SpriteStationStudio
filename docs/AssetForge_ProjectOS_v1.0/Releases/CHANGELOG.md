@@ -37,3 +37,5 @@
 - Prepared the validated Iteration 05 Aim manifest for explicit owner approval.
 - Enforced manifest status in the catalog so draft iterations cannot start generation.
 - Added regression coverage for the Iteration 05 approval boundary.
+- Approved the Iteration 05 Aim manifest and imported its transparent CAM01 canary
+  for explicit visual review without advancing the production checkpoint.
