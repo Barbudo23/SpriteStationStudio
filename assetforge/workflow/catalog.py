@@ -35,6 +35,10 @@ class ManifestCatalog:
         entries: dict[int, ManifestCatalogEntry] = {}
         for path in candidates:
             manifest = loader.load(path)
+            status = str(manifest.data.get("status", "")).strip().casefold()
+            is_frozen_foundation = manifest.iteration == 1 and status == "frozen"
+            if status != "approved" and not is_frozen_foundation:
+                continue
             if manifest.iteration in entries:
                 previous = entries[manifest.iteration].path
                 raise ValueError(

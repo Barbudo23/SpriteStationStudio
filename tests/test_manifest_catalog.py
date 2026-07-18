@@ -46,6 +46,11 @@ def test_catalog_blocks_when_next_manifest_is_not_approved():
         project_catalog().next_entry(checkpoint(4))
 
 
+def test_catalog_does_not_discover_manifest_awaiting_approval():
+    catalog = project_catalog()
+    assert catalog.get(5) is None
+
+
 def test_catalog_plan_marks_approved_next_manifest():
     lines = project_catalog().describe(checkpoint(2))
     assert lines[0].startswith("01  SIMULATED")

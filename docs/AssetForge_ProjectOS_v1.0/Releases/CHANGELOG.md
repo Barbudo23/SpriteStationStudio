@@ -32,3 +32,8 @@
   to CAM03, and passed structural QA with a 1.1958 scale ratio.
 - Packaged Iteration 04 as a 13-file production release and advanced the checkpoint
   to Iteration 04 COMPLETE at 40% project progress.
+## Unreleased
+
+- Prepared the validated Iteration 05 Aim manifest for explicit owner approval.
+- Enforced manifest status in the catalog so draft iterations cannot start generation.
+- Added regression coverage for the Iteration 05 approval boundary.
