@@ -1,0 +1,35 @@
+version: "1.0"
+status: "Approved"
+
+iteration:
+  id: 2
+  name: "Walk"
+  progress: "20%"
+
+description: >
+  Produce the first reusable walk-cycle package from the locked character,
+  camera profile, scale, equipment, and reference set established in Iteration 01.
+
+input:
+  required:
+    - Front.png
+    - Back.png
+    - Left.png
+    - Right.png
+
+tasks:
+  - Preserve the locked character identity
+  - Generate the configured camera views
+  - Export a reusable walk-cycle package
+
+output:
+  package: "Iteration_02_Walk.zip"
+
+qa:
+  identity_match: required
+  camera_registered: required
+  scale_locked: required
+  equipment_locked: required
+
+next_iteration:
+  id: 3

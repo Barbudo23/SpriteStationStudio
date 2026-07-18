@@ -37,6 +37,12 @@ class BaseProvider(ABC):
     def name(self) -> str:
         """Return the provider identifier used in logs and reports."""
 
+    @property
+    def is_simulation(self) -> bool:
+        """Return whether outputs are technical fixtures rather than production assets."""
+
+        return False
+
     @abstractmethod
     def generate(self, request: GenerationRequest) -> GenerationResult:
         """Generate assets for a normalized request."""

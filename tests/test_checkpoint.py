@@ -58,3 +58,17 @@ def test_checkpoint_rejects_inconsistent_next_iteration():
 
     with pytest.raises(ValueError, match="next iteration"):
         checkpoint.validate()
+
+
+def test_simulation_checkpoint_requires_simulated_status():
+    checkpoint = WorkflowCheckpoint(
+        status="SIMULATED",
+        completed_iteration=1,
+        next_iteration=2,
+        project_progress=0.1,
+        package_file="package.zip",
+        package_sha256="abc123",
+        stack_revision="Stack_03_Rev00",
+        mode="simulation",
+    )
+    checkpoint.validate()

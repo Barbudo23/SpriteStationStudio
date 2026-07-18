@@ -21,6 +21,16 @@ python -m assetforge --project-root projects/Soldier_AK47 --status
 An already completed iteration is skipped by default. Use `--force` only for an
 intentional local rebuild.
 
+MockProvider checkpoints and reports are marked `SIMULATED`; they prove pipeline
+behavior but never claim that technical fixture images are production assets.
+
+Run the next approved manifest after the checkpoint permits it:
+
+```bash
+python -m assetforge --project-root projects/Soldier_AK47 \
+  --manifest configs/iterations/Iteration_02_Walk.yaml --provider mock
+```
+
 ## Current implementation
 
 - Core runtime: configuration loader, state, pipeline.

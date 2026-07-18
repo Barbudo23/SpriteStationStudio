@@ -31,7 +31,7 @@ def make_finalization_state(tmp_path: Path) -> AssetForgeState:
         qa_score=100.0,
         metadata={
             "project_root": str(project_root),
-            "generation": {"provider": "mock"},
+            "generation": {"provider": "mock", "simulation": True},
             "qa": {"status": "APPROVED"},
             "export": {
                 "status": "PASS",
@@ -59,18 +59,18 @@ def test_report_completes_iteration_and_rebuilds_final_package(tmp_path):
     assert result.errors == []
     assert result.approved is True
     assert result.progress == 0.1
-    assert result.metadata["iteration_status"] == "COMPLETE"
+    assert result.metadata["iteration_status"] == "SIMULATED"
     assert result.metadata["next_iteration"] == 2
-    assert result.metadata["reporting"]["status"] == "COMPLETE"
+    assert result.metadata["reporting"]["status"] == "SIMULATED"
     checkpoint_path = Path(result.metadata["workflow_checkpoint"])
     assert checkpoint_path.is_file()
     assert "completed_iteration: 1" in checkpoint_path.read_text(encoding="utf-8")
-    assert "Status: COMPLETE" in report_path.read_text(encoding="utf-8")
+    assert "Status: SIMULATED" in report_path.read_text(encoding="utf-8")
     assert result.metadata["package"]["sha256"] != old_checksum
     assert result.metadata["package"]["sha256"] == sha256(package_path.read_bytes()).hexdigest()
     with ZipFile(package_path) as archive:
         report = archive.read("Production_Report.md").decode("utf-8")
-        assert "Status: COMPLETE" in report
+        assert "Status: SIMULATED" in report
 
 
 def test_report_requires_package(tmp_path):

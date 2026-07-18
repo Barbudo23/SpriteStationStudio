@@ -66,3 +66,33 @@ def test_package_requires_successful_export(tmp_path):
     result = GS007Package().execute(state)
     assert result.approved is False
     assert result.errors == ["Successful export is required before packaging."]
+
+
+def test_package_step_creates_initial_iteration_documents(tmp_path):
+    project_root = tmp_path / "project"
+    iteration_root = project_root / "iterations" / "iteration_02"
+    export_root = iteration_root / "Export"
+    for directory in ("PNG", "SpriteSheet", "GIF"):
+        (export_root / directory).mkdir(parents=True, exist_ok=True)
+        (export_root / directory / "asset.bin").write_bytes(b"asset")
+    (export_root / "Export_Metadata.yaml").write_text("status: PASS\n", encoding="utf-8")
+    state = AssetForgeState(
+        iteration=2,
+        configs={
+            "Manifest.yaml": {
+                "iteration": {"id": 2, "name": "Walk"},
+                "output": {"package": "Iteration_02_Walk.zip"},
+            }
+        },
+        metadata={
+            "project_root": str(project_root),
+            "stack_revision": "Stack_03_Rev00",
+            "export": {"status": "PASS", "root": str(export_root)},
+        },
+    )
+
+    result = GS007Package().execute(state)
+
+    assert result.errors == []
+    assert (iteration_root / "Readme.md").is_file()
+    assert (iteration_root / "Production_Report" / "Production_Report.md").is_file()

@@ -29,7 +29,9 @@ class GS004Generation:
         camera_profile = state.metadata["active_camera_profile"]
         project_root = Path(state.metadata["project_root"])
         mpi = state.configs["MPI.yaml"]
-        target = mpi.get("generation", {}).get("target", "Character asset")
+        manifest = state.configs["Manifest.yaml"]
+        iteration = manifest.get("iteration", {})
+        target = str(manifest.get("description") or iteration.get("name") or "Character asset").strip()
         references = tuple(
             str(project_root / "References" / filename)
             for filename in mpi["input"]["references"].values()
@@ -76,6 +78,7 @@ class GS004Generation:
         state.metadata["generation"] = {
             "status": "PASS",
             "provider": provider.name,
+            "simulation": provider.is_simulation,
             "steps": generated,
         }
         state.log(f"Generated {len(state.generated_assets)} assets across {len(generated)} views.")

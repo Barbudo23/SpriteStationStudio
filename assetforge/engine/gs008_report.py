@@ -43,8 +43,14 @@ class GS008Report:
         report_directory.mkdir(parents=True, exist_ok=True)
         production_report = report_directory / "Production_Report.md"
         iteration_summary = iteration_root / "Iteration_Summary.md"
-        production_report.write_text(self._production_report(state), encoding="utf-8")
-        iteration_summary.write_text(self._iteration_summary(state), encoding="utf-8")
+        simulation = bool(state.metadata.get("generation", {}).get("simulation"))
+        final_status = "SIMULATED" if simulation else "COMPLETE"
+        production_report.write_text(
+            self._production_report(state, final_status), encoding="utf-8"
+        )
+        iteration_summary.write_text(
+            self._iteration_summary(state, final_status), encoding="utf-8"
+        )
 
         package_path = Path(package["file"])
         try:
@@ -66,21 +72,22 @@ class GS008Report:
             }
         )
         state.progress = min(1.0, state.iteration / 10.0)
-        state.metadata["iteration_status"] = "COMPLETE"
+        state.metadata["iteration_status"] = final_status
         state.metadata["next_iteration"] = state.iteration + 1 if state.iteration < 10 else None
         state.metadata["reporting"] = {
-            "status": "COMPLETE",
+            "status": final_status,
             "production_report": str(production_report),
             "iteration_summary": str(iteration_summary),
         }
         checkpoint = WorkflowCheckpoint(
-            status="COMPLETE",
+            status=final_status,
             completed_iteration=state.iteration,
             next_iteration=state.metadata["next_iteration"],
             project_progress=state.progress,
             package_file=str(rebuilt.package_file),
             package_sha256=rebuilt.checksum,
             stack_revision=str(state.metadata.get("stack_revision", "unknown")),
+            mode="simulation" if simulation else "production",
         )
         try:
             checkpoint_path = self._checkpoint_store.save(project_root, checkpoint)
@@ -90,17 +97,18 @@ class GS008Report:
         for report in (str(production_report), str(iteration_summary)):
             state.add_report(report)
         state.log(
-            f"Iteration {state.iteration:02d} complete; project progress {state.progress:.0%}."
+            f"Iteration {state.iteration:02d} {final_status.lower()}; "
+            f"workflow progress {state.progress:.0%}."
         )
         state.approve()
         return state
 
     @staticmethod
-    def _production_report(state: AssetForgeState) -> str:
+    def _production_report(state: AssetForgeState, status: str) -> str:
         export = state.metadata["export"]
         return (
             f"# Production Report — Iteration {state.iteration:02d}\n\n"
-            "Status: COMPLETE\n\n"
+            f"Status: {status}\n\n"
             f"QA score: {state.qa_score:.2f}\n\n"
             f"PNG frames: {len(export.get('png_files', []))}\n\n"
             "Formats: PNG sequence, SpriteSheet, GIF preview\n\n"
@@ -108,11 +116,11 @@ class GS008Report:
         )
 
     @staticmethod
-    def _iteration_summary(state: AssetForgeState) -> str:
+    def _iteration_summary(state: AssetForgeState, status: str) -> str:
         next_iteration = state.iteration + 1 if state.iteration < 10 else "none"
         return (
             f"# Iteration {state.iteration:02d} Summary\n\n"
-            "Status: COMPLETE\n\n"
+            f"Status: {status}\n\n"
             f"Project progress: {min(1.0, state.iteration / 10.0):.0%}\n\n"
             f"Next iteration: {next_iteration}\n"
         )

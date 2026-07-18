@@ -17,6 +17,10 @@ class MockProvider(BaseProvider):
     def name(self) -> str:
         return "mock"
 
+    @property
+    def is_simulation(self) -> bool:
+        return True
+
     def generate(self, request: GenerationRequest) -> GenerationResult:
         fingerprint_source = "\n".join(
             (request.prompt, *request.reference_paths)

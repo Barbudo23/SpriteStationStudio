@@ -18,6 +18,7 @@ class WorkflowCheckpoint:
     package_file: str
     package_sha256: str
     stack_revision: str
+    mode: str = "production"
 
     @classmethod
     def from_mapping(cls, data: Mapping[str, Any]) -> "WorkflowCheckpoint":
@@ -33,13 +34,17 @@ class WorkflowCheckpoint:
             package_file=str(data["package_file"]),
             package_sha256=str(data["package_sha256"]),
             stack_revision=str(data["stack_revision"]),
+            mode=str(data.get("mode", "production")),
         )
         checkpoint.validate()
         return checkpoint
 
     def validate(self) -> None:
-        if self.status != "COMPLETE":
-            raise ValueError("Checkpoint status must be COMPLETE.")
+        if self.status not in {"COMPLETE", "SIMULATED"}:
+            raise ValueError("Checkpoint status must be COMPLETE or SIMULATED.")
+        expected_status = "SIMULATED" if self.mode == "simulation" else "COMPLETE"
+        if self.mode not in {"production", "simulation"} or self.status != expected_status:
+            raise ValueError("Checkpoint status and mode are inconsistent.")
         if not 1 <= self.completed_iteration <= 10:
             raise ValueError("Completed iteration must be between 1 and 10.")
         expected_progress = self.completed_iteration / 10.0

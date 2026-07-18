@@ -1,7 +1,8 @@
-status: COMPLETE
-completed_iteration: 1
-next_iteration: 2
-project_progress: 0.1
-package_file: projects\Soldier_AK47\packages\Iteration_01_Character_Base_Stack_03_Rev00.zip
-package_sha256: f633dddaafde42a5f64771a13202395d8c0f29ace1e15c53c1a18debc63f4619
+status: SIMULATED
+completed_iteration: 2
+next_iteration: 3
+project_progress: 0.2
+package_file: projects\Soldier_AK47\packages\Iteration_02_Walk_Stack_03_Rev00.zip
+package_sha256: f3423cb8c474e736158abf8fa23f294476357481fbd81def7b50c40efcd5ef45
 stack_revision: Stack_03_Rev00
+mode: simulation

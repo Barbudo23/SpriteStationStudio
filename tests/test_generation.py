@@ -34,6 +34,7 @@ def test_generation_dispatches_one_deterministic_asset_per_camera(tmp_path):
     assert len(result.generated_assets) == 8
     assert len(set(result.generated_assets)) == 8
     assert result.metadata["generation"]["provider"] == "mock"
+    assert result.metadata["generation"]["simulation"] is True
     assert [step["camera_id"] for step in result.metadata["generation"]["steps"]] == [
         f"CAM{index:02d}" for index in range(1, 9)
     ]

@@ -20,5 +20,6 @@ def test_mock_provider_is_deterministic_and_provider_neutral():
 
     assert first == second
     assert first.provider == "mock"
+    assert provider.is_simulation is True
     assert first.assets[0].startswith("mock://generation/")
     assert first.metadata["deterministic"] is True

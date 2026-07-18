@@ -15,7 +15,13 @@ from assetforge.engine.gs006_export import GS006Export
 from assetforge.engine.gs007_package import GS007Package
 from assetforge.engine.gs008_report import GS008Report
 from assetforge.providers import MockProvider
-from assetforge.workflow import ProductionWorkflowGuard, WorkflowAction, WorkflowCheckpointStore
+from assetforge.workflow import (
+    IterationManifest,
+    IterationManifestLoader,
+    ProductionWorkflowGuard,
+    WorkflowAction,
+    WorkflowCheckpointStore,
+)
 
 
 def success_message(stack_revision: str, provider: str) -> str:
@@ -25,6 +31,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run implemented AssetForge Stack 2 steps")
     parser.add_argument("--project-root", type=Path, default=Path("projects/Soldier_AK47"))
     parser.add_argument("--config-root", type=Path, default=Path("configs/core"))
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        help="Iteration manifest YAML. Defaults to configs/core/Manifest.yaml.",
+    )
     parser.add_argument(
         "--provider",
         choices=("mock",),
@@ -44,8 +55,16 @@ def main() -> int:
     args = parser.parse_args()
 
     configs = ConfigLoader(args.config_root).load_all()
-    manifest = configs["Manifest.yaml"]
-    manifest_iteration = int(manifest.get("iteration", {}).get("id", 1))
+    try:
+        if args.manifest:
+            selected_manifest = IterationManifestLoader().load(args.manifest)
+            configs["Manifest.yaml"] = dict(selected_manifest.data)
+        else:
+            selected_manifest = IterationManifest.from_mapping(configs["Manifest.yaml"])
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f"ERROR: Invalid iteration manifest: {error}")
+        return 1
+    manifest_iteration = selected_manifest.iteration
     checkpoint_store = WorkflowCheckpointStore()
     try:
         checkpoint = checkpoint_store.load(args.project_root)
@@ -58,7 +77,7 @@ def main() -> int:
         else:
             print(
                 f"Iteration {checkpoint.completed_iteration:02d}: {checkpoint.status}; "
-                f"progress={checkpoint.project_progress:.0%}; "
+                f"mode={checkpoint.mode}; progress={checkpoint.project_progress:.0%}; "
                 f"next={checkpoint.next_iteration if checkpoint.next_iteration else 'none'}; "
                 f"stack={checkpoint.stack_revision}."
             )
