@@ -5,7 +5,6 @@ approved_canary: CAM01
 completed_cameras:
 - CAM01
 pending_cameras:
-- CAM03
 - CAM04
 - CAM05
 - CAM06
@@ -16,3 +15,4 @@ generation_started: true
 workflow_state_advanced: false
 review_required_cameras:
 - CAM02
+- CAM03
