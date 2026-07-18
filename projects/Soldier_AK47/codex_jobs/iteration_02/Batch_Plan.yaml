@@ -5,7 +5,6 @@ approved_canary: CAM01
 completed_cameras:
 - CAM01
 pending_cameras:
-- CAM07
 - CAM08
 total_cameras: 8
 generation_started: true
@@ -16,3 +15,4 @@ review_required_cameras:
 - CAM04
 - CAM05
 - CAM06
+- CAM07
