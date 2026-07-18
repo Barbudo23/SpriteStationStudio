@@ -7,3 +7,15 @@ Initial release.
 - Added provider-independent generation contracts and MockProvider.
 - Added structural QA, PNG/SpriteSheet/GIF export, deterministic packaging, and reports.
 - Added unit and integration coverage plus a runnable CLI.
+
+## Stack_03_Rev00
+
+- Added persistent workflow checkpoints and guarded resume.
+- Added approved-manifest catalog and ten-iteration status planning.
+
+## Stack_04_Rev00 (in development)
+
+- Added guarded OpenAI and CloseAI image-provider integrations.
+- Added persistent provider selection without storing credentials.
+- Added Codex Bridge generation jobs, canary import, explicit approval, and batch planning.
+- Approved Iteration 02 CAM01 canary and prepared CAM02–CAM08 jobs without generation.

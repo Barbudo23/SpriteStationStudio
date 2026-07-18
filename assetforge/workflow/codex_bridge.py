@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from hashlib import sha256
 from pathlib import Path
 import shutil
 from typing import Any, Mapping
@@ -32,6 +34,13 @@ class CodexImportResult:
     status: str
     asset: Path
     report: Path
+
+
+@dataclass(frozen=True)
+class CodexBatchPlan:
+    status: str
+    plan: Path
+    jobs: tuple[CodexJob, ...]
 
 
 class CodexBridge:
@@ -179,3 +188,100 @@ class CodexBridge:
             asset=job.output,
             report=report,
         )
+
+    def approve_canary(
+        self,
+        *,
+        project_root: Path,
+        iteration: int,
+        camera_id: str = "CAM01",
+        approved_by: str = "user",
+        approved_at: str | None = None,
+    ) -> CodexImportResult:
+        """Record explicit human approval without advancing production state."""
+
+        report = project_root / "canary" / f"iteration_{iteration:02d}" / "Canary_Result.yaml"
+        if not report.is_file():
+            raise FileNotFoundError(f"Canary review record not found: {report}")
+        data = yaml.safe_load(report.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError("Canary review record must contain a YAML mapping.")
+        if data.get("status") not in {"REVIEW_REQUIRED", "APPROVED"}:
+            raise ValueError("Canary must be awaiting review before approval.")
+        if data.get("camera_id") != camera_id or int(data.get("iteration", 0)) != iteration:
+            raise ValueError("Canary review record does not match the requested camera.")
+        reviewer = approved_by.strip()
+        if not reviewer:
+            raise ValueError("Canary approver must not be empty.")
+        asset = Path(str(data.get("asset", "")))
+        if not asset.is_file():
+            raise FileNotFoundError(f"Approved canary asset not found: {asset}")
+        data.update(
+            {
+                "status": "APPROVED",
+                "approved_by": reviewer,
+                "approved_at": approved_at
+                or datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "asset_sha256": sha256(asset.read_bytes()).hexdigest(),
+                "workflow_state_advanced": False,
+            }
+        )
+        report.write_text(
+            yaml.safe_dump(data, sort_keys=False, allow_unicode=True),
+            encoding="utf-8",
+        )
+        return CodexImportResult(status="APPROVED", asset=asset, report=report)
+
+    def prepare_batch(
+        self,
+        *,
+        project_root: Path,
+        iteration: int,
+        configs: Mapping[str, Mapping[str, Any]],
+        approved_camera_id: str = "CAM01",
+    ) -> CodexBatchPlan:
+        """Prepare remaining internal camera jobs after explicit canary approval."""
+
+        report = project_root / "canary" / f"iteration_{iteration:02d}" / "Canary_Result.yaml"
+        if not report.is_file():
+            raise FileNotFoundError(f"Canary review record not found: {report}")
+        review = yaml.safe_load(report.read_text(encoding="utf-8"))
+        if not isinstance(review, dict) or review.get("status") != "APPROVED":
+            raise ValueError("Codex batch requires an explicitly APPROVED canary.")
+        if review.get("camera_id") != approved_camera_id:
+            raise ValueError("Approved canary camera does not match the batch anchor.")
+
+        camera_ids = tuple(configs["CameraLibrary.yaml"]["cameras"])
+        if approved_camera_id not in camera_ids:
+            raise ValueError("Approved canary camera is not in CameraLibrary.yaml.")
+        pending_ids = tuple(camera_id for camera_id in camera_ids if camera_id != approved_camera_id)
+        jobs = tuple(
+            self.prepare(
+                project_root=project_root,
+                iteration=iteration,
+                configs=configs,
+                camera_id=camera_id,
+            )
+            for camera_id in pending_ids
+        )
+        plan_path = (
+            project_root / "codex_jobs" / f"iteration_{iteration:02d}" / "Batch_Plan.yaml"
+        )
+        plan_path.write_text(
+            yaml.safe_dump(
+                {
+                    "status": "READY",
+                    "provider": "codex-built-in",
+                    "iteration": iteration,
+                    "approved_canary": approved_camera_id,
+                    "completed_cameras": [approved_camera_id],
+                    "pending_cameras": list(pending_ids),
+                    "total_cameras": len(camera_ids),
+                    "generation_started": False,
+                    "workflow_state_advanced": False,
+                },
+                sort_keys=False,
+            ),
+            encoding="utf-8",
+        )
+        return CodexBatchPlan(status="READY", plan=plan_path, jobs=jobs)

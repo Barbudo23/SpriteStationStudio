@@ -1,0 +1,17 @@
+status: READY
+provider: codex-built-in
+iteration: 2
+approved_canary: CAM01
+completed_cameras:
+- CAM01
+pending_cameras:
+- CAM02
+- CAM03
+- CAM04
+- CAM05
+- CAM06
+- CAM07
+- CAM08
+total_cameras: 8
+generation_started: false
+workflow_state_advanced: false

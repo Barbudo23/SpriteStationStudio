@@ -1,4 +1,4 @@
-# AssetForge — Stack 03 Rev00
+# AssetForge — Stack 04 Rev00 (in development)
 
 Local AI asset-production pipeline. The complete GS001–GS008 workflow is implemented,
 with a deterministic mock provider for safe testing and an official OpenAI GPT Image 2
@@ -101,6 +101,8 @@ test pipeline behavior but are not production art.
 - Provider-independent `BaseProvider` contract.
 - Deterministic `MockProvider` for offline tests.
 - Official OpenAI GPT Image 2 multi-reference provider.
+- Persistent OpenAI / Codex / CloseAI provider switcher.
+- Codex Bridge with explicit canary approval and resumable camera job preparation.
 - One-view paid-provider canary with mandatory human review status.
 - PNG, sprite sheet, GIF, ZIP, report, and checksum export pipeline.
 
