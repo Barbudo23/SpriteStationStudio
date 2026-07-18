@@ -11,4 +11,5 @@ Stack_04_Rev00 is complete locally through Production Iteration 03.
 - Iteration 03 export: 8 PNG frames, sprite sheet, and GIF preview.
 - Package: `Iteration_03_Idle_Stack_04_Rev00.zip` (13 files).
 - Checkpoint: Iteration 03 COMPLETE, production mode, project progress 30%.
-- Next boundary: Iteration 04 Run is blocked until its manifest is explicitly approved.
+- Windows console launcher: `AssetForge_Start.cmd`.
+- Iteration 04 Run manifest: APPROVED; CAM01 Codex request prepared without generation.

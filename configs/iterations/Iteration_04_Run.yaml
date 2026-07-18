@@ -1,0 +1,39 @@
+version: "1.0"
+status: "Approved"
+
+iteration:
+  id: 4
+  name: "Run"
+  progress: "40%"
+
+description: >
+  Produce the reusable run-cycle package for the locked soldier. Preserve the
+  established identity, camera profile, scale, clothing, equipment, and rifle while
+  changing the action to a controlled combat run with a readable forward-driving pose.
+
+input:
+  required:
+    - Front.png
+    - Back.png
+    - Left.png
+    - Right.png
+
+tasks:
+  - Preserve the locked character identity and equipment
+  - Generate the configured camera views in a consistent combat-run action
+  - Keep the pose readable at game-sprite scale
+  - Export a reusable run-cycle package
+
+output:
+  package: "Iteration_04_Run.zip"
+
+qa:
+  identity_match: required
+  camera_registered: required
+  scale_locked: required
+  equipment_locked: required
+  transparent_background: required
+  action_readability: required
+
+next_iteration:
+  id: 5

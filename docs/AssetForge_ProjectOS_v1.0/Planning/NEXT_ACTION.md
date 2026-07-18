@@ -1,5 +1,5 @@
 # NEXT ACTION
 
-Review and explicitly approve the Iteration 04 Run manifest. Until that approval exists,
-do not start generation or advance the production checkpoint beyond the completed
-Iteration 03 Idle package.
+Generate the prepared Iteration 04 Run CAM01 canary through the built-in Codex generator,
+remove the chroma-key background, and require explicit human review before preparing
+the remaining seven directions. Do not advance the production checkpoint during canary work.

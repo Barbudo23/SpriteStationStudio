@@ -6,6 +6,11 @@ provider for production canary images.
 
 ## Quick start
 
+For the simplest Windows launch, double-click `AssetForge_Start.cmd`. It opens a
+Russian-language console menu for project status, the ten-iteration plan, and provider
+selection. The provider-only shortcut remains available as
+`AssetForge_Provider_Switcher.cmd`.
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
