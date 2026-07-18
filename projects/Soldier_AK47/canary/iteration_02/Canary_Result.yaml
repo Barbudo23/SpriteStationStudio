@@ -1,0 +1,11 @@
+status: REVIEW_REQUIRED
+iteration: 2
+camera_id: CAM01
+provider: codex-built-in
+asset: projects\Soldier_AK47\canary\iteration_02\CAM01_codex.png
+request: projects\Soldier_AK47\codex_jobs\iteration_02\CAM01\Request.yaml
+dimensions:
+- 1086
+- 1448
+alpha_validated: true
+workflow_state_advanced: false
