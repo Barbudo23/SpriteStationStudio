@@ -1,0 +1,19 @@
+status: PASS
+formats:
+- PNG
+- SpriteSheet
+- GIF
+unity_compatible: true
+transparent_background: true
+files:
+  png_sequence:
+  - PNG/AssetForge_View_01.png
+  - PNG/AssetForge_View_02.png
+  - PNG/AssetForge_View_03.png
+  - PNG/AssetForge_View_04.png
+  - PNG/AssetForge_View_05.png
+  - PNG/AssetForge_View_06.png
+  - PNG/AssetForge_View_07.png
+  - PNG/AssetForge_View_08.png
+  sprite_sheet: SpriteSheet/AssetForge_SpriteSheet.png
+  gif_preview: GIF/AssetForge_Preview.gif

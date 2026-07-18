@@ -13,6 +13,7 @@ def test_missing_provider_settings_default_to_codex(tmp_path):
     settings = ProviderSettingsStore(tmp_path / "Provider.yaml").load()
     assert settings.active_provider == "codex"
     assert settings.codex_reference_upload_authorized is False
+    assert settings.max_images_per_run == 3
 
 
 @pytest.mark.parametrize(
@@ -31,7 +32,7 @@ def test_provider_menu_rejects_unknown_choice():
 def test_provider_settings_are_persisted_without_credentials(tmp_path):
     path = tmp_path / "Provider.yaml"
     store = ProviderSettingsStore(path)
-    store.save(ProviderSettings("closeai", True))
+    store.save(ProviderSettings("closeai", True, 3))
 
     saved = yaml.safe_load(path.read_text(encoding="utf-8"))
     assert store.load().active_provider == "closeai"
@@ -39,7 +40,12 @@ def test_provider_settings_are_persisted_without_credentials(tmp_path):
     assert "api_key" not in saved
     assert saved["codex_reference_upload_authorized"] is True
     assert saved["human_review_required"] is True
-    assert saved["max_images_per_run"] == 1
+    assert saved["max_images_per_run"] == 3
+
+
+def test_provider_settings_reject_invalid_batch_limit():
+    with pytest.raises(ValueError, match="between 1 and 8"):
+        ProviderSettings("codex", True, 9)
 
 
 def test_menu_marks_the_active_provider():

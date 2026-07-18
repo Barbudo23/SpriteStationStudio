@@ -32,7 +32,7 @@ def checkpoint(iteration: int) -> WorkflowCheckpoint:
 
 def test_catalog_discovers_only_approved_local_manifests():
     catalog = project_catalog()
-    assert [entry.manifest.iteration for entry in catalog.entries] == [1, 2]
+    assert [entry.manifest.iteration for entry in catalog.entries] == [1, 2, 3]
 
 
 def test_catalog_selects_iteration_two_after_iteration_one():
@@ -43,14 +43,15 @@ def test_catalog_selects_iteration_two_after_iteration_one():
 
 def test_catalog_blocks_when_next_manifest_is_not_approved():
     with pytest.raises(ManifestAwaitingApprovalError, match="awaiting an approved manifest"):
-        project_catalog().next_entry(checkpoint(2))
+        project_catalog().next_entry(checkpoint(3))
 
 
-def test_catalog_plan_marks_next_missing_manifest():
+def test_catalog_plan_marks_approved_next_manifest():
     lines = project_catalog().describe(checkpoint(2))
     assert lines[0].startswith("01  SIMULATED")
     assert lines[1].startswith("02  SIMULATED")
-    assert lines[2].startswith("03  AWAITING_MANIFEST")
+    assert lines[2].startswith("03  APPROVED")
+    assert lines[3].startswith("04  NOT_CONFIGURED")
 
 
 def test_catalog_rejects_duplicate_iteration(tmp_path):

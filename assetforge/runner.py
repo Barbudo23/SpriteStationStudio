@@ -183,6 +183,7 @@ def main() -> int:
             provider_settings = ProviderSettings(
                 selected,
                 provider_settings.codex_reference_upload_authorized,
+                provider_settings.max_images_per_run,
             )
             provider_store.save(provider_settings)
             print(f"ACTIVE PROVIDER: {PROVIDER_LABELS[selected]} ({selected}).")
@@ -191,6 +192,7 @@ def main() -> int:
             provider_settings = ProviderSettings(
                 args.set_provider,
                 provider_settings.codex_reference_upload_authorized,
+                provider_settings.max_images_per_run,
             )
             provider_store.save(provider_settings)
             print(
@@ -203,10 +205,12 @@ def main() -> int:
             provider_settings = ProviderSettings(
                 provider_settings.active_provider,
                 authorized,
+                provider_settings.max_images_per_run,
             )
             provider_store.save(provider_settings)
             state = "AUTHORIZED" if authorized else "REVOKED"
             print(f"CODEX REFERENCE UPLOAD: {state}.")
+            print(f"MAX IMAGES PER RUN: {provider_settings.max_images_per_run}.")
             return 0
         if args.show_provider:
             active = provider_settings.active_provider
@@ -217,6 +221,7 @@ def main() -> int:
                 else "NOT AUTHORIZED"
             )
             print(f"CODEX REFERENCE UPLOAD: {state}.")
+            print(f"MAX IMAGES PER RUN: {provider_settings.max_images_per_run}.")
             return 0
     except (EOFError, OSError, ValueError, TypeError) as error:
         print(f"ERROR: Provider switch failed: {error}")

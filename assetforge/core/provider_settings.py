@@ -22,12 +22,15 @@ MENU_CHOICES = {"1": "openai", "2": "codex", "3": "closeai"}
 class ProviderSettings:
     active_provider: str = "codex"
     codex_reference_upload_authorized: bool = False
+    max_images_per_run: int = 3
 
     def __post_init__(self) -> None:
         if self.active_provider not in PRODUCTION_PROVIDERS:
             raise ValueError(
                 "active_provider must be one of: " + ", ".join(PRODUCTION_PROVIDERS)
             )
+        if not 1 <= self.max_images_per_run <= 8:
+            raise ValueError("max_images_per_run must be between 1 and 8.")
 
 
 class ProviderSettingsStore:
@@ -47,6 +50,7 @@ class ProviderSettingsStore:
             codex_reference_upload_authorized=bool(
                 data.get("codex_reference_upload_authorized", False)
             ),
+            max_images_per_run=int(data.get("max_images_per_run", 3)),
         )
 
     def save(self, settings: ProviderSettings) -> None:
@@ -61,7 +65,7 @@ class ProviderSettingsStore:
             ),
             "codex_upload_scope": "configured project references for prepared jobs",
             "human_review_required": True,
-            "max_images_per_run": 1,
+            "max_images_per_run": settings.max_images_per_run,
         }
         temporary_path = self.path.with_suffix(self.path.suffix + ".tmp")
         temporary_path.write_text(

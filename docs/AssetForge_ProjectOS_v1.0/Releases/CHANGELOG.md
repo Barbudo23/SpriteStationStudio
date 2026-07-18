@@ -1,5 +1,4 @@
 # Changelog
-Initial release.
 
 ## Stack_02_Rev00
 
@@ -18,12 +17,12 @@ Initial release.
 - Added guarded OpenAI and CloseAI image-provider integrations.
 - Added persistent provider selection without storing credentials.
 - Added Codex Bridge generation jobs, canary import, explicit approval, and batch planning.
-- Approved Iteration 02 CAM01 canary and prepared CAM02–CAM08 jobs without generation.
-- Added non-destructive batch-camera import and generated CAM02 for human review.
-- Persisted scoped Codex generation authorization and generated CAM03 for human review.
-- Generated CAM04–CAM08, completed all eight directions, and added structural batch QA
-  with a contact sheet and explicit READY_FOR_REVIEW gate.
-- Added an explicit eight-view batch approval gate and a reviewed-local-asset provider.
-- Approved CAM01-CAM08, completed production QA at 100%, exported PNG/SpriteSheet/GIF,
-  and packaged Iteration 02 as a 13-file production release.
-- Advanced the production checkpoint to Iteration 02 COMPLETE at 20% project progress.
+- Added scoped Codex reference authorization and resumable multi-camera imports.
+- Added structural eight-view QA, contact sheets, and an explicit human review gate.
+- Added an approved-local-asset provider for production finalization.
+- Completed and packaged Iteration 02 Walk at 20% project progress.
+- Added the approved Iteration 03 Idle manifest and action-aware generation prompts.
+- Increased the persistent Codex generation limit to three separately generated images per run.
+- Generated and approved all eight Idle directions, completed production QA at 100%,
+  and packaged Iteration 03 as a 13-file production release.
+- Advanced the production checkpoint to Iteration 03 COMPLETE at 30% project progress.

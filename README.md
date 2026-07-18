@@ -1,4 +1,4 @@
-# AssetForge — Stack 04 Rev00 (in development)
+# AssetForge — Stack 04 Rev00
 
 Local AI asset-production pipeline. The complete GS001–GS008 workflow is implemented,
 with a deterministic mock provider for safe testing and an official OpenAI GPT Image 2
@@ -43,7 +43,7 @@ python -m assetforge --authorize-codex-generation
 `--provider` remains a one-run override and does not change the saved setting. The
 technical `mock` provider is available through this override for offline tests.
 Codex upload permission is stored locally, is limited to configured project references
-and prepared jobs, generates at most one image per run, and never removes human review.
+and prepared jobs, generates at most three images per run, and never removes human review.
 Revoke it with `python -m assetforge --revoke-codex-generation`.
 
 ## First OpenAI image (safe one-view canary)

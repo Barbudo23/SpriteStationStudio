@@ -86,6 +86,23 @@ def test_codex_bridge_rejects_png_without_alpha(tmp_path):
         )
 
 
+def test_codex_bridge_uses_manifest_action_without_walk_leakage(tmp_path):
+    project_root, configs = make_project(tmp_path)
+    configs["Manifest.yaml"] = {
+        **configs["Manifest.yaml"],
+        "iteration": {"id": 3, "name": "Idle", "progress": "30%"},
+        "description": "Create a calm combat-ready idle stance.",
+    }
+
+    job = CodexBridge().prepare(
+        project_root=project_root, iteration=3, configs=configs, camera_id="CAM01"
+    )
+
+    assert "idle action" in job.prompt
+    assert "idle pose continuity" in job.prompt
+    assert "walking" not in job.prompt
+
+
 def make_imported_canary(tmp_path):
     project_root, configs = make_project(tmp_path)
     bridge = CodexBridge()

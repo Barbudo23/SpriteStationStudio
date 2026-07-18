@@ -14,10 +14,10 @@ import yaml
 
 
 REFERENCE_ROLES = {
-    "Front.png": "back-left walking reference (Russian label: back-left, isometric 30 degrees)",
-    "Back.png": "back-right walking reference (Russian label: back-right, isometric 30 degrees)",
-    "Left.png": "front-right walking reference (Russian label: face-right, isometric 30 degrees)",
-    "Right.png": "front-left walking reference (Russian label: face-left, isometric 30 degrees)",
+    "Front.png": "back-left identity reference (Russian label: back-left, isometric 30 degrees)",
+    "Back.png": "back-right identity reference (Russian label: back-right, isometric 30 degrees)",
+    "Left.png": "front-right identity reference (Russian label: face-right, isometric 30 degrees)",
+    "Right.png": "front-left identity reference (Russian label: face-left, isometric 30 degrees)",
 }
 
 
@@ -73,6 +73,7 @@ class CodexBridge:
             raise ValueError(f"Unknown Codex camera: {camera_id}")
         camera = cameras[camera_id]
         manifest = configs["Manifest.yaml"]
+        action = str(manifest.get("iteration", {}).get("name") or "character").strip().lower()
         target = str(
             manifest.get("description")
             or manifest.get("iteration", {}).get("name")
@@ -95,7 +96,8 @@ class CodexBridge:
             f"{camera['yaw']} degrees, isometric pitch 30 degrees.\n"
             "Input images: Image 1 back-left; Image 2 back-right; Image 3 front-right; "
             "Image 4 front-left. Treat them as identity and equipment references only.\n"
-            "Subject: the same adult male soldier walking with the same AK-pattern rifle, "
+            f"Subject: the same adult male soldier performing the requested {action} action "
+            "with the same AK-pattern rifle, "
             "dark olive camouflage, hooded tactical jacket, vest, pouches, knee pads, "
             "boots, grenades, face, hair, beard, and body proportions.\n"
             "Composition/framing: one full-body character, centered, consistent scale, "
@@ -103,7 +105,7 @@ class CodexBridge:
             "Scene/backdrop: perfectly flat solid #ff00ff chroma-key background. The "
             "background must be uniform with no shadow, gradient, texture, floor, or reflection.\n"
             "Constraints: preserve identity, clothing, equipment placement, weapon design, "
-            "walking pose continuity, and isometric game-art rendering. Do not copy Russian "
+            f"{action} pose continuity, and isometric game-art rendering. Do not copy Russian "
             "headings, GIF icons, filenames, white panels, or any other text from references.\n"
             "Avoid: additional people, duplicated limbs or gear, watermark, text, logo, cast "
             "shadow, contact shadow, and #ff00ff anywhere on the character."
@@ -296,7 +298,7 @@ class CodexBridge:
             "scale_ratio_at_most_1_20": scale_consistent,
         }
         status = "PASS" if all(checks.values()) else "FAIL"
-        contact_sheet = output_root / "Iteration_02_Contact_Sheet.png"
+        contact_sheet = output_root / f"Iteration_{iteration:02d}_Contact_Sheet.png"
         self._write_contact_sheet(assets, camera_ids, contact_sheet)
         report = output_root / "Batch_QA.yaml"
         report.write_text(

@@ -1,0 +1,39 @@
+version: "1.0"
+status: "Approved"
+
+iteration:
+  id: 3
+  name: "Idle"
+  progress: "30%"
+
+description: >
+  Produce the reusable idle-cycle package for the locked soldier. Preserve the
+  established identity, camera profile, scale, clothing, equipment, and rifle while
+  changing the action to a calm combat-ready standing pose suitable for a seamless loop.
+
+input:
+  required:
+    - Front.png
+    - Back.png
+    - Left.png
+    - Right.png
+
+tasks:
+  - Preserve the locked character identity and equipment
+  - Generate the configured camera views in a consistent idle stance
+  - Keep the pose suitable for a subtle seamless idle loop
+  - Export a reusable idle-cycle package
+
+output:
+  package: "Iteration_03_Idle.zip"
+
+qa:
+  identity_match: required
+  camera_registered: required
+  scale_locked: required
+  equipment_locked: required
+  transparent_background: required
+  seamless_loop: required
+
+next_iteration:
+  id: 4
