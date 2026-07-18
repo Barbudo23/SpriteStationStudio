@@ -38,6 +38,21 @@ The provider accepts only the official `https://api.openai.com/v1` endpoint. Def
 are `gpt-image-2`, quality `low`, size `1024x1024`, a 180-second timeout, and two SDK
 retries. These values can be changed in the local `.env` file.
 
+### CloseAI-compatible access
+
+CloseAI is configured separately, so a gateway key can never be sent accidentally to
+the official OpenAI endpoint (or the other way around). Put the key after
+`CLOSEAI_API_KEY=` in `.env`, then perform a free model-list probe before a canary:
+
+```powershell
+python -m assetforge --provider closeai --probe-provider
+python -m assetforge --manifest configs/iterations/Iteration_02_Walk.yaml `
+  --provider closeai --canary --canary-camera CAM01
+```
+
+The default CloseAI model name is based on its public model catalog and can be corrected
+through `CLOSEAI_IMAGE_MODEL` if the probe reports a different ID.
+
 ## Local simulation
 
 ```powershell

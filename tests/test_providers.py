@@ -49,6 +49,17 @@ class FakeImages:
         )
 
 
+class FakeModels:
+    def list(self):
+        return SimpleNamespace(
+            data=[
+                SimpleNamespace(id="text-model"),
+                SimpleNamespace(id="gpt-image-1.5"),
+                SimpleNamespace(id="glm-image"),
+            ]
+        )
+
+
 def encoded_test_png() -> str:
     buffer = BytesIO()
     Image.new("RGBA", (2, 2), (20, 40, 60, 255)).save(buffer, format="PNG")
@@ -62,6 +73,26 @@ def test_openai_config_requires_key_and_official_endpoint():
         OpenAIImageConfig.from_env(
             {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://example.com/v1"}
         )
+
+
+def test_closeai_config_is_separate_and_endpoint_locked():
+    config = OpenAIImageConfig.from_closeai_env({"CLOSEAI_API_KEY": "test-key"})
+    assert config.provider_name == "closeai"
+    assert config.base_url == "https://closeai.com.ru/v1"
+    assert config.model == "gpt-image-1.5"
+    with pytest.raises(ValueError, match="closeai.com.ru"):
+        OpenAIImageConfig.from_closeai_env(
+            {"CLOSEAI_API_KEY": "test-key", "CLOSEAI_BASE_URL": "https://example.com/v1"}
+        )
+
+
+def test_provider_probe_filters_image_model_ids():
+    provider = OpenAIImageProvider(
+        OpenAIImageConfig.from_closeai_env({"CLOSEAI_API_KEY": "test-key"}),
+        client=SimpleNamespace(models=FakeModels()),
+    )
+
+    assert provider.probe_image_models() == ("glm-image", "gpt-image-1.5")
 
 
 def test_openai_provider_sends_all_references_and_writes_review_asset(tmp_path):

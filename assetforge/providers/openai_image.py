@@ -18,6 +18,7 @@ from assetforge.providers.base import BaseProvider, GenerationRequest, Generatio
 
 
 OFFICIAL_OPENAI_BASE_URL = "https://api.openai.com/v1"
+CLOSEAI_BASE_URL = "https://closeai.com.ru/v1"
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,7 @@ class OpenAIImageConfig:
     background: str = "auto"
     timeout: float = 180.0
     max_retries: int = 2
+    provider_name: str = "openai"
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> "OpenAIImageConfig":
@@ -52,13 +54,38 @@ class OpenAIImageConfig:
         config.validate()
         return config
 
+    @classmethod
+    def from_closeai_env(cls, env: Mapping[str, str] | None = None) -> "OpenAIImageConfig":
+        values = os.environ if env is None else env
+        key = values.get("CLOSEAI_API_KEY", "").strip()
+        if not key:
+            raise ValueError("CLOSEAI_API_KEY is required for the CloseAI image provider.")
+        config = cls(
+            api_key=key,
+            base_url=values.get("CLOSEAI_BASE_URL", CLOSEAI_BASE_URL).rstrip("/"),
+            model=values.get("CLOSEAI_IMAGE_MODEL", "gpt-image-1.5").strip(),
+            quality=values.get("OPENAI_IMAGE_QUALITY", "low").strip(),
+            size=values.get("OPENAI_IMAGE_SIZE", "1024x1024").strip(),
+            background=values.get("OPENAI_IMAGE_BACKGROUND", "auto").strip(),
+            timeout=float(values.get("OPENAI_IMAGE_TIMEOUT", "180")),
+            max_retries=int(values.get("OPENAI_IMAGE_MAX_RETRIES", "2")),
+            provider_name="closeai",
+        )
+        config.validate()
+        return config
+
     def validate(self) -> None:
-        if self.base_url != OFFICIAL_OPENAI_BASE_URL:
-            raise ValueError(
-                "OPENAI_BASE_URL must be https://api.openai.com/v1 for provider=openai."
-            )
-        if not self.model.startswith("gpt-image-2"):
+        expected_url = (
+            OFFICIAL_OPENAI_BASE_URL if self.provider_name == "openai" else CLOSEAI_BASE_URL
+        )
+        if self.provider_name not in {"openai", "closeai"}:
+            raise ValueError("provider_name must be openai or closeai.")
+        if self.base_url != expected_url:
+            raise ValueError(f"{self.provider_name} provider requires endpoint {expected_url}.")
+        if self.provider_name == "openai" and not self.model.startswith("gpt-image-2"):
             raise ValueError("OPENAI_IMAGE_MODEL must be gpt-image-2 or its dated snapshot.")
+        if not self.model:
+            raise ValueError("Image model must not be empty.")
         if self.quality not in {"auto", "low", "medium", "high"}:
             raise ValueError("OPENAI_IMAGE_QUALITY must be auto, low, medium, or high.")
         if self.background not in {"auto", "opaque", "transparent"}:
@@ -88,7 +115,23 @@ class OpenAIImageProvider(BaseProvider):
 
     @property
     def name(self) -> str:
-        return "openai"
+        return self.config.provider_name
+
+    def probe_image_models(self) -> tuple[str, ...]:
+        """Read model IDs without requesting a paid image generation."""
+
+        try:
+            response = self._client.models.list()
+        except Exception as error:
+            raise RuntimeError(
+                f"{self.name} model probe failed ({type(error).__name__})."
+            ) from error
+        model_ids = sorted(
+            str(getattr(model, "id", ""))
+            for model in getattr(response, "data", ())
+            if "image" in str(getattr(model, "id", "")).lower()
+        )
+        return tuple(model_id for model_id in model_ids if model_id)
 
     def generate(self, request: GenerationRequest) -> GenerationResult:
         references = tuple(Path(path) for path in request.reference_paths)

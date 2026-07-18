@@ -56,7 +56,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--provider",
-        choices=("mock", "openai"),
+        choices=("mock", "openai", "closeai"),
         default="mock",
         help="Generation provider. OpenAI is initially restricted to one-view canary mode.",
     )
@@ -69,6 +69,11 @@ def main() -> int:
         "--canary-camera",
         default="CAM01",
         help="Camera ID for the one-view canary (default: CAM01).",
+    )
+    parser.add_argument(
+        "--probe-provider",
+        action="store_true",
+        help="List image-capable models without generating an image.",
     )
     parser.add_argument(
         "--force",
@@ -132,16 +137,34 @@ def main() -> int:
             print(line)
         return 0
 
-    if args.provider == "openai" and not args.canary:
+    if args.provider in {"openai", "closeai"} and args.probe_provider:
+        try:
+            config = (
+                OpenAIImageConfig.from_env()
+                if args.provider == "openai"
+                else OpenAIImageConfig.from_closeai_env()
+            )
+            models = OpenAIImageProvider(config).probe_image_models()
+        except (OSError, RuntimeError, ValueError) as error:
+            print(f"ERROR: Provider probe failed: {error}")
+            return 1
+        print("Image models: " + (", ".join(models) if models else "none reported"))
+        return 0
+    if args.provider in {"openai", "closeai"} and not args.canary:
         print(
-            "BLOCKED: OpenAI full-batch generation is disabled until a canary image "
-            "has passed human review. Run with --provider openai --canary."
+            "BLOCKED: paid full-batch generation is disabled until a canary image "
+            f"has passed human review. Run with --provider {args.provider} --canary."
         )
         return 1
     if args.canary:
         try:
-            if args.provider == "openai":
-                provider = OpenAIImageProvider(OpenAIImageConfig.from_env())
+            if args.provider in {"openai", "closeai"}:
+                config = (
+                    OpenAIImageConfig.from_env()
+                    if args.provider == "openai"
+                    else OpenAIImageConfig.from_closeai_env()
+                )
+                provider = OpenAIImageProvider(config)
             else:
                 provider = MockProvider()
             canary = CanaryRunner().run(
