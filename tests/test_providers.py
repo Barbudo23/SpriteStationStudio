@@ -60,6 +60,14 @@ class FakeModels:
         )
 
 
+class DeniedImages:
+    def edit(self, **kwargs):
+        error = RuntimeError("unsafe raw message")
+        error.status_code = 403
+        error.body = {"error": {"message": "model is not enabled"}}
+        raise error
+
+
 def encoded_test_png() -> str:
     buffer = BytesIO()
     Image.new("RGBA", (2, 2), (20, 40, 60, 255)).save(buffer, format="PNG")
@@ -93,6 +101,25 @@ def test_provider_probe_filters_image_model_ids():
     )
 
     assert provider.probe_image_models() == ("glm-image", "gpt-image-1.5")
+
+
+def test_provider_surfaces_safe_gateway_error_detail(tmp_path):
+    reference = tmp_path / "Front.png"
+    Image.new("RGB", (2, 2), (255, 255, 255)).save(reference)
+    provider = OpenAIImageProvider(
+        OpenAIImageConfig.from_closeai_env({"CLOSEAI_API_KEY": "secret-test-key"}),
+        client=SimpleNamespace(images=DeniedImages()),
+    )
+
+    with pytest.raises(RuntimeError, match="HTTP 403: model is not enabled") as captured:
+        provider.generate(
+            GenerationRequest(
+                prompt="front view",
+                reference_paths=(str(reference),),
+                parameters={"output_directory": str(tmp_path / "out")},
+            )
+        )
+    assert "secret-test-key" not in str(captured.value)
 
 
 def test_openai_provider_sends_all_references_and_writes_review_asset(tmp_path):

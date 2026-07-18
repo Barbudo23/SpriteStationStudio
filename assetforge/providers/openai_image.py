@@ -158,8 +158,21 @@ class OpenAIImageProvider(BaseProvider):
                     background=self.config.background,
                 )
             except Exception as error:
+                status = getattr(error, "status_code", None)
+                body = getattr(error, "body", None)
+                detail = ""
+                if isinstance(body, dict):
+                    nested = body.get("error", body)
+                    if isinstance(nested, dict):
+                        detail = str(nested.get("message", ""))
+                    elif nested:
+                        detail = str(nested)
+                detail = detail.replace(self.config.api_key, "[REDACTED]")[:300]
+                suffix = f" HTTP {status}" if status else ""
+                if detail:
+                    suffix += f": {detail}"
                 raise RuntimeError(
-                    f"OpenAI image request failed ({type(error).__name__})."
+                    f"{self.name} image request failed ({type(error).__name__}){suffix}."
                 ) from error
 
         data = getattr(response, "data", None)
