@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.U2D.Sprites;
 using UnityEngine;
 
 public static class AssetForgeUnityBridge
@@ -14,6 +15,7 @@ public static class AssetForgeUnityBridge
         public string sourcePath;
         public string reportPath;
         public string presetPath;
+        public string packagePath;
         public string workingAssetPath = "Assets/AssetForgeInput";
     }
 
@@ -30,6 +32,14 @@ public static class AssetForgeUnityBridge
         public string file;
         public string spriteMode;
         public string name;
+        public string textureType;
+        public bool alphaIsTransparency;
+        public bool mipMaps;
+        public string wrapMode;
+        public string filterMode;
+        public string compression;
+        public float pixelsPerUnit;
+        public float[] pivot;
         public List<SpriteSlice> slices = new List<SpriteSlice>();
     }
 
@@ -90,6 +100,8 @@ public static class AssetForgeUnityBridge
         public int spriteAssetCount;
         public int spriteSliceCount;
         public List<SpritePreviewAsset> spriteAssets = new List<SpritePreviewAsset>();
+        public bool importSettingsApplied;
+        public int appliedAssetCount;
         public string error;
     }
 
@@ -123,6 +135,13 @@ public static class AssetForgeUnityBridge
                 return;
             }
 
+            if (command.operation == "apply_sprite_import")
+            {
+                ApplySpriteImport(command, report);
+                WriteReport(command.reportPath, report);
+                return;
+            }
+
             if (command.operation != "analyze_asset")
                 throw new InvalidOperationException("Unsupported operation: " + command.operation);
 
@@ -145,6 +164,117 @@ public static class AssetForgeUnityBridge
             Debug.LogException(ex);
             EditorApplication.Exit(2);
         }
+    }
+
+    private static void ApplySpriteImport(Command command, AssetReport report)
+    {
+        if (string.IsNullOrWhiteSpace(command.packagePath) || !Directory.Exists(command.packagePath))
+            throw new DirectoryNotFoundException("Exported Unity package not found: " + command.packagePath);
+        if (string.IsNullOrWhiteSpace(command.presetPath) || !File.Exists(command.presetPath))
+            throw new FileNotFoundException("Unity sprite preset not found.", command.presetPath);
+
+        var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+        var assetsRoot = Path.GetFullPath(Application.dataPath);
+        var importsRoot = Path.GetFullPath(Path.Combine(assetsRoot, "AssetForgeImports"));
+        var packageRoot = Path.GetFullPath(command.packagePath);
+        var packagePrefix = packageRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+        var importsPrefix = importsRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+        if (!packageRoot.StartsWith(importsPrefix, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Package must be inside Assets/AssetForgeImports.");
+        if (!string.Equals(Path.GetDirectoryName(packageRoot), importsRoot, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Nested package paths are not supported.");
+
+        var presetPath = Path.GetFullPath(command.presetPath);
+        if (!string.Equals(Path.GetDirectoryName(presetPath), packageRoot, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Preset must be stored in the exported package root.");
+        var preset = JsonUtility.FromJson<UnityImportPreset>(File.ReadAllText(presetPath));
+        if (preset == null || !string.Equals(preset.engine, "Unity", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Preset is not an AssetForge Unity import preset.");
+        if (preset.assets == null || preset.assets.Count == 0)
+            throw new InvalidDataException("Preset contains no sprite assets.");
+
+        report.presetPath = presetPath;
+        report.spriteAssetCount = preset.assets.Count;
+        foreach (var asset in preset.assets)
+        {
+            if (!string.Equals(asset.textureType, "Sprite", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Only Sprite textureType is supported.");
+            if (!string.Equals(asset.spriteMode, "Single", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(asset.spriteMode, "Multiple", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Unsupported spriteMode: " + asset.spriteMode);
+            if (!string.Equals(asset.wrapMode, "Clamp", StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(asset.filterMode, "Bilinear", StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(asset.compression, "Uncompressed", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Preset contains unsupported texture settings.");
+
+            var absolute = Path.GetFullPath(Path.Combine(packageRoot, asset.file.Replace('/', Path.DirectorySeparatorChar)));
+            if (!absolute.StartsWith(packagePrefix, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Sprite path escapes the exported package.");
+            if (!File.Exists(absolute))
+                throw new FileNotFoundException("Sprite PNG not found.", absolute);
+
+            var assetPath = "Assets/" + Path.GetRelativePath(assetsRoot, absolute).Replace('\\', '/');
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceSynchronousImport);
+            var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+            if (importer == null)
+                throw new InvalidDataException("Asset is not handled by TextureImporter: " + assetPath);
+
+            importer.textureType = TextureImporterType.Sprite;
+            importer.alphaIsTransparency = asset.alphaIsTransparency;
+            importer.mipmapEnabled = asset.mipMaps;
+            importer.wrapMode = TextureWrapMode.Clamp;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.spritePixelsPerUnit = asset.pixelsPerUnit > 0 ? asset.pixelsPerUnit : 100f;
+
+            if (string.Equals(asset.spriteMode, "Multiple", StringComparison.OrdinalIgnoreCase))
+            {
+                if (asset.slices == null || asset.slices.Count == 0)
+                    throw new InvalidDataException("Multiple Sprite asset contains no slices.");
+                report.spriteSliceCount += asset.slices.Count;
+                importer.spriteImportMode = SpriteImportMode.Multiple;
+                importer.SaveAndReimport();
+                var factory = new SpriteDataProviderFactories();
+                factory.Init();
+                var dataProvider = factory.GetSpriteEditorDataProviderFromObject(importer);
+                dataProvider.InitSpriteEditorDataProvider();
+                var spriteRects = (asset.slices ?? new List<SpriteSlice>()).Select(slice =>
+                {
+                    if (slice.rect == null || slice.rect.Length != 4)
+                        throw new InvalidDataException("Sprite slice rect must contain four integers.");
+                    return new SpriteRect
+                    {
+                        name = slice.name,
+                        rect = new Rect(slice.rect[0], slice.rect[1], slice.rect[2], slice.rect[3]),
+                        alignment = SpriteAlignment.Custom,
+                        pivot = new Vector2(0.5f, 0f),
+                        spriteID = GUID.Generate()
+                    };
+                }).ToArray();
+                dataProvider.SetSpriteRects(spriteRects);
+                dataProvider.Apply();
+            }
+            else
+            {
+                importer.spriteImportMode = SpriteImportMode.Single;
+                var pivot = asset.pivot != null && asset.pivot.Length == 2
+                    ? new Vector2(asset.pivot[0], asset.pivot[1])
+                    : new Vector2(0.5f, 0f);
+                var settings = new TextureImporterSettings();
+                importer.ReadTextureSettings(settings);
+                settings.spriteAlignment = (int)SpriteAlignment.Custom;
+                settings.spritePivot = pivot;
+                importer.SetTextureSettings(settings);
+            }
+
+            importer.SaveAndReimport();
+            report.appliedAssetCount++;
+        }
+
+        AssetDatabase.SaveAssets();
+        report.importSettingsApplied = report.appliedAssetCount == report.spriteAssetCount;
     }
 
     private static void PreviewSpriteImport(Command command, AssetReport report)

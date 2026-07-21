@@ -16,6 +16,7 @@ from app.animation_runner import AnimationRenderRunner, AnimationRenderRequest
 from app.unity_runner import UnityRunner, UnityBridgeError
 from app.unity_sprite_preview import UnitySpritePreviewRunner
 from app.unity_package_export import export_verified_package
+from app.unity_sprite_import import UnitySpriteImportRunner
 from app.unity_asset_library import UnityAssetLibrary, UnityAssetRecord
 from app.settings_store import SettingsStore, AppSettings
 from app.task_guard import TaskGuard
@@ -45,6 +46,7 @@ class AssetForgeApp(tk.Tk):
         self.animation_runner = AnimationRenderRunner()
         self.unity_runner = UnityRunner()
         self.unity_sprite_preview_runner = UnitySpritePreviewRunner(self.unity_runner)
+        self.unity_sprite_import_runner = UnitySpriteImportRunner(self.unity_runner)
         self.unity_asset_library = UnityAssetLibrary()
         self.unity_asset_records: list[UnityAssetRecord] = []
         self.settings_store = SettingsStore()
@@ -101,6 +103,7 @@ class AssetForgeApp(tk.Tk):
         )
         self.last_unity_preset_path: Path | None = None
         self.last_unity_preview_report_path: Path | None = None
+        self.last_unity_export_dir: Path | None = None
 
         self.preview_photo = None
         self._build_ui()
@@ -494,6 +497,11 @@ class AssetForgeApp(tk.Tk):
             integrations,
             text="EXPORT VERIFIED PACKAGE TO UNITY",
             command=self._export_verified_unity_package,
+        ).pack(fill="x", pady=(0, 6))
+        ttk.Button(
+            integrations,
+            text="APPLY TEXTURE IMPORT SETTINGS",
+            command=self._apply_unity_sprite_import_settings,
         ).pack(fill="x", pady=(0, 8))
         ttk.Label(
             integrations,
@@ -1481,6 +1489,48 @@ class AssetForgeApp(tk.Tk):
         threading.Thread(target=worker, daemon=True).start()
 
 
+    def _apply_unity_sprite_import_settings(self) -> None:
+        unity = self.unity_var.get().strip()
+        if not unity:
+            messagebox.showwarning("Unity Sprite Import", "Select Unity.exe first.")
+            return
+        package_dir = self.last_unity_export_dir
+        if package_dir is None or not package_dir.is_dir():
+            messagebox.showwarning(
+                "Unity Sprite Import",
+                "Export a verified package to Unity before applying import settings.",
+            )
+            return
+        if not messagebox.askyesno(
+            "Confirm TextureImporter Settings",
+            "Unity will create or update .meta files only for PNG files in:\n"
+            f"{package_dir}\n\n"
+            "No assets outside this new AssetForgeImports folder will be changed. Continue?",
+        ):
+            return
+
+        token = self.task_guard.begin("unity_sprite_import_apply")
+        if token is None:
+            messagebox.showinfo("Unity Sprite Import", "Import settings are already being applied.")
+            return
+        self.status_var.set("Unity is applying TextureImporter settings...")
+        self.progress.start(10)
+
+        def worker() -> None:
+            try:
+                result = self.unity_sprite_import_runner.run(
+                    Path(unity), package_dir, timeout=300
+                )
+                self.events.put(("unity_import_apply_ok", {"token": token, "result": result}))
+            except Exception as exc:
+                self.events.put(("unity_import_apply_error", {
+                    "token": token,
+                    "message": str(exc),
+                }))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+
     def _choose_blender(self) -> None:
         types = [("Blender", "blender.exe"), ("Все файлы", "*.*")]
         value = filedialog.askopenfilename(title="Выберите Blender", filetypes=types)
@@ -1851,6 +1901,8 @@ class AssetForgeApp(tk.Tk):
                         self.task_guard.finish(token)
                     result = data.get("result")
                     target = result.target_dir if result else "—"
+                    if result:
+                        self.last_unity_export_dir = result.target_dir
                     count = len(result.copied_files) if result else 0
                     self.status_var.set(f"Unity package exported: {count} files")
                     self._append_log(f"UNITY PACKAGE EXPORTED: {target}")
@@ -1859,6 +1911,32 @@ class AssetForgeApp(tk.Tk):
                         f"Скопировано файлов: {count}\n{target}\n\n"
                         "Существующие файлы не перезаписывались.",
                     )
+                elif kind == "unity_import_apply_ok":
+                    self.progress.stop()
+                    data = payload if isinstance(payload, dict) else {}
+                    token = data.get("token")
+                    if token:
+                        self.task_guard.finish(token)
+                    result = data.get("result")
+                    report = result.report if result else {}
+                    applied = int(report.get("appliedAssetCount", 0))
+                    self.status_var.set(f"Unity import settings applied: {applied} assets")
+                    self._append_log("UNITY TEXTURE IMPORT REPORT")
+                    self._append_log(json.dumps(report, ensure_ascii=False, indent=2))
+                    messagebox.showinfo(
+                        "Unity Sprite Import",
+                        f"TextureImporter settings applied to {applied} sprite assets.",
+                    )
+                elif kind == "unity_import_apply_error":
+                    self.progress.stop()
+                    data = payload if isinstance(payload, dict) else {}
+                    token = data.get("token")
+                    if token:
+                        self.task_guard.finish(token)
+                    message = str(data.get("message", "Unknown error"))
+                    self.status_var.set("Unity TextureImporter error")
+                    self._append_log(f"Unity TextureImporter error: {message}")
+                    messagebox.showerror("Unity Sprite Import", message)
                 elif kind == "unity_export_error":
                     self.progress.stop()
                     data = payload if isinstance(payload, dict) else {}

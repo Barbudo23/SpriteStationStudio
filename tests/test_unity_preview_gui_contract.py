@@ -18,6 +18,9 @@ class UnityPreviewGuiContractTests(unittest.TestCase):
         self.assertIn("EXPORT VERIFIED PACKAGE TO UNITY", source)
         self.assertIn("def _export_verified_unity_package", source)
         self.assertIn('"unity_export_ok"', source)
+        self.assertIn("APPLY TEXTURE IMPORT SETTINGS", source)
+        self.assertIn("def _apply_unity_sprite_import_settings", source)
+        self.assertIn('"unity_import_apply_ok"', source)
         self.assertIn("askyesno", source)
         self.assertGreaterEqual(
             source.count("last_unity_preview_report_path = None"), 3
