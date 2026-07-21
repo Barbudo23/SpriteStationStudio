@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from contextlib import contextmanager
 from pathlib import Path
 import hashlib
 import sqlite3
 import time
+from typing import Iterator
 
 
 @dataclass(frozen=True)
@@ -32,8 +34,18 @@ class AssetDatabase:
         conn.row_factory = sqlite3.Row
         return conn
 
+    @contextmanager
+    def session(self) -> Iterator[sqlite3.Connection]:
+        """Commit or roll back a transaction and always release the database file."""
+        conn = self.connect()
+        try:
+            with conn:
+                yield conn
+        finally:
+            conn.close()
+
     def _initialize(self) -> None:
-        with self.connect() as conn:
+        with self.session() as conn:
             conn.executescript("""
                 PRAGMA journal_mode=WAL;
                 CREATE TABLE IF NOT EXISTS assets (
@@ -73,7 +85,7 @@ class AssetDatabase:
         source_path = source_path.expanduser().resolve()
         now = time.time()
         file_hash = self.hash_file(source_path) if source_path.is_file() else ""
-        with self.connect() as conn:
+        with self.session() as conn:
             conn.execute("""
                 INSERT INTO assets (
                     guid, name, asset_type, source_path, project_path,
@@ -103,6 +115,6 @@ class AssetDatabase:
             sql += " AND asset_type = ?"
             args.append(asset_type)
         sql += " ORDER BY modified_utc DESC, name COLLATE NOCASE"
-        with self.connect() as conn:
+        with self.session() as conn:
             rows = conn.execute(sql, args).fetchall()
         return [AssetRow(**dict(row)) for row in rows]
