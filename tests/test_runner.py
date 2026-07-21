@@ -3,6 +3,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from app.blender_runner import BlenderRunner, ForgeError, RenderRequest
 
@@ -66,6 +67,24 @@ class CommandTests(unittest.TestCase):
             self.assertIn(str(model), command)
             self.assertIn("1024", command)
             self.assertIn(str(worker), command)
+
+    def test_find_blender_uses_windows_registry_install_location(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            blender = Path(tmp) / "Blender 5.1" / "blender.exe"
+            blender.parent.mkdir()
+            blender.write_text("", encoding="utf-8")
+
+            with (
+                patch("app.blender_runner.sys.platform", "win32"),
+                patch("app.blender_runner.shutil.which", return_value=None),
+                patch.dict("app.blender_runner.os.environ", {}, clear=True),
+                patch.object(
+                    BlenderRunner,
+                    "_windows_registry_candidates",
+                    return_value=[blender],
+                ),
+            ):
+                self.assertEqual(BlenderRunner.find_blender(), blender.resolve())
 
 
 if __name__ == "__main__":

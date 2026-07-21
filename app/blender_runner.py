@@ -54,6 +54,49 @@ class BlenderRunner:
         self.worker_script = worker_script or root / "worker" / "render_preview.py"
 
     @staticmethod
+    def _windows_registry_candidates() -> list[Path]:
+        """Return Blender executables registered by Windows Installer."""
+        try:
+            import winreg
+        except ImportError:
+            return []
+
+        candidates: list[Path] = []
+        uninstall_paths = (
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+            r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+        )
+        for hive in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+            for uninstall_path in uninstall_paths:
+                try:
+                    root_key = winreg.OpenKey(hive, uninstall_path)
+                except OSError:
+                    continue
+                with root_key:
+                    index = 0
+                    while True:
+                        try:
+                            subkey_name = winreg.EnumKey(root_key, index)
+                        except OSError:
+                            break
+                        index += 1
+                        try:
+                            with winreg.OpenKey(root_key, subkey_name) as subkey:
+                                display_name = str(
+                                    winreg.QueryValueEx(subkey, "DisplayName")[0]
+                                )
+                                if "blender" not in display_name.lower():
+                                    continue
+                                install_location = str(
+                                    winreg.QueryValueEx(subkey, "InstallLocation")[0]
+                                ).strip()
+                        except OSError:
+                            continue
+                        if install_location:
+                            candidates.append(Path(install_location) / "blender.exe")
+        return candidates
+
+    @staticmethod
     def find_blender() -> Path | None:
         env = os.environ.get("BLENDER_PATH")
         candidates: list[Path] = []
@@ -65,6 +108,7 @@ class BlenderRunner:
             candidates.append(Path(found))
 
         if sys.platform.startswith("win"):
+            candidates.extend(BlenderRunner._windows_registry_candidates())
             program_files = [
                 Path(os.environ.get("ProgramFiles", r"C:\Program Files")),
                 Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")),
