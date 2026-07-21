@@ -1,0 +1,12 @@
+{
+  "version": "0.6.1",
+  "channel": "stable",
+  "python_compile_exit": 0,
+  "tests_exit": 0,
+  "tests_summary": [
+    "Ran 29 tests in 0.064s",
+    "OK"
+  ],
+  "real_blender_tested_here": false,
+  "real_unity_tested_here": false
+}

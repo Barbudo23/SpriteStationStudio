@@ -1,0 +1,22 @@
+Spreadsheet runtime warmup failed during python startup
+Traceback (most recent call last):
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py", line 26, in warm_spreadsheet_runtime_on_startup
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/spreadsheet_warmup.py", line 785, in warm_spreadsheet_runtime
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/spreadsheet_warmup.py", line 720, in _warm_feature_flows
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/spreadsheet_warmup.py", line 704, in _warm_collaboration_flows
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/generated/interface/models.py", line 30820, in hydrate_crdt_from_proto
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/rpc/remote.py", line 749, in __call__
+  File "/tmp/tmp.yTcnQsZYiA/artifact_tool_v2-2.8.4/artifact_tool/rpc/client.py", line 150, in call
+artifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.
+test_command_contains_worker_arguments (test_runner.CommandTests.test_command_contains_worker_arguments) ... ok
+test_auto_engine_is_valid (test_runner.RenderRequestTests.test_auto_engine_is_valid) ... ok
+test_legacy_eevee_engine_is_valid (test_runner.RenderRequestTests.test_legacy_eevee_engine_is_valid) ... ok
+test_missing_model (test_runner.RenderRequestTests.test_missing_model) ... ok
+test_resolution_bounds (test_runner.RenderRequestTests.test_resolution_bounds) ... ok
+test_unsupported_extension (test_runner.RenderRequestTests.test_unsupported_extension) ... ok
+test_valid_request (test_runner.RenderRequestTests.test_valid_request) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.007s
+
+OK

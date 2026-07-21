@@ -1,0 +1,8 @@
+[project]
+name = "pseudo3dforge"
+version = "0.1.0"
+description = "Automatic 3D model preview renderer powered by Blender"
+requires-python = ">=3.10"
+
+[tool.unittest]
+start-directory = "tests"

@@ -1,0 +1,8 @@
+{
+  "version": "0.8.1",
+  "type": "hotfix",
+  "fixed_issue": "Tkinter topbar mixed pack/grid geometry managers",
+  "compile_exit": 0,
+  "tests_exit": 0,
+  "real_windows_gui_launch_tested_here": false
+}

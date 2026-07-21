@@ -1,0 +1,8 @@
+{
+  "version": "0.7.0",
+  "feature": "animation_sprites",
+  "compile_exit": 0,
+  "tests_exit": 0,
+  "real_blender_tested_here": false,
+  "notes": "Worker requires validation with installed Blender and animated FBX/GLB."
+}

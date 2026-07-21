@@ -1,0 +1,12 @@
+{
+  "version": "0.8.0",
+  "compile_exit": 0,
+  "tests_exit": 0,
+  "core_components": [
+    "project_manager",
+    "event_bus",
+    "job_queue",
+    "asset_database",
+    "plugin_registry"
+  ]
+}

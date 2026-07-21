@@ -1,0 +1,10 @@
+{
+  "version": "0.8.1",
+  "channel": "stable_baseline",
+  "code_changes": false,
+  "documentation_changes_only": true,
+  "compile_exit": 0,
+  "tests_exit": 0,
+  "frozen_core_policy": true,
+  "real_windows_launch_confirmation_pending": true
+}
