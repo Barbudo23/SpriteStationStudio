@@ -30,6 +30,7 @@ class AssetForgeCore:
             PluginInfo("unity_bridge", "Unity Bridge", "0.6.0", True, "bridge"),
             PluginInfo("unity_library", "Unity Asset Library", "0.6.0", True, "library"),
             PluginInfo("animation_sprites", "Animation Sprite Renderer", "0.1.0", True, "production"),
+            PluginInfo("ai_center", "AI Center", "0.8.2-dev", True, "generation"),
         ):
             self.plugins.register(plugin)
 

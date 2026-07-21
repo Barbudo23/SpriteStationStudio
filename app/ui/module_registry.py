@@ -36,6 +36,10 @@ def create_default_registry() -> ModuleRegistry:
         "3D-модель → PNG, направления, анимации и sprite sheet."
     ))
     registry.register(ModuleDescriptor(
+        "ai_center", "AI Center", "AI",
+        "Генерация изображений через OpenAI API, Codex Bridge или CloseAI API."
+    ))
+    registry.register(ModuleDescriptor(
         "motion_lab", "MotionLab", "▶",
         "Экспериментальные циклы, GIF-превью и движение.", enabled=False
     ))

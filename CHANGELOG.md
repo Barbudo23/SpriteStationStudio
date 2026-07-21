@@ -121,3 +121,16 @@
 - Добавлен JSON-отчёт.
 - Добавлен CLI.
 - Добавлены unit-тесты командной строки и валидации.
+# v0.8.2 Dev — AI Center
+
+- Добавлен независимый модуль AI Center.
+- Добавлены OpenAI API, Codex Bridge и CloseAI API provider contracts.
+- API-ключи читаются только из переменных окружения и не сохраняются.
+- Добавлены JSON jobs, SHA-256 prompt и обязательный human-review gate.
+- Добавлены тесты AI-настроек, Codex job, OpenAI-compatible API и регистрации модуля.
+- Обновлены аудит baseline, GitHub workflow и план разработки.
+
+# v0.8.1.1 Hotfix
+
+- SQLite-соединения гарантированно закрываются после операций на Windows.
+- Схема базы и публичный API не изменены.

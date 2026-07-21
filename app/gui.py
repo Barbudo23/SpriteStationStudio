@@ -26,12 +26,13 @@ from app.image_asset_source import (
 )
 from app.ui.module_registry import create_default_registry
 from app.ui.theme import apply_theme, COLORS
+from app.ai_center.window import AICenterWindow
 
 
 class AssetForgeApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("AssetForge Studio — Pseudo3D Forge · Image Source")
+        self.title("AssetForge Studio v0.8.2 Dev — Pseudo3D Forge · AI Center")
         self.geometry("1440x900")
         self.minsize(1120, 720)
 
@@ -134,7 +135,7 @@ class AssetForgeApp(tk.Tk):
         ).grid(row=0, column=0, sticky="e", padx=(0, 12))
         ttk.Label(
             right_status,
-            text="v0.8.1 Core Hotfix",
+            text="v0.8.2 AI Dev",
             style="Badge.TLabel",
         ).grid(row=0, column=1, sticky="e")
 
@@ -539,6 +540,8 @@ class AssetForgeApp(tk.Tk):
         self.module_var.set(module_id)
         if module_id == "dashboard":
             messagebox.showinfo("Dashboard", "Dashboard будет добавлен следующим этапом.")
+        elif module_id == "ai_center":
+            AICenterWindow(self)
 
     def _update_source_mode(self) -> None:
         mode = self.source_mode_var.get()
