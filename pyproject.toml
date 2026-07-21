@@ -1,6 +1,6 @@
 [project]
 name = "assetforge-studio"
-version = "0.8.2.dev0"
+version = "0.8.3.dev0"
 description = "Modular Blender, Unity, and AI-assisted game asset production studio"
 requires-python = ">=3.10"
 
