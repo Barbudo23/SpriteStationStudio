@@ -38,6 +38,18 @@ class AnimationRunnerTests(unittest.TestCase):
             self.assertIn("8", command)
             self.assertIn("--frame-step", command)
             self.assertIn("--max-frames", command)
+            self.assertEqual(command[command.index("--camera-profile") + 1], "Strategy30")
+            self.assertEqual(command[command.index("--pivot-mode") + 1], "bottom_center")
+
+    def test_selected_camera_profile_is_forwarded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            request = AnimationRenderRequest(
+                **{**request.__dict__, "camera_profile": "XCOM"}
+            )
+            command = AnimationRenderRunner(worker).build_command(request)
+            self.assertEqual(command[command.index("--camera-profile") + 1], "XCOM")
+            self.assertEqual(command[command.index("--camera-elevation") + 1], "35.0")
 
     def test_invalid_direction_count_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

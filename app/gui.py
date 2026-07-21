@@ -1433,6 +1433,7 @@ class AssetForgeApp(tk.Tk):
                 frame_end=frame_end,
                 frame_step=int(self.animation_frame_step_var.get()),
                 max_frames=int(self.animation_max_frames_var.get()),
+                camera_profile=self.camera_profile_var.get(),
             )
             self.animation_runner.build_command(request)
         except (ForgeError, ValueError, OSError) as exc:

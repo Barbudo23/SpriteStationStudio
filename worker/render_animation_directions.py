@@ -56,6 +56,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--frame-end", type=int)
     parser.add_argument("--frame-step", type=int, default=2)
     parser.add_argument("--max-frames", type=int, default=32)
+    parser.add_argument("--camera-profile", default="Strategy30")
+    parser.add_argument("--camera-azimuth", type=float, default=45.0)
+    parser.add_argument("--camera-elevation", type=float, default=30.0)
+    parser.add_argument("--framing-margin", type=float, default=1.35)
+    parser.add_argument("--pivot-mode", choices=("bottom_center",), default="bottom_center")
     return parser.parse_args(argv)
 
 
@@ -193,7 +198,12 @@ def main() -> int:
 
         bounds = normalize_scene(objects)
         asset_root = create_asset_root()
-        setup_camera(*bounds)
+        setup_camera(
+            *bounds,
+            azimuth_degrees=args.camera_azimuth,
+            elevation_degrees=args.camera_elevation,
+            framing_margin=args.framing_margin,
+        )
         setup_lighting(*bounds)
         resolved_engine = configure_render(
             frames_root / "placeholder.png",
@@ -255,7 +265,7 @@ def main() -> int:
         all_outputs.append(contact_sheet_path)
 
         manifest = {
-            "schemaVersion": "1.0",
+            "schemaVersion": "1.1",
             "application": "AssetForge Studio",
             "module": "Animation Sprite Renderer",
             "assetName": model.stem,
@@ -264,7 +274,32 @@ def main() -> int:
             "frameRange": {"start": start, "end": end},
             "sampledFrames": frames,
             "frameCountPerDirection": len(frames),
-            "canvas": {"width": args.resolution, "height": args.resolution},
+            "canvas": {
+                "width": args.resolution,
+                "height": args.resolution,
+                "transparent": True,
+                "colorMode": "RGBA",
+            },
+            "camera": {
+                "profile": args.camera_profile,
+                "projection": "orthographic",
+                "azimuthDegrees": args.camera_azimuth,
+                "elevationDegrees": args.camera_elevation,
+                "framingMargin": args.framing_margin,
+            },
+            "normalization": {
+                "centeredXY": True,
+                "groundAligned": True,
+                "scalePolicy": "fit_largest_dimension",
+                "pivot": {
+                    "mode": args.pivot_mode,
+                    "normalized": [0.5, 0.0],
+                },
+                "bounds": {
+                    "minimum": [float(value) for value in bounds[0]],
+                    "maximum": [float(value) for value in bounds[1]],
+                },
+            },
             "renderEngine": resolved_engine,
             "directions": direction_records,
             "contactSheet": contact_sheet_path.name,
@@ -284,6 +319,7 @@ def main() -> int:
             "frameCountPerDirection": len(frames),
             "totalRenderedFrames": total_renders,
             "frameRange": [start, end],
+            "cameraProfile": args.camera_profile,
             "renderEngine": resolved_engine,
             "durationMs": round((time.perf_counter() - started) * 1000),
             "contactSheet": str(contact_sheet_path),
