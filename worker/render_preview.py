@@ -20,6 +20,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", required=True)
     parser.add_argument("--resolution", type=int, default=512)
     parser.add_argument("--engine", default="AUTO")
+    parser.add_argument("--camera-profile", default="Strategy30")
+    parser.add_argument("--camera-azimuth", type=float, default=45.0)
+    parser.add_argument("--camera-elevation", type=float, default=30.0)
+    parser.add_argument("--framing-margin", type=float, default=1.35)
+    parser.add_argument("--pivot-mode", choices=("bottom_center",), default="bottom_center")
     return parser.parse_args(argv)
 
 
@@ -298,6 +303,7 @@ def main() -> int:
 
     preview = output_dir / "Preview.png"
     report_path = output_dir / "import_report.json"
+    manifest_path = output_dir / "preview_manifest.json"
     started = time.perf_counter()
     bounds = None
 
@@ -319,7 +325,12 @@ def main() -> int:
         bounds = normalize_scene(objects)
 
         print("[Forge] Creating camera")
-        setup_camera(*bounds)
+        setup_camera(
+            *bounds,
+            azimuth_degrees=args.camera_azimuth,
+            elevation_degrees=args.camera_elevation,
+            framing_margin=args.framing_margin,
+        )
 
         print("[Forge] Creating lights")
         setup_lighting(*bounds)
@@ -333,8 +344,48 @@ def main() -> int:
 
         report = make_report(model, preview, "success", started, bounds=bounds)
         report["renderEngine"] = resolved_engine
+        report["cameraProfile"] = args.camera_profile
         report_path.write_text(
             json.dumps(report, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        manifest = {
+            "schemaVersion": "1.1",
+            "application": "AssetForge Studio",
+            "module": "Single Sprite Preview",
+            "sourceType": "3d_model",
+            "assetName": model.stem,
+            "sprite": preview.name,
+            "canvas": {
+                "width": args.resolution,
+                "height": args.resolution,
+                "transparent": True,
+                "colorMode": "RGBA",
+            },
+            "camera": {
+                "profile": args.camera_profile,
+                "projection": "orthographic",
+                "azimuthDegrees": args.camera_azimuth,
+                "elevationDegrees": args.camera_elevation,
+                "framingMargin": args.framing_margin,
+            },
+            "normalization": {
+                "centeredXY": True,
+                "groundAligned": True,
+                "scalePolicy": "fit_largest_dimension",
+                "pivot": {
+                    "mode": args.pivot_mode,
+                    "normalized": [0.5, 0.0],
+                },
+                "bounds": {
+                    "minimum": [float(value) for value in bounds[0]],
+                    "maximum": [float(value) for value in bounds[1]],
+                },
+            },
+            "renderEngine": resolved_engine,
+        }
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         print(f"[Forge] SUCCESS: {preview}")

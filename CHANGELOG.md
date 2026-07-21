@@ -9,6 +9,8 @@
 - Выполнен успешный реальный smoke-test в Blender 5.1.2 на GLB-модели.
 - Единый manifest 1.1, Camera Profile и pivot перенесены в анимационный рендер.
 - Анимационный пакет проверен реальным Blender smoke-тестом: 4 направления × 2 кадра, sheets, contact sheet и ZIP.
+- Режим одиночного Preview переведён на общие Camera Profiles и `preview_manifest.json` 1.1.
+- Одиночный Preview проверен реальным рендером профиля Diablo в Blender 5.1.2.
 - AI Center оставлен в статусе «в разработке / приостановлен».
 
 # v0.8.1 Core Hotfix

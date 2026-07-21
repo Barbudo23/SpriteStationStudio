@@ -38,6 +38,20 @@ class StaticSpriteContractTests(unittest.TestCase):
         ):
             self.assertIn(required, source)
 
+    def test_single_preview_uses_same_manifest_contract(self) -> None:
+        source = (
+            Path(__file__).resolve().parents[1] / "worker" / "render_preview.py"
+        ).read_text(encoding="utf-8")
+        ast.parse(source)
+        for required in (
+            '"schemaVersion": "1.1"',
+            '"camera"',
+            '"normalization"',
+            '"pivot"',
+            '"transparent": True',
+        ):
+            self.assertIn(required, source)
+
     @staticmethod
     def _worker_path() -> Path:
         return Path(__file__).resolve().parents[1] / "worker" / "render_directions.py"

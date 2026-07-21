@@ -33,6 +33,8 @@
 - [x] Провести визуальный Blender smoke-test на эталонной GLB-модели (Blender 5.1.2, 4 направления, Strategy30).
 - [x] Перенести тот же контракт камеры/pivot в анимационный конвейер.
 - [x] Выполнить smoke-test анимационного пакета и проверить sprite sheets (4 направления × 2 кадра, Blender 5.1.2).
+- [x] Унифицировать Camera Profile, canvas и pivot для режима одного ракурса.
+- [x] Выполнить реальный smoke-test одиночного Preview и manifest 1.1 (профиль Diablo, Blender 5.1.2).
 
 ## Этап 3 — v0.9.0 Production Workflow
 

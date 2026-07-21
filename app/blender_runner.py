@@ -24,6 +24,7 @@ class RenderRequest:
     output_dir: Path
     resolution: int = 512
     engine: str = "AUTO"
+    camera_profile: str = "Strategy30"
 
     def validate(self) -> None:
         if not self.blender_path.is_file():
@@ -45,6 +46,7 @@ class RenderRequest:
 class RenderResult:
     preview_path: Path
     report_path: Path
+    manifest_path: Path
     report: dict
 
 
@@ -128,7 +130,10 @@ class BlenderRunner:
         return None
 
     def build_command(self, request: RenderRequest) -> list[str]:
+        from app.camera_profiles import get_camera_profile
+
         request.validate()
+        profile = get_camera_profile(request.camera_profile)
         if not self.worker_script.is_file():
             raise ForgeError(f"Worker script не найден: {self.worker_script}")
 
@@ -147,6 +152,16 @@ class BlenderRunner:
             str(request.resolution),
             "--engine",
             request.engine,
+            "--camera-profile",
+            profile.profile_id,
+            "--camera-azimuth",
+            str(profile.azimuth_degrees),
+            "--camera-elevation",
+            str(profile.elevation_degrees),
+            "--framing-margin",
+            str(profile.framing_margin),
+            "--pivot-mode",
+            profile.pivot_mode,
         ]
 
     def run(
@@ -159,8 +174,9 @@ class BlenderRunner:
 
         preview_path = request.output_dir / "Preview.png"
         report_path = request.output_dir / "import_report.json"
+        manifest_path = request.output_dir / "preview_manifest.json"
 
-        for stale in (preview_path, report_path):
+        for stale in (preview_path, report_path, manifest_path):
             try:
                 stale.unlink()
             except FileNotFoundError:
@@ -199,6 +215,8 @@ class BlenderRunner:
             raise ForgeError("Blender завершился без Preview.png")
         if not report_path.is_file():
             raise ForgeError("Blender завершился без import_report.json")
+        if not manifest_path.is_file():
+            raise ForgeError("Blender завершился без preview_manifest.json")
 
         try:
             report = json.loads(report_path.read_text(encoding="utf-8"))
@@ -211,5 +229,6 @@ class BlenderRunner:
         return RenderResult(
             preview_path=preview_path,
             report_path=report_path,
+            manifest_path=manifest_path,
             report=report,
         )

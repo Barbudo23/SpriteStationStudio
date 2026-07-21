@@ -1481,6 +1481,7 @@ class AssetForgeApp(tk.Tk):
                 output_dir=Path(self.output_var.get().strip()),
                 resolution=int(self.resolution_var.get()),
                 engine=self.engine_var.get(),
+                camera_profile=self.camera_profile_var.get(),
             )
             request.validate()
         except (ValueError, ForgeError) as exc:
@@ -1525,6 +1526,7 @@ class AssetForgeApp(tk.Tk):
                 output_dir=Path(self.output_var.get().strip()),
                 resolution=int(self.resolution_var.get()),
                 engine=self.engine_var.get(),
+                camera_profile=self.camera_profile_var.get(),
             )
             request.validate()
         except (ValueError, ForgeError) as exc:

@@ -67,6 +67,23 @@ class CommandTests(unittest.TestCase):
             self.assertIn(str(model), command)
             self.assertIn("1024", command)
             self.assertIn(str(worker), command)
+            self.assertEqual(command[command.index("--camera-profile") + 1], "Strategy30")
+            self.assertEqual(command[command.index("--pivot-mode") + 1], "bottom_center")
+
+    def test_single_preview_uses_selected_camera_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            blender = root / "blender.exe"
+            model = root / "hero.glb"
+            worker = root / "worker.py"
+            for path in (blender, model, worker):
+                path.write_bytes(b"x")
+            request = RenderRequest(
+                blender, model, root / "out", camera_profile="Diablo"
+            )
+            command = BlenderRunner(worker).build_command(request)
+            self.assertEqual(command[command.index("--camera-profile") + 1], "Diablo")
+            self.assertEqual(command[command.index("--framing-margin") + 1], "1.5")
 
     def test_find_blender_uses_windows_registry_install_location(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
