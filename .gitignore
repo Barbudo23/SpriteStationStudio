@@ -10,3 +10,13 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+unity_bridge_project/Library/
+unity_bridge_project/Logs/
+unity_bridge_project/Temp/
+unity_bridge_project/UserSettings/
+unity_bridge_project/Packages/packages-lock.json
+unity_bridge_project/ProjectSettings/*.asset
+unity_bridge_project/*.csproj
+unity_bridge_project/*.sln
+unity_bridge_project/*.slnx
+unity_bridge_project/.vsconfig

@@ -13,6 +13,10 @@
 - Одиночный Preview проверен реальным рендером профиля Diablo в Blender 5.1.2.
 - Добавлен `unity_import_preset.json` для Single Sprite и нарезки анимационных Multiple Sprite.
 - Unity preset автоматически включается в ZIP без изменения пользовательских Unity-проектов.
+- Unity Bridge получил read-only команду `preview_sprite_import` с проверкой PNG и границ slices.
+- Статический пакет успешно проверен в Unity 6000.4.0f1: 4/4 спрайта valid, предупреждений нет.
+- Анимационный пакет проверен в Unity: 4/4 sheet и 8/8 slices valid, предупреждений нет.
+- Из bridge project удалены несовместимые необязательные IDE/Collaborate/Test зависимости.
 - AI Center оставлен в статусе «в разработке / приостановлен».
 
 # v0.8.1 Core Hotfix

@@ -13,7 +13,45 @@ public static class AssetForgeUnityBridge
         public string operation;
         public string sourcePath;
         public string reportPath;
+        public string presetPath;
         public string workingAssetPath = "Assets/AssetForgeInput";
+    }
+
+    [Serializable]
+    private sealed class SpriteSlice
+    {
+        public string name;
+        public int[] rect;
+    }
+
+    [Serializable]
+    private sealed class SpriteImportAsset
+    {
+        public string file;
+        public string spriteMode;
+        public string name;
+        public List<SpriteSlice> slices = new List<SpriteSlice>();
+    }
+
+    [Serializable]
+    private sealed class UnityImportPreset
+    {
+        public string schemaVersion;
+        public string engine;
+        public string assetName;
+        public List<SpriteImportAsset> assets = new List<SpriteImportAsset>();
+    }
+
+    [Serializable]
+    private sealed class SpritePreviewAsset
+    {
+        public string file;
+        public string spriteMode;
+        public int width;
+        public int height;
+        public int sliceCount;
+        public bool valid;
+        public string error;
     }
 
     [Serializable]
@@ -47,6 +85,11 @@ public static class AssetForgeUnityBridge
         public List<string> boneNames = new List<string>();
         public List<ClipReport> animationClips = new List<ClipReport>();
         public List<string> warnings = new List<string>();
+        public bool readOnlyPreview;
+        public string presetPath;
+        public int spriteAssetCount;
+        public int spriteSliceCount;
+        public List<SpritePreviewAsset> spriteAssets = new List<SpritePreviewAsset>();
         public string error;
     }
 
@@ -73,6 +116,13 @@ public static class AssetForgeUnityBridge
                 return;
             }
 
+            if (command.operation == "preview_sprite_import")
+            {
+                PreviewSpriteImport(command, report);
+                WriteReport(command.reportPath, report);
+                return;
+            }
+
             if (command.operation != "analyze_asset")
                 throw new InvalidOperationException("Unsupported operation: " + command.operation);
 
@@ -94,6 +144,78 @@ public static class AssetForgeUnityBridge
             }
             Debug.LogException(ex);
             EditorApplication.Exit(2);
+        }
+    }
+
+    private static void PreviewSpriteImport(Command command, AssetReport report)
+    {
+        if (string.IsNullOrWhiteSpace(command.presetPath) || !File.Exists(command.presetPath))
+            throw new FileNotFoundException("Unity sprite preset not found.", command.presetPath);
+
+        var presetPath = Path.GetFullPath(command.presetPath);
+        var packageRoot = Path.GetDirectoryName(presetPath);
+        var rootPrefix = packageRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+        var preset = JsonUtility.FromJson<UnityImportPreset>(File.ReadAllText(presetPath));
+        if (preset == null || !string.Equals(preset.engine, "Unity", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Preset is not an AssetForge Unity import preset.");
+
+        report.readOnlyPreview = true;
+        report.presetPath = presetPath;
+        report.spriteAssetCount = preset.assets != null ? preset.assets.Count : 0;
+
+        foreach (var asset in preset.assets ?? new List<SpriteImportAsset>())
+        {
+            var item = new SpritePreviewAsset
+            {
+                file = asset.file,
+                spriteMode = asset.spriteMode,
+                sliceCount = asset.slices != null ? asset.slices.Count : 0,
+                valid = false
+            };
+            report.spriteAssets.Add(item);
+            report.spriteSliceCount += item.sliceCount;
+
+            try
+            {
+                var absolute = Path.GetFullPath(Path.Combine(packageRoot, asset.file.Replace('/', Path.DirectorySeparatorChar)));
+                if (!absolute.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Sprite path escapes the package directory.");
+                if (!File.Exists(absolute))
+                    throw new FileNotFoundException("Sprite PNG not found.", absolute);
+
+                var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                try
+                {
+                    if (!ImageConversion.LoadImage(texture, File.ReadAllBytes(absolute), false))
+                        throw new InvalidDataException("File is not a readable image.");
+                    item.width = texture.width;
+                    item.height = texture.height;
+
+                    foreach (var slice in asset.slices ?? new List<SpriteSlice>())
+                    {
+                        if (slice.rect == null || slice.rect.Length != 4)
+                            throw new InvalidDataException("Sprite slice rect must contain four integers.");
+                        var x = slice.rect[0];
+                        var y = slice.rect[1];
+                        var width = slice.rect[2];
+                        var height = slice.rect[3];
+                        if (x < 0 || y < 0 || width <= 0 || height <= 0 ||
+                            x + width > texture.width || y + height > texture.height)
+                            throw new InvalidDataException("Sprite slice is outside image bounds: " + slice.name);
+                    }
+                    item.valid = true;
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(texture);
+                }
+            }
+            catch (Exception ex)
+            {
+                item.error = ex.Message;
+                report.warnings.Add(asset.file + ": " + ex.Message);
+            }
         }
     }
 
