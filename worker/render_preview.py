@@ -114,13 +114,24 @@ def look_at(obj: bpy.types.Object, target: Vector) -> None:
     obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
 
 
-def setup_camera(minimum: Vector, maximum: Vector) -> bpy.types.Object:
+def setup_camera(
+    minimum: Vector,
+    maximum: Vector,
+    azimuth_degrees: float = 45.0,
+    elevation_degrees: float = 30.0,
+    framing_margin: float = 1.35,
+) -> bpy.types.Object:
     size = maximum - minimum
     center = (minimum + maximum) * 0.5
     max_dim = max(size.x, size.y, size.z, 0.001)
 
-    azimuth = math.radians(45.0)
-    elevation = math.radians(30.0)
+    if not 0.0 <= elevation_degrees < 90.0:
+        raise ValueError("Camera elevation must be between 0 and 90 degrees.")
+    if not 1.0 <= framing_margin <= 3.0:
+        raise ValueError("Camera framing margin must be between 1.0 and 3.0.")
+
+    azimuth = math.radians(azimuth_degrees)
+    elevation = math.radians(elevation_degrees)
     distance = max_dim * 4.0
     horizontal = math.cos(elevation) * distance
 
@@ -134,7 +145,7 @@ def setup_camera(minimum: Vector, maximum: Vector) -> bpy.types.Object:
         center.z + math.sin(elevation) * distance,
     ))
     camera_data.type = "ORTHO"
-    camera_data.ortho_scale = max(size.x, size.y, size.z) * 1.35
+    camera_data.ortho_scale = max_dim * framing_margin
     camera_data.lens = 50
     camera_data.clip_start = max(max_dim / 1000.0, 0.001)
     camera_data.clip_end = max(distance * 10.0, 1000.0)

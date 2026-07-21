@@ -1,3 +1,12 @@
+# v0.8.3 Static Sprite Pipeline Dev
+
+- Camera Profile в интерфейсе подключён к реальному 4/8-направленному Blender-рендеру.
+- Добавлены проверяемые профили Strategy30, XCOM, Commandos и Diablo.
+- Параметры ортографической камеры передаются worker-процессу явно.
+- Manifest обновлён до 1.1: RGBA-холст, камера, нормализация, bounds и pivot.
+- Добавлены тесты профилей камеры и контракта статического спрайта.
+- AI Center оставлен в статусе «в разработке / приостановлен».
+
 # v0.8.1 Core Hotfix
 
 - Fixed Tkinter startup crash caused by mixing pack and grid in the top bar.

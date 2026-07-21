@@ -1,4 +1,8 @@
-# AssetForge Studio — v0.8.2 AI Center Dev
+# AssetForge Studio — v0.8.3 Static Sprite Pipeline Dev
+
+Текущая разработка сосредоточена на основном конвейере **3D-модель → статические 2D-спрайты**. Профили камеры теперь реально управляют 4/8-направленным Blender-рендером, а manifest 1.1 фиксирует холст, камеру, нормализацию и pivot. Подробнее: `docs/STATIC_SPRITE_PIPELINE.md`.
+
+AI Center сохранён, но временно имеет статус **«в разработке / приостановлен»**.
 
 Текущая ветка основана на проверенном архиве v0.8.1 и отдельном SQLite hotfix.
 Добавлен модуль **AI Center** с провайдерами OpenAI API, Codex Bridge и CloseAI API.

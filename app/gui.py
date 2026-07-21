@@ -32,7 +32,7 @@ from app.ai_center.window import AICenterWindow
 class AssetForgeApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("AssetForge Studio v0.8.2 Dev — Pseudo3D Forge · AI Center")
+        self.title("AssetForge Studio v0.8.3 Dev — Static Sprite Pipeline")
         self.geometry("1440x900")
         self.minsize(1120, 720)
 
@@ -135,7 +135,7 @@ class AssetForgeApp(tk.Tk):
         ).grid(row=0, column=0, sticky="e", padx=(0, 12))
         ttk.Label(
             right_status,
-            text="v0.8.2 AI Dev",
+            text="v0.8.3 Sprite Dev",
             style="Badge.TLabel",
         ).grid(row=0, column=1, sticky="e")
 
@@ -383,7 +383,7 @@ class AssetForgeApp(tk.Tk):
 
         render.grid_columnconfigure(0, weight=1)
         self._combo(render, "Camera Profile", self.camera_profile_var,
-                    ("Strategy30", "XCOM", "Commandos", "Diablo", "Custom"))
+                    ("Strategy30", "XCOM", "Commandos", "Diablo"))
         self._combo(render, "Lighting Profile", self.lighting_profile_var,
                     ("GameDefault", "SoftStudio", "OutdoorSun", "HighContrast", "NeutralBake"))
         self._combo(render, "Directions", self.direction_set_var,
@@ -1495,7 +1495,7 @@ class AssetForgeApp(tk.Tk):
 
         threading.Thread(
             target=self._direction_render_thread,
-            args=(request, direction_count),
+            args=(request, direction_count, self.camera_profile_var.get()),
             daemon=True,
         ).start()
 
@@ -1503,11 +1503,13 @@ class AssetForgeApp(tk.Tk):
         self,
         request: RenderRequest,
         direction_count: int,
+        camera_profile: str,
     ) -> None:
         try:
             result = self.direction_runner.run(
                 request,
                 direction_count,
+                camera_profile,
                 on_output=lambda line: self.events.put(("log", line)),
             )
             self.events.put(("direction_success", result))

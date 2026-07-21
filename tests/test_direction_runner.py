@@ -6,6 +6,7 @@ from pathlib import Path
 
 from app.blender_runner import RenderRequest
 from app.direction_runner import DirectionRenderRunner
+from app.blender_runner import ForgeError
 
 
 class DirectionRunnerTests(unittest.TestCase):
@@ -25,6 +26,40 @@ class DirectionRunnerTests(unittest.TestCase):
             self.assertIn("--directions", command)
             self.assertIn("8", command)
             self.assertIn(str(model), command)
+            self.assertEqual(command[command.index("--camera-profile") + 1], "Strategy30")
+            self.assertEqual(command[command.index("--camera-elevation") + 1], "30.0")
+            self.assertEqual(command[command.index("--pivot-mode") + 1], "bottom_center")
+
+    def test_uses_selected_camera_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            blender = root / "blender.exe"
+            blender.write_text("", encoding="utf-8")
+            model = root / "unit.glb"
+            model.write_bytes(b"x")
+            worker = root / "render_directions.py"
+            worker.write_text("", encoding="utf-8")
+
+            request = RenderRequest(blender, model, root / "out")
+            command = DirectionRenderRunner(worker).build_command(request, 4, "Commandos")
+
+            self.assertEqual(command[command.index("--camera-profile") + 1], "Commandos")
+            self.assertEqual(command[command.index("--camera-elevation") + 1], "42.0")
+            self.assertEqual(command[command.index("--framing-margin") + 1], "1.45")
+
+    def test_rejects_unknown_camera_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            blender = root / "blender.exe"
+            blender.write_text("", encoding="utf-8")
+            model = root / "unit.glb"
+            model.write_bytes(b"x")
+            worker = root / "render_directions.py"
+            worker.write_text("", encoding="utf-8")
+
+            request = RenderRequest(blender, model, root / "out")
+            with self.assertRaises(ForgeError):
+                DirectionRenderRunner(worker).build_command(request, 8, "Custom")
 
     def test_rejects_invalid_direction_count(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
