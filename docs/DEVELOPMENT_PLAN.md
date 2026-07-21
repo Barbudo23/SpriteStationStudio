@@ -54,7 +54,8 @@
 ## Этап 3 — v0.9.0 Production Workflow
 
 - [x] Зафиксировать RC scope и support matrix (`docs/RC_SCOPE_v0.9.0.md`).
-- [ ] Добавить независимый контракт `BatchPlan 1.0` максимум на три Blender-операции.
+- [x] Добавить независимый контракт `BatchPlan 1.0` максимум на три Blender-операции.
+- [x] Добавить атомарное JSON-хранилище, resume-переходы и data-safety тесты.
 - [ ] Подключить BatchPlan к одному существующему Blender workflow после contract tests.
 - Пакетная генерация до трёх кадров за запуск.
 - Возобновляемый batch plan.
@@ -78,4 +79,4 @@
 
 ## Ближайшее действие
 
-Добавить независимый модуль `core/batch/` с контрактом `BatchPlan 1.0`, атомарным хранилищем и тестами. Не подключать его к GUI, BlenderRunner или Job Queue на первом шаге. AI Center не развивать.
+Подключить `BatchPlan 1.0` только к одному существующему Blender workflow через отдельный coordinator и выполнить реальный Blender smoke. GUI, Job Queue и AI Center не изменять.
