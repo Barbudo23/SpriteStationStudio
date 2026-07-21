@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import tempfile
 import unittest
 from core.database.asset_database import AssetDatabase
@@ -14,6 +15,9 @@ class AssetDatabaseTests(unittest.TestCase):
             rows = db.list_assets("Soldier", "Model")
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0].guid, "guid1")
+            renamed = root / "assets-renamed.sqlite3"
+            os.replace(db.path, renamed)
+            self.assertTrue(renamed.is_file())
 
 if __name__ == "__main__":
     unittest.main()
