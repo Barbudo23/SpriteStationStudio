@@ -20,6 +20,9 @@
 - В Integrations добавлена кнопка `UNITY IMPORT PREVIEW (READ-ONLY)`.
 - Интерфейс автоматически выбирает preset последнего рендера и показывает assets/slices/warnings.
 - Unity preview выполняется в фоновом потоке с защитой от повторного запуска.
+- Добавлен подтверждаемый экспорт проверенного пакета в новую папку `Assets/AssetForgeImports`.
+- Экспорт запрещает перезапись, mismatched preview, warnings, invalid assets и небезопасные пути.
+- После нового рендера старый Unity preview автоматически считается недействительным.
 - AI Center оставлен в статусе «в разработке / приостановлен».
 
 # v0.8.1 Core Hotfix

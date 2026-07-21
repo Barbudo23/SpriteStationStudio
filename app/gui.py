@@ -15,6 +15,7 @@ from app.direction_runner import DirectionRenderRunner
 from app.animation_runner import AnimationRenderRunner, AnimationRenderRequest
 from app.unity_runner import UnityRunner, UnityBridgeError
 from app.unity_sprite_preview import UnitySpritePreviewRunner
+from app.unity_package_export import export_verified_package
 from app.unity_asset_library import UnityAssetLibrary, UnityAssetRecord
 from app.settings_store import SettingsStore, AppSettings
 from app.task_guard import TaskGuard
@@ -99,6 +100,7 @@ class AssetForgeApp(tk.Tk):
             / "examples" / "ui_references" / "Iteration_02_Contact_Sheet.png"
         )
         self.last_unity_preset_path: Path | None = None
+        self.last_unity_preview_report_path: Path | None = None
 
         self.preview_photo = None
         self._build_ui()
@@ -487,6 +489,11 @@ class AssetForgeApp(tk.Tk):
             integrations,
             text="UNITY IMPORT PREVIEW (READ-ONLY)",
             command=self._preview_unity_sprite_import,
+        ).pack(fill="x", pady=(0, 6))
+        ttk.Button(
+            integrations,
+            text="EXPORT VERIFIED PACKAGE TO UNITY",
+            command=self._export_verified_unity_package,
         ).pack(fill="x", pady=(0, 8))
         ttk.Label(
             integrations,
@@ -1428,6 +1435,52 @@ class AssetForgeApp(tk.Tk):
         threading.Thread(target=worker, daemon=True).start()
 
 
+    def _export_verified_unity_package(self) -> None:
+        output_dir = Path(self.output_var.get().strip())
+        preset = self.last_unity_preset_path or (output_dir / "unity_import_preset.json")
+        report = self.last_unity_preview_report_path or (
+            output_dir / "unity_import_preview_report.json"
+        )
+        if not preset.is_file() or not report.is_file():
+            messagebox.showwarning(
+                "Unity Package Export",
+                "Сначала выполните UNITY IMPORT PREVIEW (READ-ONLY).",
+            )
+            return
+
+        selected = filedialog.askdirectory(
+            title="Выберите Unity-проект или его папку Assets"
+        )
+        if not selected:
+            return
+        if not messagebox.askyesno(
+            "Подтверждение Unity Export",
+            "AssetForge создаст новую папку Assets/AssetForgeImports/<asset>.\n"
+            "Существующие файлы и .meta не будут перезаписаны.\n\n"
+            f"Проект: {selected}\n\nПродолжить?",
+        ):
+            return
+
+        token = self.task_guard.begin("unity_package_export")
+        if token is None:
+            messagebox.showinfo("Unity Package Export", "Экспорт уже выполняется.")
+            return
+        self.status_var.set("Копирование проверенного пакета в Unity Assets…")
+        self.progress.start(10)
+
+        def worker() -> None:
+            try:
+                result = export_verified_package(preset, report, Path(selected))
+                self.events.put(("unity_export_ok", {"token": token, "result": result}))
+            except Exception as exc:
+                self.events.put(("unity_export_error", {
+                    "token": token,
+                    "message": str(exc),
+                }))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+
     def _choose_blender(self) -> None:
         types = [("Blender", "blender.exe"), ("Все файлы", "*.*")]
         value = filedialog.askopenfilename(title="Выберите Blender", filetypes=types)
@@ -1627,6 +1680,7 @@ class AssetForgeApp(tk.Tk):
                         self._append_log(f"Animation manifest: {result.manifest_path}")
                         self._append_log(f"Unity preset: {result.unity_preset_path}")
                         self.last_unity_preset_path = result.unity_preset_path
+                        self.last_unity_preview_report_path = None
                         self._append_log(f"Animation ZIP: {result.zip_path}")
                         messagebox.showinfo(
                             "Animation Sprites готовы",
@@ -1770,6 +1824,8 @@ class AssetForgeApp(tk.Tk):
                         self.task_guard.finish(token)
                     result = data.get("result")
                     report = result.report if result else {}
+                    if result:
+                        self.last_unity_preview_report_path = result.report_path
                     assets = report.get("spriteAssets", [])
                     valid_count = sum(1 for item in assets if item.get("valid"))
                     asset_count = int(report.get("spriteAssetCount", len(assets)))
@@ -1787,6 +1843,32 @@ class AssetForgeApp(tk.Tk):
                         f"Предупреждения: {len(warnings)}\n\n"
                         "Пользовательский Unity-проект не изменялся.",
                     )
+                elif kind == "unity_export_ok":
+                    self.progress.stop()
+                    data = payload if isinstance(payload, dict) else {}
+                    token = data.get("token")
+                    if token:
+                        self.task_guard.finish(token)
+                    result = data.get("result")
+                    target = result.target_dir if result else "—"
+                    count = len(result.copied_files) if result else 0
+                    self.status_var.set(f"Unity package exported: {count} files")
+                    self._append_log(f"UNITY PACKAGE EXPORTED: {target}")
+                    messagebox.showinfo(
+                        "Unity Package Export",
+                        f"Скопировано файлов: {count}\n{target}\n\n"
+                        "Существующие файлы не перезаписывались.",
+                    )
+                elif kind == "unity_export_error":
+                    self.progress.stop()
+                    data = payload if isinstance(payload, dict) else {}
+                    token = data.get("token")
+                    if token:
+                        self.task_guard.finish(token)
+                    message = str(data.get("message", "Неизвестная ошибка"))
+                    self.status_var.set("Ошибка Unity Package Export")
+                    self._append_log(f"Unity Package Export error: {message}")
+                    messagebox.showerror("Unity Package Export", message)
                 elif kind == "unity_preview_error":
                     self.progress.stop()
                     data = payload if isinstance(payload, dict) else {}
@@ -1826,6 +1908,7 @@ class AssetForgeApp(tk.Tk):
                     self._load_preview(result.preview_path)
                     self._append_log(f"Unity preset: {result.unity_preset_path}")
                     self.last_unity_preset_path = result.unity_preset_path
+                    self.last_unity_preview_report_path = None
                     self._append_log(f"ГОТОВО: {result.preview_path}")
                 elif kind == "direction_success":
                     self.progress.stop()
@@ -1840,6 +1923,7 @@ class AssetForgeApp(tk.Tk):
                     self._append_log(f"CONTACT SHEET: {result.contact_sheet_path}")
                     self._append_log(f"Unity preset: {result.unity_preset_path}")
                     self.last_unity_preset_path = result.unity_preset_path
+                    self.last_unity_preview_report_path = None
                     self._append_log(f"ZIP: {result.zip_path}")
                     messagebox.showinfo(
                         "Пакет ракурсов готов",

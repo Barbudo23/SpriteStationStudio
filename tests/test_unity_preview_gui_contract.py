@@ -15,6 +15,13 @@ class UnityPreviewGuiContractTests(unittest.TestCase):
         self.assertIn("def _preview_unity_sprite_import", source)
         self.assertIn('"unity_preview_ok"', source)
         self.assertIn("last_unity_preset_path", source)
+        self.assertIn("EXPORT VERIFIED PACKAGE TO UNITY", source)
+        self.assertIn("def _export_verified_unity_package", source)
+        self.assertIn('"unity_export_ok"', source)
+        self.assertIn("askyesno", source)
+        self.assertGreaterEqual(
+            source.count("last_unity_preview_report_path = None"), 3
+        )
 
 
 if __name__ == "__main__":
