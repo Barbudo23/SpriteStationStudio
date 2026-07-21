@@ -14,6 +14,7 @@ from app.blender_runner import BlenderRunner, ForgeError, RenderRequest
 from app.direction_runner import DirectionRenderRunner
 from app.animation_runner import AnimationRenderRunner, AnimationRenderRequest
 from app.unity_runner import UnityRunner, UnityBridgeError
+from app.unity_sprite_preview import UnitySpritePreviewRunner
 from app.unity_asset_library import UnityAssetLibrary, UnityAssetRecord
 from app.settings_store import SettingsStore, AppSettings
 from app.task_guard import TaskGuard
@@ -42,6 +43,7 @@ class AssetForgeApp(tk.Tk):
         self.direction_runner = DirectionRenderRunner()
         self.animation_runner = AnimationRenderRunner()
         self.unity_runner = UnityRunner()
+        self.unity_sprite_preview_runner = UnitySpritePreviewRunner(self.unity_runner)
         self.unity_asset_library = UnityAssetLibrary()
         self.unity_asset_records: list[UnityAssetRecord] = []
         self.settings_store = SettingsStore()
@@ -96,6 +98,7 @@ class AssetForgeApp(tk.Tk):
             Path(__file__).resolve().parents[1]
             / "examples" / "ui_references" / "Iteration_02_Contact_Sheet.png"
         )
+        self.last_unity_preset_path: Path | None = None
 
         self.preview_photo = None
         self._build_ui()
@@ -479,6 +482,11 @@ class AssetForgeApp(tk.Tk):
             integrations,
             text="АНАЛИЗИРОВАТЬ МОДЕЛЬ В UNITY",
             command=self._analyze_model_with_unity,
+        ).pack(fill="x", pady=(0, 6))
+        ttk.Button(
+            integrations,
+            text="UNITY IMPORT PREVIEW (READ-ONLY)",
+            command=self._preview_unity_sprite_import,
         ).pack(fill="x", pady=(0, 8))
         ttk.Label(
             integrations,
@@ -1378,6 +1386,48 @@ class AssetForgeApp(tk.Tk):
         threading.Thread(target=worker, daemon=True).start()
 
 
+    def _preview_unity_sprite_import(self) -> None:
+        unity = self.unity_var.get().strip()
+        if not unity:
+            messagebox.showwarning("Unity Import Preview", "Укажите путь к Unity.exe.")
+            return
+
+        default_preset = Path(self.output_var.get().strip()) / "unity_import_preset.json"
+        preset = self.last_unity_preset_path
+        if preset is None or not preset.is_file():
+            preset = default_preset
+        if not preset.is_file():
+            selected = filedialog.askopenfilename(
+                title="Выберите unity_import_preset.json",
+                filetypes=[("Unity Import Preset", "*.json"), ("Все файлы", "*.*")],
+            )
+            if not selected:
+                return
+            preset = Path(selected)
+
+        token = self.task_guard.begin("unity_import_preview")
+        if token is None:
+            messagebox.showinfo("Unity Import Preview", "Проверка уже выполняется.")
+            return
+        self.status_var.set("Unity проверяет Sprite preset в read-only режиме…")
+        self.progress.start(10)
+        self._append_log(f"UNITY IMPORT PREVIEW: {preset}")
+
+        def worker() -> None:
+            try:
+                result = self.unity_sprite_preview_runner.run(
+                    Path(unity), preset, timeout=300
+                )
+                self.events.put(("unity_preview_ok", {"token": token, "result": result}))
+            except Exception as exc:
+                self.events.put(("unity_preview_error", {
+                    "token": token,
+                    "message": str(exc),
+                }))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+
     def _choose_blender(self) -> None:
         types = [("Blender", "blender.exe"), ("Все файлы", "*.*")]
         value = filedialog.askopenfilename(title="Выберите Blender", filetypes=types)
@@ -1576,6 +1626,7 @@ class AssetForgeApp(tk.Tk):
                         self._load_preview(result.contact_sheet_path)
                         self._append_log(f"Animation manifest: {result.manifest_path}")
                         self._append_log(f"Unity preset: {result.unity_preset_path}")
+                        self.last_unity_preset_path = result.unity_preset_path
                         self._append_log(f"Animation ZIP: {result.zip_path}")
                         messagebox.showinfo(
                             "Animation Sprites готовы",
@@ -1711,6 +1762,41 @@ class AssetForgeApp(tk.Tk):
                     )
                     self._append_log("UNITY ASSET REPORT")
                     self._append_log(json.dumps(report, ensure_ascii=False, indent=2))
+                elif kind == "unity_preview_ok":
+                    self.progress.stop()
+                    data = payload if isinstance(payload, dict) else {}
+                    token = data.get("token")
+                    if token:
+                        self.task_guard.finish(token)
+                    result = data.get("result")
+                    report = result.report if result else {}
+                    assets = report.get("spriteAssets", [])
+                    valid_count = sum(1 for item in assets if item.get("valid"))
+                    asset_count = int(report.get("spriteAssetCount", len(assets)))
+                    slice_count = int(report.get("spriteSliceCount", 0))
+                    warnings = report.get("warnings", [])
+                    self.status_var.set(
+                        f"Unity Import Preview: {valid_count}/{asset_count} valid"
+                    )
+                    self._append_log("UNITY IMPORT PREVIEW REPORT")
+                    self._append_log(json.dumps(report, ensure_ascii=False, indent=2))
+                    messagebox.showinfo(
+                        "Unity Import Preview — Read-only",
+                        f"Ассеты: {valid_count}/{asset_count} valid\n"
+                        f"Slices: {slice_count}\n"
+                        f"Предупреждения: {len(warnings)}\n\n"
+                        "Пользовательский Unity-проект не изменялся.",
+                    )
+                elif kind == "unity_preview_error":
+                    self.progress.stop()
+                    data = payload if isinstance(payload, dict) else {}
+                    token = data.get("token")
+                    if token:
+                        self.task_guard.finish(token)
+                    message = str(data.get("message", "Неизвестная ошибка"))
+                    self.status_var.set("Ошибка Unity Import Preview")
+                    self._append_log(f"Unity Import Preview error: {message}")
+                    messagebox.showerror("Unity Import Preview", message)
                 elif kind == "unity_error":
                     self.progress.stop()
                     self.unity_status_var.set("Unity Bridge: ошибка")
@@ -1739,6 +1825,7 @@ class AssetForgeApp(tk.Tk):
                     )
                     self._load_preview(result.preview_path)
                     self._append_log(f"Unity preset: {result.unity_preset_path}")
+                    self.last_unity_preset_path = result.unity_preset_path
                     self._append_log(f"ГОТОВО: {result.preview_path}")
                 elif kind == "direction_success":
                     self.progress.stop()
@@ -1752,6 +1839,7 @@ class AssetForgeApp(tk.Tk):
                     self._load_preview(result.contact_sheet_path)
                     self._append_log(f"CONTACT SHEET: {result.contact_sheet_path}")
                     self._append_log(f"Unity preset: {result.unity_preset_path}")
+                    self.last_unity_preset_path = result.unity_preset_path
                     self._append_log(f"ZIP: {result.zip_path}")
                     messagebox.showinfo(
                         "Пакет ракурсов готов",

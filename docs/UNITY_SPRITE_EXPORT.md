@@ -35,4 +35,14 @@ Preset не копирует файлы в пользовательский Unit
 - четыре анимационных sheet 512×256 и восемь slices — 4/4 sheet и 8/8 slices корректны;
 - предупреждений нет, оба отчёта имеют `readOnlyPreview=true`.
 
-Bridge project использует только необходимые встроенные Unity-модули. Необязательные IDE, Collaborate/Plastic SCM и Test Framework пакеты удалены, чтобы исключить их несовместимость с версиями Unity Editor. Следующий шаг — вывести запуск preview и его отчёт в интерфейс AssetForge Studio.
+Bridge project использует только необходимые встроенные Unity-модули. Необязательные IDE, Collaborate/Plastic SCM и Test Framework пакеты удалены, чтобы исключить их несовместимость с версиями Unity Editor.
+
+## Запуск из интерфейса
+
+1. Создайте Preview, пакет направлений или анимацию.
+2. Откройте панель Integrations и убедитесь, что Unity Bridge подключён.
+3. Нажмите **UNITY IMPORT PREVIEW (READ-ONLY)**.
+4. AssetForge автоматически использует preset последнего рендера. Если он не найден, программа предложит выбрать `unity_import_preset.json`.
+5. После проверки откроется краткий отчёт: valid assets, slices и warnings. Полный JSON записывается в журнал интерфейса и файл `unity_import_preview_report.json`.
+
+Операция выполняется в фоне. Повторный запуск блокируется до завершения текущей проверки.
