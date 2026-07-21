@@ -1575,6 +1575,7 @@ class AssetForgeApp(tk.Tk):
                         self.preview_mode_var.set("animation")
                         self._load_preview(result.contact_sheet_path)
                         self._append_log(f"Animation manifest: {result.manifest_path}")
+                        self._append_log(f"Unity preset: {result.unity_preset_path}")
                         self._append_log(f"Animation ZIP: {result.zip_path}")
                         messagebox.showinfo(
                             "Animation Sprites готовы",
@@ -1737,6 +1738,7 @@ class AssetForgeApp(tk.Tk):
                         )
                     )
                     self._load_preview(result.preview_path)
+                    self._append_log(f"Unity preset: {result.unity_preset_path}")
                     self._append_log(f"ГОТОВО: {result.preview_path}")
                 elif kind == "direction_success":
                     self.progress.stop()
@@ -1749,6 +1751,7 @@ class AssetForgeApp(tk.Tk):
                     self.preview_mode_var.set("sprite_bar")
                     self._load_preview(result.contact_sheet_path)
                     self._append_log(f"CONTACT SHEET: {result.contact_sheet_path}")
+                    self._append_log(f"Unity preset: {result.unity_preset_path}")
                     self._append_log(f"ZIP: {result.zip_path}")
                     messagebox.showinfo(
                         "Пакет ракурсов готов",

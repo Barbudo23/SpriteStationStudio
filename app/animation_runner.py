@@ -31,6 +31,7 @@ class AnimationRenderResult:
     manifest_path: Path
     report_path: Path
     contact_sheet_path: Path
+    unity_preset_path: Path
     report: dict
 
 
@@ -127,10 +128,15 @@ class AnimationRenderRunner:
         if report.get("status") != "success":
             raise ForgeError(report.get("error", "Ошибка animation render."))
 
+        from app.engine_export import append_preset_to_zip, write_unity_import_preset
+        unity_preset_path = write_unity_import_preset(manifest_path)
+        append_preset_to_zip(zip_path, unity_preset_path)
+
         return AnimationRenderResult(
             zip_path=zip_path,
             manifest_path=manifest_path,
             report_path=report_path,
             contact_sheet_path=contact_sheet_path,
+            unity_preset_path=unity_preset_path,
             report=report,
         )

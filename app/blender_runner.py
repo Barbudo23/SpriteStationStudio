@@ -47,6 +47,7 @@ class RenderResult:
     preview_path: Path
     report_path: Path
     manifest_path: Path
+    unity_preset_path: Path
     report: dict
 
 
@@ -226,9 +227,13 @@ class BlenderRunner:
         if report.get("status") != "success":
             raise ForgeError(report.get("error", "Worker вернул неизвестную ошибку."))
 
+        from app.engine_export import write_unity_import_preset
+        unity_preset_path = write_unity_import_preset(manifest_path)
+
         return RenderResult(
             preview_path=preview_path,
             report_path=report_path,
             manifest_path=manifest_path,
+            unity_preset_path=unity_preset_path,
             report=report,
         )

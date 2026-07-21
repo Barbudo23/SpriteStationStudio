@@ -11,6 +11,8 @@
 - Анимационный пакет проверен реальным Blender smoke-тестом: 4 направления × 2 кадра, sheets, contact sheet и ZIP.
 - Режим одиночного Preview переведён на общие Camera Profiles и `preview_manifest.json` 1.1.
 - Одиночный Preview проверен реальным рендером профиля Diablo в Blender 5.1.2.
+- Добавлен `unity_import_preset.json` для Single Sprite и нарезки анимационных Multiple Sprite.
+- Unity preset автоматически включается в ZIP без изменения пользовательских Unity-проектов.
 - AI Center оставлен в статусе «в разработке / приостановлен».
 
 # v0.8.1 Core Hotfix

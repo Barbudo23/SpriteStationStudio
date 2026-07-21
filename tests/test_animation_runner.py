@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch, MagicMock
+from zipfile import ZipFile
 
 from app.animation_runner import (
     AnimationRenderRequest,
@@ -72,9 +73,20 @@ class AnimationRunnerTests(unittest.TestCase):
                 "frameCountPerDirection": 12,
             }
             (request.output_dir / "animation_report.json").write_text(json.dumps(report))
-            (request.output_dir / "animation_manifest.json").write_text("{}")
+            (request.output_dir / "animation_manifest.json").write_text(json.dumps({
+                "schemaVersion": "1.1",
+                "assetName": "soldier",
+                "canvas": {"width": 256, "height": 256},
+                "normalization": {"pivot": {"normalized": [0.5, 0.0]}},
+                "directions": [{
+                    "id": "north",
+                    "sheet": "animation_sheets/00_north.png",
+                    "frames": [{"sourceFrame": 1}],
+                }],
+            }))
             (request.output_dir / "animation_contact_sheet.png").write_bytes(b"png")
-            (request.output_dir / "soldier_8dir_animation.zip").write_bytes(b"zip")
+            with ZipFile(request.output_dir / "soldier_8dir_animation.zip", "w"):
+                pass
 
             process = MagicMock()
             process.stdout = iter([])
