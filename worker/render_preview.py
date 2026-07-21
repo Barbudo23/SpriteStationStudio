@@ -179,7 +179,8 @@ def setup_lighting(minimum: Vector, maximum: Vector) -> None:
 
     world = bpy.context.scene.world or bpy.data.worlds.new("ForgeWorld")
     bpy.context.scene.world = world
-    world.use_nodes = True
+    if world.node_tree is None:
+        world.use_nodes = True
     background = world.node_tree.nodes.get("Background")
     if background:
         background.inputs["Color"].default_value = (0.04, 0.04, 0.04, 1.0)

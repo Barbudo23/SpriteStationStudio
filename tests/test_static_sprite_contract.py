@@ -52,6 +52,13 @@ class StaticSpriteContractTests(unittest.TestCase):
         ):
             self.assertIn(required, source)
 
+    def test_single_preview_avoids_blender_51_world_nodes_deprecation(self) -> None:
+        source = (
+            Path(__file__).resolve().parents[1] / "worker" / "render_preview.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("if world.node_tree is None:", source)
+        self.assertNotIn("\n    world.use_nodes = True\n", source)
+
     @staticmethod
     def _worker_path() -> Path:
         return Path(__file__).resolve().parents[1] / "worker" / "render_directions.py"

@@ -56,7 +56,8 @@
 - [x] Зафиксировать RC scope и support matrix (`docs/RC_SCOPE_v0.9.0.md`).
 - [x] Добавить независимый контракт `BatchPlan 1.0` максимум на три Blender-операции.
 - [x] Добавить атомарное JSON-хранилище, resume-переходы и data-safety тесты.
-- [ ] Подключить BatchPlan к одному существующему Blender workflow после contract tests.
+- [x] Подключить BatchPlan к одиночному Preview через изолированный coordinator после contract tests.
+- [x] Выполнить реальный Blender smoke Batch Preview и подтвердить checkpoint/result manifest.
 - Пакетная генерация до трёх кадров за запуск.
 - Возобновляемый batch plan.
 - Проверка PNG, alpha и геометрии объекта.
@@ -79,4 +80,4 @@
 
 ## Ближайшее действие
 
-Подключить `BatchPlan 1.0` только к одному существующему Blender workflow через отдельный coordinator и выполнить реальный Blender smoke. GUI, Job Queue и AI Center не изменять.
+Спроектировать независимую локальную проверку PNG/alpha для опубликованного Batch Preview. GUI, Job Queue и AI Center не изменять.
