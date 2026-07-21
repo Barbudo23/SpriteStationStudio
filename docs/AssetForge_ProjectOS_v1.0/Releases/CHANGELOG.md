@@ -39,3 +39,5 @@
 - Added regression coverage for the Iteration 05 approval boundary.
 - Approved the Iteration 05 Aim manifest and imported its transparent CAM01 canary
   for explicit visual review without advancing the production checkpoint.
+- Approved the Aim canary and imported transparent CAM02 through CAM07; paused with
+  CAM08 pending and the production checkpoint unchanged at Iteration 04 COMPLETE.

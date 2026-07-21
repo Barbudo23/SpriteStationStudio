@@ -1,4 +1,4 @@
-status: REVIEW_REQUIRED
+status: APPROVED
 iteration: 5
 camera_id: CAM01
 provider: codex-built-in
@@ -9,3 +9,6 @@ dimensions:
 - 1448
 alpha_validated: true
 workflow_state_advanced: false
+approved_by: project-owner
+approved_at: '2026-07-18T15:15:52+00:00'
+asset_sha256: a19c8651a3c47efbe1200b9ca326764e72a5b5e59fc9ed17cdfff19d4c566e9d
