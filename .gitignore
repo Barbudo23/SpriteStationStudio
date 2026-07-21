@@ -7,3 +7,6 @@ output/*
 *.blend1
 .DS_Store
 Thumbs.db
+.env
+.env.*
+!.env.example

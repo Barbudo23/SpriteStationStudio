@@ -1,8 +1,11 @@
 [project]
-name = "pseudo3dforge"
-version = "0.1.0"
-description = "Automatic 3D model preview renderer powered by Blender"
+name = "assetforge-studio"
+version = "0.8.2.dev0"
+description = "Modular Blender, Unity, and AI-assisted game asset production studio"
 requires-python = ">=3.10"
 
 [tool.unittest]
 start-directory = "tests"
+
+[project.optional-dependencies]
+ai = ["openai>=2.0"]

@@ -1,4 +1,8 @@
-# AssetForge Studio — Pseudo3D Forge UI Prototype v0.8.1 Core Hotfix
+# AssetForge Studio — v0.8.2 AI Center Dev
+
+Текущая ветка основана на проверенном архиве v0.8.1 и отдельном SQLite hotfix.
+Добавлен модуль **AI Center** с провайдерами OpenAI API, Codex Bridge и CloseAI API.
+Подробности: `docs/AI_CENTER.md`, план: `docs/DEVELOPMENT_PLAN.md`.
 
 Первая рабочая версия приложения для автоматического создания PNG-превью из 3D-модели через Blender.
 
