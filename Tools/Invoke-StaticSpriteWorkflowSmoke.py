@@ -17,7 +17,7 @@ from core.batch import BatchItem, BatchOperation, BatchPlan, BatchPlanStore, rec
 from core.validation import encode_rgba_png
 
 
-def run_smoke(root: Path) -> dict:
+def prepare_inputs(root: Path) -> tuple[Path, Path]:
     items = []
     for index in range(1, 4):
         item_id = f"smoke-preview-{index}"
@@ -50,7 +50,12 @@ def run_smoke(root: Path) -> dict:
     plan_path = root / "batch_plan.json"
     BatchPlanStore().save(plan, plan_path)
     contact = build_batch_contact_sheet(plan_path)
-    review = record_batch_review(contact.manifest_path, plan_path, {
+    return plan_path, contact.manifest_path
+
+
+def run_smoke(root: Path) -> dict:
+    plan_path, contact_manifest_path = prepare_inputs(root)
+    review = record_batch_review(contact_manifest_path, plan_path, {
         "smoke-preview-1": "approved",
         "smoke-preview-2": "rejected",
         "smoke-preview-3": "approved",
@@ -70,7 +75,22 @@ def run_smoke(root: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the isolated Static Sprite workflow smoke-test.")
-    parser.parse_args()
+    parser.add_argument(
+        "--prepare-gui-fixture", type=Path, metavar="DIR",
+        help="Create a new persistent plan/contact pair for disposable GUI QA instead of running smoke.",
+    )
+    args = parser.parse_args()
+    if args.prepare_gui_fixture is not None:
+        fixture_root = args.prepare_gui_fixture.expanduser().resolve()
+        fixture_root.mkdir(parents=True, exist_ok=False)
+        plan_path, contact_path = prepare_inputs(fixture_root)
+        print(json.dumps({
+            "application": "Sprite Station Studio",
+            "purpose": "disposable_gui_qa_fixture",
+            "plan": str(plan_path),
+            "contactManifest": str(contact_path),
+        }, ensure_ascii=False, indent=2))
+        return 0
     with tempfile.TemporaryDirectory(prefix="sss-static-workflow-smoke-") as tmp:
         print(json.dumps(run_smoke(Path(tmp)), ensure_ascii=False, indent=2))
     return 0

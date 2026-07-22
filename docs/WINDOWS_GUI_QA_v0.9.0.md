@@ -10,6 +10,7 @@
 | Открытие SpriteBuilder | `PASS` | отдельное окно `Sprite Station Studio — Static Sprite Workflow v0.9` открылось корректно |
 | Компоновка панели | `PASS` | видимы BatchPlan, Contact manifest, explicit decisions, output, build и audit |
 | Пустые пути | `PASS AFTER FIX` | вместо разрешения `Path("")` в рабочую папку выводится явное требование выбрать JSON-файл |
+| Disposable fixture | `PASS` | `Tools/Invoke-StaticSpriteWorkflowSmoke.py --prepare-gui-fixture <DIR>` создаёт новую plan/contact-пару без Blender, Unity и API |
 | Happy-path на реальном plan/contact | `PENDING` | требуется подготовленный незаписанный output-каталог |
 | Rejected item | `PENDING` | требуется реальная пара plan/contact |
 | Invalid plan/contact pair | `PENDING` | требуется отдельная безопасная fixture-пара |
@@ -17,3 +18,11 @@
 | Audit existing | `PENDING` | требуется завершённый disposable workflow |
 
 Итог: GUI gate остаётся `PARTIAL`; RC/Stable не объявляется. AI Center не изменялся.
+
+Для продолжения ручного QA можно создать новый набор в ранее не существующей папке:
+
+```powershell
+python Tools/Invoke-StaticSpriteWorkflowSmoke.py --prepare-gui-fixture output/gui-qa-manual
+```
+
+Инструмент намеренно не перезаписывает существующий каталог.
