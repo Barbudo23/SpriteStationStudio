@@ -42,14 +42,16 @@ def _preview_png(visible: bool = True) -> bytes:
 
 
 class FakePreviewRunner:
-    def __init__(self, fail: bool = False, visible: bool = True) -> None:
+    def __init__(self, fail: bool = False, visible: bool = True,
+                 fail_on_call: int | None = None) -> None:
         self.fail = fail
         self.visible = visible
+        self.fail_on_call = fail_on_call
         self.requests = []
 
     def run(self, request, on_output=None):
         self.requests.append(request)
-        if self.fail:
+        if self.fail or len(self.requests) == self.fail_on_call:
             raise ForgeError("simulated Blender failure")
         request.output_dir.mkdir(parents=True)
         (request.output_dir / "Preview.png").write_bytes(_preview_png(self.visible))
@@ -82,6 +84,24 @@ class BatchPreviewCoordinatorTests(unittest.TestCase):
         ),), plan_id="plan-1")
         plan_path = root / "batch_plan.json"
         BatchPlanStore().save(plan, plan_path)
+        return blender, plan_path
+
+    def prepare_three(self, root: Path):
+        blender = root / "blender.exe"
+        blender.write_text("")
+        models = root / "models"
+        models.mkdir()
+        items = []
+        for index in range(1, 4):
+            (models / f"unit-{index}.glb").write_bytes(b"model")
+            items.append(BatchItem(
+                item_id=f"preview-{index}",
+                operation=BatchOperation.PREVIEW,
+                source_path=f"models/unit-{index}.glb",
+                output_path=f"renders/preview-{index}",
+            ))
+        plan_path = root / "batch_plan.json"
+        BatchPlanStore().save(BatchPlan.create(items, plan_id="plan-3"), plan_path)
         return blender, plan_path
 
     def test_runs_preview_through_staging_and_checkpoints_completion(self) -> None:
@@ -189,6 +209,47 @@ class BatchPreviewCoordinatorTests(unittest.TestCase):
             ).run_next(plan_path)
             self.assertEqual(result.item_id, None)
             self.assertEqual(result.plan.items[0].status, BatchStatus.COMPLETED)
+
+    def test_run_batch_completes_three_items_sequentially(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            blender, plan_path = self.prepare_three(root)
+            runner = FakePreviewRunner()
+            result = BatchPreviewCoordinator(blender, runner=runner).run_batch(plan_path)
+            self.assertEqual(
+                result.completed_item_ids,
+                ("preview-1", "preview-2", "preview-3"),
+            )
+            self.assertIsNone(result.failed_item_id)
+            self.assertTrue(all(
+                item.status == BatchStatus.COMPLETED for item in result.plan.items
+            ))
+            self.assertEqual(len(runner.requests), 3)
+
+    def test_run_batch_stops_on_first_error_and_leaves_remaining_pending(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            blender, plan_path = self.prepare_three(root)
+            runner = FakePreviewRunner(fail_on_call=2)
+            result = BatchPreviewCoordinator(blender, runner=runner).run_batch(plan_path)
+            self.assertEqual(result.completed_item_ids, ("preview-1",))
+            self.assertEqual(result.failed_item_id, "preview-2")
+            self.assertIn("simulated Blender failure", result.error)
+            self.assertEqual(
+                [item.status for item in result.plan.items],
+                [BatchStatus.COMPLETED, BatchStatus.FAILED, BatchStatus.PENDING],
+            )
+            self.assertEqual(len(runner.requests), 2)
+            self.assertFalse((root / "renders/preview-3").exists())
+
+    def test_run_batch_rejects_limit_outside_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            blender, plan_path = self.prepare_three(root)
+            coordinator = BatchPreviewCoordinator(blender, runner=FakePreviewRunner())
+            for invalid in (0, 4):
+                with self.assertRaises(BatchPlanError):
+                    coordinator.run_batch(plan_path, max_items=invalid)
 
 
 if __name__ == "__main__":

@@ -25,6 +25,14 @@ class BatchPreviewResult:
     output_dir: Path | None
 
 
+@dataclass(frozen=True)
+class BatchPreviewRunResult:
+    plan: BatchPlan
+    completed_item_ids: tuple[str, ...]
+    failed_item_id: str | None = None
+    error: str | None = None
+
+
 class BatchPreviewCoordinator:
     """Runs one durable BatchPlan item through the existing Preview workflow."""
 
@@ -43,6 +51,38 @@ class BatchPreviewCoordinator:
         self.resolution = resolution
         self.engine = engine
         self.camera_profile = camera_profile
+
+    def run_batch(
+        self,
+        plan_path: Path,
+        on_output: Callable[[str], None] | None = None,
+        max_items: int = 3,
+    ) -> BatchPreviewRunResult:
+        if not 1 <= max_items <= 3:
+            raise BatchPlanError("Batch Preview run must process between one and three items.")
+
+        completed: list[str] = []
+        plan_path = plan_path.expanduser().resolve()
+        for _ in range(max_items):
+            try:
+                result = self.run_next(plan_path, on_output=on_output)
+            except Exception as exc:
+                plan = self.store.load(plan_path)
+                failed = next(
+                    (item for item in plan.items if item.status == BatchStatus.FAILED),
+                    None,
+                )
+                return BatchPreviewRunResult(
+                    plan=plan,
+                    completed_item_ids=tuple(completed),
+                    failed_item_id=failed.item_id if failed else None,
+                    error=f"{type(exc).__name__}: {exc}",
+                )
+            if result.item_id is None:
+                return BatchPreviewRunResult(result.plan, tuple(completed))
+            completed.append(result.item_id)
+
+        return BatchPreviewRunResult(self.store.load(plan_path), tuple(completed))
 
     def run_next(
         self,
