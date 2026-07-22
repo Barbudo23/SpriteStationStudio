@@ -69,6 +69,7 @@
 - Проверка PNG, alpha и геометрии объекта.
 - [x] Read-only contact sheet и manifest для визуального пакетного согласования без изменения исходных PNG.
 - [x] Атомарный контракт ручных решений `approved` / `rejected` с проверкой SHA-256 исходников.
+- [x] Изолированный staging-пакет только для `approved` Preview с повторной проверкой целостности.
 - Импорт утверждённых кадров в SpriteBuilder/Animation pipeline.
 
 ## Этап 4 — v0.9.5 Provider Reliability
@@ -87,4 +88,4 @@
 
 ## Ближайшее действие
 
-Передавать только `approved` Preview в отдельный staging-пакет SpriteBuilder без изменения исходников. GUI, Job Queue, AI Center и Unity export пока не изменять.
+Добавить контракт SpriteBuilder для преобразования approved staging-пакета в набор статических Sprite без подключения GUI, Job Queue, AI Center и Unity export.

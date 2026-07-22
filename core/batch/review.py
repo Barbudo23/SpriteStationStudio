@@ -61,12 +61,19 @@ def record_batch_review(
     if not isinstance(raw_items, list) or not 1 <= len(raw_items) <= 3:
         raise BatchPlanError("Contact sheet must contain between one and three items.")
     plan_root = plan_path.parent
+    plan_items = {item.item_id: item for item in plan.items}
     item_ids = []
     source_hashes = []
     for raw in raw_items:
         if not isinstance(raw, dict) or not isinstance(raw.get("itemId"), str):
             raise BatchPlanError("Contact sheet item is invalid.")
         item_id = raw["itemId"]
+        if item_id not in plan_items or not plan_items[item_id].result_manifest:
+            raise BatchPlanError(f"Contact sheet item does not belong to BatchPlan: {item_id}")
+        declared_manifest = _resolve_inside(plan_root, raw.get("manifest"), "Contact sheet manifest")
+        expected_manifest = (plan_root / plan_items[item_id].result_manifest).resolve()
+        if declared_manifest != expected_manifest:
+            raise BatchPlanError(f"Contact sheet result manifest does not match BatchPlan: {item_id}")
         sprite = _resolve_inside(plan_root, raw.get("sprite"), "Contact sheet sprite")
         expected_hash = raw.get("sha256")
         if not sprite.is_file() or not isinstance(expected_hash, str):
@@ -78,6 +85,8 @@ def record_batch_review(
         source_hashes.append({"itemId": item_id, "sha256": actual_hash})
     if len(item_ids) != len(set(item_ids)):
         raise BatchPlanError("Contact sheet contains duplicate itemId values.")
+    if set(item_ids) != set(plan_items):
+        raise BatchPlanError("Contact sheet items do not match BatchPlan items.")
 
     normalized = {}
     try:
