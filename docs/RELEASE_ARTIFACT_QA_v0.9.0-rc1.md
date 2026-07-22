@@ -28,7 +28,15 @@
 - `python -S run.py --help` — `PASS`.
 - `python -S -m unittest discover -s tests -q` — `PASS`, 131/131.
 - `python -S Tools/Invoke-StaticSpriteWorkflowSmoke.py` — `PASS`, audit valid, 10 файлов проверено.
+- `Tools/Verify-ReleaseCandidate.py` повторно проверяет manifest, размер, SHA-256, single-root ZIP, path traversal, версию и file count до извлечения.
+- Автоматизированный `--run-clean-checks` — `PASS`; опубликованный ZIP распакован во временный каталог, внутри повторены entry point, 131 tests и synthetic E2E.
 
 ## Решение
 
 Artifact опубликован как GitHub prerelease `v0.9.0-rc1`. Тег разрешается в `df8613c5d44be876672273692c32520e0631b59d`; три assets имеют статус `uploaded`, а GitHub digest ZIP совпадает с локальным SHA-256. Stable-статус не присваивался.
+
+Повторная локальная проверка:
+
+```powershell
+python Tools/Verify-ReleaseCandidate.py <ZIP> <MANIFEST.json> --checksum <SHA256-file> --run-clean-checks
+```
