@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
+import re
 import stat
 import subprocess
 import sys
@@ -19,6 +20,9 @@ class ReleaseVerificationError(RuntimeError):
 MAX_MEMBER_BYTES = 1024 * 1024 * 1024
 MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024
 MAX_COMPRESSION_RATIO = 250
+VERSION_PATTERN = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:rc[0-9]+)?$")
+COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 
 
 def sha256(path: Path) -> str:
@@ -45,6 +49,26 @@ def read_manifest(path: Path) -> dict:
         raise ReleaseVerificationError(f"Release manifest is missing: {', '.join(missing)}")
     if payload["application"] != "Sprite Station Studio":
         raise ReleaseVerificationError("Release manifest application brand is invalid.")
+    if not isinstance(payload["version"], str) or not VERSION_PATTERN.fullmatch(payload["version"]):
+        raise ReleaseVerificationError("Release manifest version is invalid.")
+    if payload["releaseChannel"] not in {"local-rc-candidate", "github-prerelease"}:
+        raise ReleaseVerificationError("Release manifest channel is invalid.")
+    if not isinstance(payload["commit"], str) or not COMMIT_PATTERN.fullmatch(payload["commit"]):
+        raise ReleaseVerificationError("Release manifest commit is invalid.")
+    if (
+        not isinstance(payload["archive"], str)
+        or PurePosixPath(payload["archive"]).name != payload["archive"]
+        or not payload["archive"].endswith(".zip")
+    ):
+        raise ReleaseVerificationError("Release manifest archive name is invalid.")
+    if not isinstance(payload["archiveSha256"], str) or not SHA256_PATTERN.fullmatch(payload["archiveSha256"]):
+        raise ReleaseVerificationError("Release manifest SHA-256 is invalid.")
+    for field in ("archiveBytes", "trackedFileCount"):
+        value = payload[field]
+        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+            raise ReleaseVerificationError(f"Release manifest {field} must be a positive integer.")
+    if not isinstance(payload["published"], bool):
+        raise ReleaseVerificationError("Release manifest published must be boolean.")
     return payload
 
 
@@ -65,7 +89,10 @@ def verify_release(
     if actual_hash != manifest["archiveSha256"]:
         raise ReleaseVerificationError("Archive SHA-256 does not match release manifest.")
     if checksum_path is not None:
-        fields = checksum_path.read_text(encoding="ascii").strip().split()
+        try:
+            fields = checksum_path.read_text(encoding="ascii").strip().split()
+        except (OSError, UnicodeError) as exc:
+            raise ReleaseVerificationError(f"Cannot read checksum file: {exc}") from exc
         if fields != [actual_hash, archive_path.name]:
             raise ReleaseVerificationError("Checksum file does not match archive and manifest.")
 

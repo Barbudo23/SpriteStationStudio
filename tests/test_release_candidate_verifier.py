@@ -67,6 +67,33 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
             with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "SHA-256"):
                 MODULE.verify_release(archive, manifest, checksum)
 
+    def test_rejects_malformed_manifest_scalar_types(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            archive, manifest, checksum = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["archiveBytes"] = True
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "positive integer"):
+                MODULE.verify_release(archive, manifest, checksum)
+
+    def test_rejects_manifest_archive_path_instead_of_filename(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            archive, manifest, checksum = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["archive"] = "../" + archive.name
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "archive name"):
+                MODULE.verify_release(archive, manifest, checksum)
+
+    def test_rejects_non_hex_commit_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            archive, manifest, checksum = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["commit"] = "not-a-git-commit"
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "commit is invalid"):
+                MODULE.verify_release(archive, manifest, checksum)
+
     def test_rejects_path_traversal_before_extraction(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             archive, manifest, checksum = self.fixture(Path(tmp), unsafe=True)

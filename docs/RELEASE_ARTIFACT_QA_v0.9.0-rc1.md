@@ -30,6 +30,7 @@
 - `python -S Tools/Invoke-StaticSpriteWorkflowSmoke.py` — `PASS`, audit valid, 10 файлов проверено.
 - `Tools/Verify-ReleaseCandidate.py` повторно проверяет manifest, размер, SHA-256, single-root ZIP, path traversal, версию и file count до извлечения.
 - Verifier отклоняет symlink, encrypted и duplicate members, отдельный файл больше 1 GiB, суммарный распакованный размер больше 2 GiB и коэффициент сжатия выше 250:1.
+- Manifest проходит строгую проверку типов и форматов: версия, release channel, 40-символьный commit, basename ZIP, SHA-256, положительные размеры/count и boolean published.
 - Автоматизированный `--run-clean-checks` — `PASS`; опубликованный ZIP распакован во временный каталог, внутри повторены entry point, 131 tests и synthetic E2E.
 - Release builder создаёт ZIP, manifest и checksum в staging-каталоге и публикует их транзакционно; искусственный сбой подтверждает rollback без частичного набора.
 
