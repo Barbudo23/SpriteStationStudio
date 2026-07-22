@@ -17,7 +17,7 @@ Sprite Station Studio преобразует результаты 3D Preview в 
 
 ## Проверено
 
-- 130/130 Python tests.
+- 131/131 Python tests, включая проверку неопубликованного no-overwrite release builder.
 - Manual Windows GUI QA, включая системный file dialog и три review items.
 - Clean-install из Git archive с `python -S` без сторонних runtime-пакетов.
 - Переименование активных поверхностей в Sprite Station Studio с контролируемой legacy-совместимостью.
