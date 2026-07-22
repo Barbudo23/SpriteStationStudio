@@ -34,6 +34,7 @@ class BrandMigrationTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         active_surfaces = (
             "README.md", "pyproject.toml", "app/gui.py", "app/ai_center/window.py",
+            "app/static_sprite_workflow_window.py",
             "docs/AI_CENTER.md", "docs/CORE_FRAMEWORK.md", "docs/RC_SCOPE_v0.9.0.md",
             "docs/STATIC_SPRITE_PIPELINE.md", "docs/UI_ARCHITECTURE.md",
             "docs/UNITY_ASSET_LIBRARY.md", "docs/UNITY_BRIDGE.md",

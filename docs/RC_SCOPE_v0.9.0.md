@@ -72,4 +72,4 @@
 
 ## Следующая точная задача
 
-Добавить ограниченную GUI-интеграцию Static Sprite Workflow по `docs/WORKFLOW_READINESS_v0.9.0.md`. Статус остаётся `NOT RC` до ручного GUI и clean-install QA.
+Провести ручной Windows GUI QA отдельной панели Static Sprite Workflow: happy-path, rejected item, invalid plan/contact pair, immutable review, overwrite и audit. Статус остаётся `NOT RC` до ручного GUI и clean-install QA.

@@ -27,7 +27,8 @@
 | Финальный аудит | `PASS` | read-only проверка contracts, item IDs, safe paths и вложенных SHA-256 |
 | Воспроизводимый synthetic E2E | `PASS` | 3 Preview: 2 approved, 1 rejected, 4 artifacts / 10 checked files |
 | Fresh physical E2E | `PASS` | локальная 49-МБ GLB, Blender 5.1, 2 новых Preview 128×128, audit до/после Unity, Unity 6000.4.0f1: 2/2 valid, warnings 0 |
-| Полная Python regression | `PASS` | 124/124 tests после закрытия fresh physical E2E gate |
+| GUI integration | `PASS` | отдельное окно SpriteBuilder, выбор plan/contact, explicit decisions, transactional build и audit |
+| Полная Python regression | `PASS` | 126/126 tests после подключения минимальной GUI-панели |
 | Переименование | `PASS` | Sprite Station Studio/SSS на активных поверхностях; legacy allowlist тестируется |
 | GitHub | `PASS` | приватный `Barbudo23/SpriteStationStudio`, рабочая ветка синхронизирована |
 
@@ -35,7 +36,6 @@
 
 | Gate | Статус | Условие закрытия |
 |---|---|---|
-| GUI integration | `PENDING` | минимальная отдельная панель запуска/статуса без массового изменения `gui.py` |
 | Manual Windows GUI QA | `PENDING` | ручной happy-path, cancel, invalid path, overwrite и restart/resume |
 | Clean-install QA | `PENDING` | запуск из чистой копии с документированными Python/Blender/Unity requirements |
 | Release artifact | `PENDING` | ZIP, SHA-256 manifest, release notes и tag после закрытия предыдущих gates |
@@ -44,4 +44,4 @@ Animation workflow и AI Center не блокируют ограниченное
 
 ## Следующая точная задача
 
-Подключить workflow к минимальной отдельной GUI-панели: выбор BatchPlan/contact sheet, явные решения пользователя и запуск проверенного coordinator. Не изменять AI Center и существующие Render/Unity маршруты.
+Провести ручной Windows GUI QA новой панели: happy-path, rejected item, invalid plan/contact pair, immutable review, overwrite и audit. Не изменять AI Center.

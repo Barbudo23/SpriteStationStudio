@@ -17,6 +17,7 @@
 - Added a reproducible three-Preview end-to-end workflow smoke tool with final read-only audit.
 - Recorded v0.9.0 backend readiness and the remaining physical E2E, GUI and clean-install gates.
 - Closed the fresh physical E2E gate with new Blender renders and Unity 6000.4.0f1 read-only validation (2/2, no warnings).
+- Enabled a separate minimal SpriteBuilder workflow window without changing existing Render, Unity or AI Center routes.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

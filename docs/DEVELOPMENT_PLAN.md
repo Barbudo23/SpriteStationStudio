@@ -78,6 +78,7 @@
 - [x] Воспроизводимый end-to-end smoke на трёх Preview с двумя approved, одним rejected и финальным аудитом.
 - [x] Workflow readiness checklist: backend готов к limited GUI integration, продукт остаётся NOT RC.
 - [x] Fresh physical E2E: локальная GLB → 2 новых Blender Preview → review → audit → Unity 2/2 valid без warnings.
+- [x] Минимальная отдельная GUI-панель Static Sprite Workflow через включённый SpriteBuilder.
 - Импорт утверждённых кадров в Animation pipeline.
 
 ## Этап 4 — v0.9.5 Provider Reliability
@@ -96,4 +97,4 @@
 
 ## Ближайшее действие
 
-Добавить минимальную отдельную GUI-панель Static Sprite Workflow без массового рефакторинга `gui.py`. AI Center и существующие Render/Unity маршруты не изменять.
+Провести ручной Windows GUI QA панели: load pair, approved/rejected, build, audit, invalid pair и повторный запуск. AI Center не изменять.

@@ -30,6 +30,7 @@ from app.image_asset_source import (
 from app.ui.module_registry import create_default_registry
 from app.ui.theme import apply_theme, COLORS
 from app.ai_center.window import AICenterWindow
+from app.static_sprite_workflow_window import StaticSpriteWorkflowWindow
 from app.brand import PRODUCT_NAME, PRODUCT_SHORT_NAME, UNITY_IMPORTS_DIR
 
 
@@ -566,6 +567,8 @@ class AssetForgeApp(tk.Tk):
             messagebox.showinfo("Dashboard", "Dashboard будет добавлен следующим этапом.")
         elif module_id == "ai_center":
             AICenterWindow(self)
+        elif module_id == "sprite_builder":
+            StaticSpriteWorkflowWindow(self)
 
     def _update_source_mode(self) -> None:
         mode = self.source_mode_var.get()

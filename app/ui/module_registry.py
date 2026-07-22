@@ -49,7 +49,7 @@ def create_default_registry() -> ModuleRegistry:
     ))
     registry.register(ModuleDescriptor(
         "sprite_builder", "SpriteBuilder", "▦",
-        "Кадры, сетки, sprite sheet и экспорт.", enabled=False
+        "Approved Static Sprite workflow, audit и Unity preview package."
     ))
     registry.register(ModuleDescriptor(
         "atlas_builder", "AtlasBuilder", "▤",
