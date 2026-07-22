@@ -13,6 +13,7 @@
 - Added a read-only Static Sprite Set adapter for the existing Unity preset preview workflow.
 - Verified the adapter in Unity 6000.4.0f1: 2/2 Single Sprites valid in read-only preview with no warnings.
 - Added an all-or-nothing coordinator for review, approved staging, SpriteBuilder and Unity preview preparation.
+- Added strict read-only auditing for published workflow contracts, paths, item identities and hashes.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
