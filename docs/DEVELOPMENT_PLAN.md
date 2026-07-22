@@ -58,6 +58,9 @@
 - [x] Добавить атомарное JSON-хранилище, resume-переходы и data-safety тесты.
 - [x] Подключить BatchPlan к одиночному Preview через изолированный coordinator после contract tests.
 - [x] Выполнить реальный Blender smoke Batch Preview и подтвердить checkpoint/result manifest.
+- [x] Добавить независимую read-only проверку PNG/alpha и соответствия manifest 1.1.
+- [x] Проверить PNG validator на реальном Blender 5.1.2 Preview.
+- [ ] Подключить PNG validator перед staging-публикацией Batch Preview.
 - Пакетная генерация до трёх кадров за запуск.
 - Возобновляемый batch plan.
 - Проверка PNG, alpha и геометрии объекта.
@@ -80,4 +83,4 @@
 
 ## Ближайшее действие
 
-Спроектировать независимую локальную проверку PNG/alpha для опубликованного Batch Preview. GUI, Job Queue и AI Center не изменять.
+Подключить проверенный PNG validator к Batch Preview перед staging-публикацией. GUI, Job Queue и AI Center не изменять.
