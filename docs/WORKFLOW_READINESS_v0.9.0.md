@@ -33,16 +33,16 @@
 | Переименование | `PASS` | Sprite Station Studio/SSS на активных поверхностях; legacy allowlist тестируется |
 | GitHub | `PASS` | приватный `Barbudo23/SpriteStationStudio`, рабочая ветка синхронизирована |
 | Clean-install QA | `PASS` | Git archive, Python `-S`, CLI help, 130 tests с Tk и synthetic E2E без site-packages |
+| Manual Windows GUI QA | `PASS` | системный file dialog, два JSON-пути и три review items визуально подтверждены |
 
 ## Непройденные release gates
 
 | Gate | Статус | Условие закрытия |
 |---|---|---|
-| Manual Windows GUI QA | `PARTIAL` | запуск, компоновка, Tk E2E, mismatch, no-overwrite и restart проверены; нужен визуальный file-dialog path |
 | Release artifact | `PENDING` | ZIP, SHA-256 manifest, release notes и tag после закрытия предыдущих gates |
 
 Animation workflow и AI Center не блокируют ограниченное подключение статического workflow к GUI, но остаются вне готовности v1.0.
 
 ## Следующая точная задача
 
-Завершить единственный оставшийся ручной GUI-сценарий: выбрать BatchPlan и contact manifest через системный Windows file dialog и визуально подтвердить загрузку трёх review items. Не изменять AI Center и не объявлять RC до этой проверки.
+Подготовить локальный проверяемый release-candidate artifact: ZIP из tracked-файлов, SHA-256 manifest и release notes. Не создавать Git tag или GitHub Release до отдельной проверки артефакта. AI Center не изменять.

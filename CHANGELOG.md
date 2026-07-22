@@ -22,6 +22,7 @@
 - Added a real Tk controller end-to-end test covering approved/rejected publication and final audit.
 - Covered mismatched manifests, immutable review reuse, restart and no-overwrite in the Tk workflow controller.
 - Passed clean-install QA from a Git archive with Python `-S`, all tests and synthetic workflow E2E.
+- Closed Manual Windows GUI QA with real system file selection and three loaded review items.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

@@ -72,4 +72,4 @@
 
 ## Следующая точная задача
 
-Вручную подтвердить выбор BatchPlan и contact manifest через системный Windows file dialog. Clean-install QA уже пройден; статус остаётся `NOT RC` до закрытия последнего визуального GUI gate.
+Подготовить и проверить локальный release-candidate artifact. Manual Windows GUI QA и clean-install QA пройдены; Git tag и GitHub Release создаются только после отдельной проверки ZIP и SHA-256 manifest.
