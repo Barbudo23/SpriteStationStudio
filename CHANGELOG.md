@@ -1,3 +1,11 @@
+# Sprite Station Studio Brand Migration
+
+- Public product name changed from AssetForge Studio to Sprite Station Studio (SSS).
+- Python distribution and new user configuration directory use the new isolated name.
+- Unity exports now prefer `Assets/SpriteStationImports`.
+- Legacy `.afs` projects, `AssetForgeUnityBridge` commands, settings and Unity import folders remain supported.
+- Historical changelog and release-note entries retain the former product name for traceability.
+
 # v0.8.3 Static Sprite Pipeline Dev
 
 - Camera Profile в интерфейсе подключён к реальному 4/8-направленному Blender-рендеру.

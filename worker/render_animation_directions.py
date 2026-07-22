@@ -266,7 +266,7 @@ def main() -> int:
 
         manifest = {
             "schemaVersion": "1.1",
-            "application": "AssetForge Studio",
+            "application": "Sprite Station Studio",
             "module": "Animation Sprite Renderer",
             "assetName": model.stem,
             "source": str(model),

@@ -1,6 +1,6 @@
-# AssetForge Studio — v0.8.3 Static Sprite Pipeline Dev
+# Sprite Station Studio (SSS) — v0.8.3 Static Sprite Pipeline Dev
 
-Текущая разработка сосредоточена на основном конвейере **3D-модель → статические 2D-спрайты**. Профили камеры управляют Blender-рендером, manifest 1.1 фиксирует холст, камеру, нормализацию и pivot, а `unity_import_preset.json` описывает безопасный импорт Sprite. Подробнее: `docs/STATIC_SPRITE_PIPELINE.md` и `docs/UNITY_SPRITE_EXPORT.md`.
+Sprite Station Studio создаёт статические и анимированные 2D-спрайты из 3D-моделей. Текущая разработка сосредоточена на основном конвейере **3D-модель → статические 2D-спрайты**. Профили камеры управляют Blender-рендером, manifest 1.1 фиксирует холст, камеру, нормализацию и pivot, а `unity_import_preset.json` описывает безопасный импорт Sprite. Подробнее: `docs/STATIC_SPRITE_PIPELINE.md` и `docs/UNITY_SPRITE_EXPORT.md`.
 
 Следующий этап v0.9.0 и проверенная матрица окружения зафиксированы в `docs/RC_SCOPE_v0.9.0.md`. AI Center остаётся приостановленным и не входит в текущий RC scope.
 
@@ -95,7 +95,7 @@ Workbench или Cycles.
 
 ## Новый интерфейс
 
-Добавлена расширяемая оболочка AssetForge Studio с реестром модулей, Preview, Inspector и нижней панелью Jobs/Log/Output.
+Добавлена расширяемая оболочка Sprite Station Studio с реестром модулей, Preview, Inspector и нижней панелью Jobs/Log/Output.
 
 
 ## Image Source — 4 ракурса без Blender
@@ -179,7 +179,7 @@ Unity и Blender ищутся автоматически. Вкладка Bridges
 Добавлен рендер активной анимации в 4/8 направлениях с PNG-кадрами, отдельными sprite sheets, manifest и ZIP. См. `docs/ANIMATION_SPRITES.md`.
 
 
-## AssetForge Core v0.8
+## Sprite Station Core v0.8
 
 Добавлены `.afs` проекты, Event Bus, Job Queue, SQLite Asset Database и Plugin Registry. См. `docs/CORE_FRAMEWORK.md`.
 

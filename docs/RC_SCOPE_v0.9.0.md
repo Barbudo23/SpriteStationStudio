@@ -1,4 +1,4 @@
-# AssetForge Studio v0.9.0 — RC Scope and Support Matrix
+# Sprite Station Studio v0.9.0 — RC Scope and Support Matrix
 
 Статус документа: **APPROVED DEVELOPMENT SCOPE**. Статус продукта: **не RC и не production-ready**.
 
@@ -67,4 +67,3 @@
 ## Следующая точная задача
 
 Добавить независимый модуль `core/batch/` с моделью и валидатором `BatchPlan 1.0`, атомарным JSON-хранилищем и unit/contract tests. На этом шаге не подключать план к GUI, BlenderRunner или существующей Job Queue.
-

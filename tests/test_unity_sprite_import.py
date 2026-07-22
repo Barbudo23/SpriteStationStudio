@@ -11,9 +11,9 @@ from app.unity_sprite_import import UnitySpriteImportRunner
 
 
 class UnitySpriteImportTests(unittest.TestCase):
-    def prepare(self, root: Path) -> tuple[Path, Path, Path]:
+    def prepare(self, root: Path, imports_dir: str = "SpriteStationImports") -> tuple[Path, Path, Path]:
         project = root / "UnityProject"
-        package = project / "Assets" / "AssetForgeImports" / "Test_Soldier"
+        package = project / "Assets" / imports_dir / "Test_Soldier"
         package.mkdir(parents=True)
         (project / "ProjectSettings").mkdir()
         preset = package / "unity_import_preset.json"
@@ -55,6 +55,24 @@ class UnitySpriteImportTests(unittest.TestCase):
             with self.assertRaises(UnityBridgeError):
                 UnitySpriteImportRunner(Mock()).run(root / "Unity.exe", package)
 
+    def test_accepts_legacy_assetforge_import_folder(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            _, package, unity = self.prepare(Path(tmp), "AssetForgeImports")
+            runner_mock = Mock()
+
+            def execute(*args, **kwargs):
+                command = json.loads(Path(args[3]).read_text())
+                Path(command["reportPath"]).write_text(json.dumps({
+                    "importSettingsApplied": True,
+                    "appliedAssetCount": 0,
+                    "warnings": [],
+                }))
+                return UnityCommandResult(0, "", "", Path(command["reportPath"]))
+
+            runner_mock.execute.side_effect = execute
+            result = UnitySpriteImportRunner(runner_mock).run(unity, package)
+            self.assertTrue(result.report["importSettingsApplied"])
+
     def test_refuses_to_overwrite_existing_apply_report(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             _, package, unity = self.prepare(Path(tmp))
@@ -71,6 +89,7 @@ class UnitySpriteImportTests(unittest.TestCase):
         self.assertIn('command.operation == "apply_sprite_import"', source)
         method = source.split("private static void ApplySpriteImport", 1)[1]
         method = method.split("private static void PreviewSpriteImport", 1)[0]
+        self.assertIn('"SpriteStationImports"', method)
         self.assertIn('"AssetForgeImports"', method)
         self.assertIn("importer.SaveAndReimport()", method)
         self.assertIn("report.importSettingsApplied", method)

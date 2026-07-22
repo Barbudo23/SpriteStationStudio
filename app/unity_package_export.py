@@ -8,6 +8,7 @@ import shutil
 from uuid import uuid4
 
 from app.unity_runner import UnityBridgeError
+from app.brand import UNITY_IMPORTS_DIR
 
 
 @dataclass(frozen=True)
@@ -18,7 +19,7 @@ class UnityPackageExportResult:
 
 def _safe_name(value: str) -> str:
     name = re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("._")
-    return name or "AssetForgeSprite"
+    return name or "SpriteStationSprite"
 
 
 def _validate_unity_assets_dir(path: Path) -> Path:
@@ -61,8 +62,8 @@ def export_verified_package(
         raise UnityBridgeError("Unity preview report does not match preset assets.")
 
     assets_dir = _validate_unity_assets_dir(unity_project_or_assets)
-    asset_name = _safe_name(str(preset.get("assetName") or "AssetForgeSprite"))
-    export_root = assets_dir / "AssetForgeImports"
+    asset_name = _safe_name(str(preset.get("assetName") or "SpriteStationSprite"))
+    export_root = assets_dir / UNITY_IMPORTS_DIR
     target_dir = export_root / asset_name
     if target_dir.exists():
         raise UnityBridgeError(

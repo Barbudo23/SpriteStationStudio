@@ -102,7 +102,7 @@ def build_image_asset(request: ImageAssetRequest) -> ImageAssetResult:
 
     manifest = {
         "schemaVersion": "1.0",
-        "application": "AssetForge Studio",
+        "application": "Sprite Station Studio",
         "module": "Pseudo3D Forge",
         "sourceType": "four_direction_images",
         "assetId": str(uuid.uuid4()),
@@ -133,7 +133,7 @@ def build_image_asset(request: ImageAssetRequest) -> ImageAssetResult:
 
     readme = workspace / "README.txt"
     readme.write_text(
-        "AssetForge Studio image-source package.\n"
+        "Sprite Station Studio image-source package.\n"
         "This package was created without Blender from four directional images.\n",
         encoding="utf-8",
     )

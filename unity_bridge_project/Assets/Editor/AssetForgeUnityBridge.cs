@@ -16,7 +16,7 @@ public static class AssetForgeUnityBridge
         public string reportPath;
         public string presetPath;
         public string packagePath;
-        public string workingAssetPath = "Assets/AssetForgeInput";
+        public string workingAssetPath = "Assets/SpriteStationInput";
     }
 
     [Serializable]
@@ -116,7 +116,7 @@ public static class AssetForgeUnityBridge
         {
             var commandPath = GetArgument("-assetForgeCommand");
             if (string.IsNullOrWhiteSpace(commandPath) || !File.Exists(commandPath))
-                throw new FileNotFoundException("AssetForge command JSON not found.", commandPath);
+                throw new FileNotFoundException("Sprite Station command JSON not found.", commandPath);
 
             var command = JsonUtility.FromJson<Command>(File.ReadAllText(commandPath));
             report.operation = command.operation;
@@ -175,23 +175,31 @@ public static class AssetForgeUnityBridge
 
         var projectRoot = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
         var assetsRoot = Path.GetFullPath(Application.dataPath);
-        var importsRoot = Path.GetFullPath(Path.Combine(assetsRoot, "AssetForgeImports"));
+        var importsRoot = Path.GetFullPath(Path.Combine(assetsRoot, "SpriteStationImports"));
+        var legacyImportsRoot = Path.GetFullPath(Path.Combine(assetsRoot, "AssetForgeImports"));
         var packageRoot = Path.GetFullPath(command.packagePath);
-        var packagePrefix = packageRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-            + Path.DirectorySeparatorChar;
         var importsPrefix = importsRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
             + Path.DirectorySeparatorChar;
-        if (!packageRoot.StartsWith(importsPrefix, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Package must be inside Assets/AssetForgeImports.");
-        if (!string.Equals(Path.GetDirectoryName(packageRoot), importsRoot, StringComparison.OrdinalIgnoreCase))
+        var legacyImportsPrefix = legacyImportsRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
+        var selectedImportsRoot = packageRoot.StartsWith(importsPrefix, StringComparison.OrdinalIgnoreCase)
+            ? importsRoot
+            : packageRoot.StartsWith(legacyImportsPrefix, StringComparison.OrdinalIgnoreCase)
+                ? legacyImportsRoot
+                : null;
+        if (selectedImportsRoot == null)
+            throw new InvalidDataException("Package must be inside Assets/SpriteStationImports (legacy AssetForgeImports is supported). ");
+        if (!string.Equals(Path.GetDirectoryName(packageRoot), selectedImportsRoot, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Nested package paths are not supported.");
+        var packagePrefix = packageRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
 
         var presetPath = Path.GetFullPath(command.presetPath);
         if (!string.Equals(Path.GetDirectoryName(presetPath), packageRoot, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Preset must be stored in the exported package root.");
         var preset = JsonUtility.FromJson<UnityImportPreset>(File.ReadAllText(presetPath));
         if (preset == null || !string.Equals(preset.engine, "Unity", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Preset is not an AssetForge Unity import preset.");
+            throw new InvalidDataException("Preset is not a Sprite Station Unity import preset.");
         if (preset.assets == null || preset.assets.Count == 0)
             throw new InvalidDataException("Preset contains no sprite assets.");
 
@@ -288,7 +296,7 @@ public static class AssetForgeUnityBridge
             + Path.DirectorySeparatorChar;
         var preset = JsonUtility.FromJson<UnityImportPreset>(File.ReadAllText(presetPath));
         if (preset == null || !string.Equals(preset.engine, "Unity", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Preset is not an AssetForge Unity import preset.");
+            throw new InvalidDataException("Preset is not a Sprite Station Unity import preset.");
 
         report.readOnlyPreview = true;
         report.presetPath = presetPath;
@@ -355,7 +363,7 @@ public static class AssetForgeUnityBridge
             throw new FileNotFoundException("Source asset not found.", command.sourcePath);
 
         var folder = string.IsNullOrWhiteSpace(command.workingAssetPath)
-            ? "Assets/AssetForgeInput"
+            ? "Assets/SpriteStationInput"
             : command.workingAssetPath.Replace("\\", "/");
 
         if (!AssetDatabase.IsValidFolder(folder))
@@ -432,7 +440,7 @@ public static class AssetForgeUnityBridge
         var absolute = Path.GetFullPath(path);
         Directory.CreateDirectory(Path.GetDirectoryName(absolute));
         File.WriteAllText(absolute, JsonUtility.ToJson(report, true));
-        Debug.Log("AssetForge Unity report written: " + absolute);
+        Debug.Log("Sprite Station Unity report written: " + absolute);
     }
 
     private static string GetArgument(string name)

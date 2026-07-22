@@ -1,8 +1,8 @@
-# План разработки AssetForge Studio
+# План разработки Sprite Station Studio (SSS)
 
 ## Контроль версий
 
-- Репозиторий: `Barbudo23/AssetForge` (private).
+- Репозиторий: `Barbudo23/SpriteStationStudio` (переименование из `Barbudo23/AssetForge`).
 - Исходная база: ветка `studio/0.8.1-baseline`, тег `studio-v0.8.1-baseline`.
 - Hotfix: тег `studio-v0.8.1.1-hotfix`.
 - AI Center: ветка `studio/0.8.2-ai-dev`, разработка приостановлена.

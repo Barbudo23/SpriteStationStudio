@@ -15,7 +15,7 @@ class AICenterWindow(tk.Toplevel):
 
     def __init__(self, parent: tk.Misc) -> None:
         super().__init__(parent)
-        self.title("AssetForge Studio — AI Center v0.8.2 Dev")
+        self.title("Sprite Station Studio — AI Center v0.8.2 Dev")
         self.geometry("760x620")
         self.minsize(680, 540)
         self.store = AISettingsStore()

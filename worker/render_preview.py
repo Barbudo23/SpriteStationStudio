@@ -352,7 +352,7 @@ def main() -> int:
         )
         manifest = {
             "schemaVersion": "1.1",
-            "application": "AssetForge Studio",
+            "application": "Sprite Station Studio",
             "module": "Single Sprite Preview",
             "sourceType": "3d_model",
             "assetName": model.stem,

@@ -1,7 +1,7 @@
 # GitHub workflow
 
-Рабочие версии AssetForge Studio контролируются в приватном репозитории
-`Barbudo23/AssetForge`.
+Рабочие версии Sprite Station Studio контролируются в репозитории
+`Barbudo23/SpriteStationStudio`.
 
 ## Правила
 
@@ -21,3 +21,4 @@
 | `stack/04-rev00` | архивная линия предыдущего AssetForge ProjectOS |
 
 Истории Studio и ProjectOS не смешиваются слиянием без отдельного migration plan.
+Старый адрес `Barbudo23/AssetForge` используется только как GitHub redirect после переименования.

@@ -31,11 +31,12 @@ class UnityPackageExportTests(unittest.TestCase):
         (project / "ProjectSettings").mkdir()
         return preset, report, project
 
-    def test_exports_to_new_assetforge_folder(self) -> None:
+    def test_exports_to_new_sprite_station_folder(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             preset, report, project = self.prepare(Path(tmp))
             result = export_verified_package(preset, report, project)
             self.assertEqual(result.target_dir.name, "Test_Soldier")
+            self.assertEqual(result.target_dir.parent.name, "SpriteStationImports")
             self.assertTrue((result.target_dir / "directions" / "north.png").is_file())
             self.assertTrue((result.target_dir / preset.name).is_file())
 

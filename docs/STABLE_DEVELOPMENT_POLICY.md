@@ -1,4 +1,4 @@
-# AssetForge Studio — Stable Development Policy
+# Sprite Station Studio — Stable Development Policy
 
 ## Назначение
 

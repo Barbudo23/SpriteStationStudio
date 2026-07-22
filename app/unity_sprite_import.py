@@ -7,6 +7,7 @@ import shutil
 import tempfile
 
 from app.unity_runner import UnityBridgeError, UnityRunner
+from app.brand import LEGACY_UNITY_IMPORTS_DIR, UNITY_IMPORTS_DIR
 
 
 @dataclass(frozen=True)
@@ -27,10 +28,10 @@ def _validate_exported_package(path: Path) -> tuple[Path, Path, Path]:
     except IndexError as exc:
         raise UnityBridgeError("Invalid exported Unity package path.") from exc
 
-    if imports_dir.name != "AssetForgeImports" or assets_dir.name.lower() != "assets":
+    if imports_dir.name not in {UNITY_IMPORTS_DIR, LEGACY_UNITY_IMPORTS_DIR} or assets_dir.name.lower() != "assets":
         raise UnityBridgeError(
             "TextureImporter settings can only be applied inside "
-            "Assets/AssetForgeImports/<asset>."
+            "Assets/SpriteStationImports/<asset> (legacy AssetForgeImports is also supported)."
         )
     project_dir = assets_dir.parent
     if not (project_dir / "ProjectSettings").is_dir():
@@ -63,7 +64,7 @@ class UnitySpriteImportRunner:
                 "existing reports are never overwritten."
             )
 
-        with tempfile.TemporaryDirectory(prefix="assetforge-unity-import-") as tmp:
+        with tempfile.TemporaryDirectory(prefix="sprite-station-unity-import-") as tmp:
             temporary_dir = Path(tmp)
             command_path = temporary_dir / "command.json"
             report_path = temporary_dir / "report.json"

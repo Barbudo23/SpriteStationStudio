@@ -1,4 +1,4 @@
-# AssetForge Core v0.8
+# Sprite Station Studio Core v0.8
 
 ## Components
 

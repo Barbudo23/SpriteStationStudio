@@ -1,4 +1,4 @@
-# AssetForge Studio UI Architecture — Pseudo3D Forge
+# Sprite Station Studio UI Architecture — Pseudo3D Forge
 
 ## Reference analysis
 
@@ -9,7 +9,7 @@ The original MVP interface is functional and stable, but intentionally linear:
 - one action row;
 - one log panel.
 
-This is ideal for validating the Blender worker but cannot scale to multiple AssetForge modules.
+This is ideal for validating the Blender worker but cannot scale to multiple Sprite Station Studio modules.
 
 ## New shell structure
 

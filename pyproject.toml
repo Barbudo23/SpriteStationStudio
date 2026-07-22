@@ -1,7 +1,7 @@
 [project]
-name = "assetforge-studio"
+name = "sprite-station-studio"
 version = "0.8.3.dev0"
-description = "Modular Blender, Unity, and AI-assisted game asset production studio"
+description = "Sprite creation studio powered by Blender and Unity workflows"
 requires-python = ">=3.10"
 
 [tool.unittest]

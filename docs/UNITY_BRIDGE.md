@@ -3,7 +3,7 @@
 Unity Bridge запускает установленный Unity Editor как изолированный subprocess:
 
 ```text
-AssetForge Studio
+Sprite Station Studio
   -> Unity.exe -batchmode -nographics
   -> AssetForgeUnityBridge.Execute
   -> unity_asset_report.json
@@ -34,7 +34,7 @@ C:\Program Files\Unity\Hub\Editor\<version>\Editor\Unity.exe
 
 ## Изоляция
 
-Python-процесс не загружает Unity DLL. Обмен выполняется через JSON. Поэтому сбой Unity не должен разрушать GUI AssetForge.
+Python-процесс не загружает Unity DLL. Обмен выполняется через JSON. Поэтому сбой Unity не должен разрушать GUI Sprite Station Studio.
 
 ## Ограничения текущей версии
 
@@ -45,7 +45,7 @@ Python-процесс не загружает Unity DLL. Обмен выполн
 
 ## Автоматический поиск и подключение
 
-AssetForge сканирует:
+Sprite Station Studio сканирует:
 
 - PATH;
 - стандартные папки Unity Hub;

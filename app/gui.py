@@ -30,12 +30,13 @@ from app.image_asset_source import (
 from app.ui.module_registry import create_default_registry
 from app.ui.theme import apply_theme, COLORS
 from app.ai_center.window import AICenterWindow
+from app.brand import PRODUCT_NAME, PRODUCT_SHORT_NAME, UNITY_IMPORTS_DIR
 
 
 class AssetForgeApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("AssetForge Studio v0.8.3 Dev — Static Sprite Pipeline")
+        self.title(f"{PRODUCT_NAME} v0.8.3 Dev — Static Sprite Pipeline")
         self.geometry("1440x900")
         self.minsize(1120, 720)
 
@@ -126,7 +127,7 @@ class AssetForgeApp(tk.Tk):
         bar.grid(row=0, column=0, columnspan=3, sticky="ew")
         bar.columnconfigure(1, weight=1)
 
-        ttk.Label(bar, text="ASSETFORGE STUDIO", style="Section.TLabel").grid(
+        ttk.Label(bar, text=f"{PRODUCT_NAME.upper()} ({PRODUCT_SHORT_NAME})", style="Section.TLabel").grid(
             row=0, column=0, sticky="w"
         )
         ttk.Label(
@@ -821,7 +822,7 @@ class AssetForgeApp(tk.Tk):
 
     def _open_unity_asset_library(self) -> None:
         window = tk.Toplevel(self)
-        window.title("AssetForge Studio — Unity Asset Library")
+        window.title(f"{PRODUCT_NAME} — Unity Asset Library")
         window.geometry("1120x700")
         window.minsize(900, 560)
         window.transient(self)
@@ -1192,13 +1193,13 @@ class AssetForgeApp(tk.Tk):
 
     def _open_project_manager(self) -> None:
         window = tk.Toplevel(self)
-        window.title("AssetForge Studio — Project Manager")
+        window.title(f"{PRODUCT_NAME} — Project Manager")
         window.geometry("760x340")
         window.transient(self)
 
         frame = ttk.Frame(window, padding=16)
         frame.pack(fill="both", expand=True)
-        ttk.Label(frame, text="AssetForge Projects", style="Section.TLabel").pack(anchor="w")
+        ttk.Label(frame, text="Sprite Station Projects", style="Section.TLabel").pack(anchor="w")
 
         status = ttk.Label(
             frame,
@@ -1217,7 +1218,7 @@ class AssetForgeApp(tk.Tk):
             dialog.transient(window)
             content = ttk.Frame(dialog, padding=14)
             content.pack(fill="both", expand=True)
-            name_var = tk.StringVar(value="AssetForgeProject")
+            name_var = tk.StringVar(value="SpriteStationProject")
             ttk.Label(content, text="Название проекта").pack(anchor="w")
             entry = ttk.Entry(content, textvariable=name_var)
             entry.pack(fill="x", pady=(6, 12))
@@ -1236,8 +1237,8 @@ class AssetForgeApp(tk.Tk):
 
         def open_project() -> None:
             descriptor = filedialog.askopenfilename(
-                title="Открыть AssetForge Project",
-                filetypes=[("AssetForge Project", "*.afs"), ("Все файлы", "*.*")],
+                title="Открыть Sprite Station Project",
+                filetypes=[("Sprite Station Project (legacy .afs)", "*.afs"), ("Все файлы", "*.*")],
             )
             if not descriptor:
                 return
@@ -1261,7 +1262,7 @@ class AssetForgeApp(tk.Tk):
 
     def _open_job_queue(self) -> None:
         window = tk.Toplevel(self)
-        window.title("AssetForge Studio — Job Queue")
+        window.title(f"{PRODUCT_NAME} — Job Queue")
         window.geometry("900x480")
         window.transient(self)
 
@@ -1313,7 +1314,7 @@ class AssetForgeApp(tk.Tk):
 
     def _open_settings(self) -> None:
         window = tk.Toplevel(self)
-        window.title("AssetForge Studio — Настройки")
+        window.title(f"{PRODUCT_NAME} — Настройки")
         window.geometry("720x300")
         window.transient(self)
         frame = ttk.Frame(window, padding=16)
@@ -1376,7 +1377,7 @@ class AssetForgeApp(tk.Tk):
             "operation": "analyze_asset",
             "sourcePath": str(Path(model).expanduser().resolve()),
             "reportPath": str(report_path),
-            "workingAssetPath": "Assets/AssetForgeInput",
+            "workingAssetPath": "Assets/SpriteStationInput",
         }
         command_path.write_text(json.dumps(command, ensure_ascii=False, indent=2), encoding="utf-8")
         self.status_var.set("Unity анализирует модель в batch mode…")
@@ -1463,7 +1464,7 @@ class AssetForgeApp(tk.Tk):
             return
         if not messagebox.askyesno(
             "Подтверждение Unity Export",
-            "AssetForge создаст новую папку Assets/AssetForgeImports/<asset>.\n"
+            f"{PRODUCT_NAME} создаст новую папку Assets/{UNITY_IMPORTS_DIR}/<asset>.\n"
             "Существующие файлы и .meta не будут перезаписаны.\n\n"
             f"Проект: {selected}\n\nПродолжить?",
         ):
@@ -1505,7 +1506,7 @@ class AssetForgeApp(tk.Tk):
             "Confirm TextureImporter Settings",
             "Unity will create or update .meta files only for PNG files in:\n"
             f"{package_dir}\n\n"
-            "No assets outside this new AssetForgeImports folder will be changed. Continue?",
+            f"No assets outside this new {UNITY_IMPORTS_DIR} folder will be changed. Continue?",
         ):
             return
 
