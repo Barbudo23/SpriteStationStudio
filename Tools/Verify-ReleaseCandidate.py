@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+import unicodedata
 from zipfile import ZipFile
 
 
@@ -23,6 +24,11 @@ MAX_COMPRESSION_RATIO = 250
 VERSION_PATTERN = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:rc[0-9]+)?$")
 COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+WINDOWS_RESERVED_NAMES = {
+    "CON", "PRN", "AUX", "NUL",
+    *(f"COM{number}" for number in range(1, 10)),
+    *(f"LPT{number}" for number in range(1, 10)),
+}
 
 
 def sha256(path: Path) -> str:
@@ -72,6 +78,21 @@ def read_manifest(path: Path) -> dict:
     return payload
 
 
+def portable_member_key(name: str) -> str:
+    if "\\" in name:
+        raise ReleaseVerificationError(f"Backslashes are not allowed in archive members: {name}")
+    member = PurePosixPath(name)
+    for part in member.parts:
+        if part in {"", ".", ".."}:
+            raise ReleaseVerificationError(f"Unsafe archive member: {name}")
+        if part.endswith((" ", ".")) or ":" in part:
+            raise ReleaseVerificationError(f"Non-portable archive member: {name}")
+        stem = part.split(".", 1)[0].upper()
+        if stem in WINDOWS_RESERVED_NAMES:
+            raise ReleaseVerificationError(f"Windows-reserved archive member: {name}")
+    return unicodedata.normalize("NFC", name).casefold()
+
+
 def verify_release(
     archive_path: Path,
     manifest_path: Path,
@@ -101,6 +122,9 @@ def verify_release(
         names = [entry.filename for entry in entries]
         if len(names) != len(set(names)):
             raise ReleaseVerificationError("Release archive contains duplicate members.")
+        portable_keys = [portable_member_key(name.rstrip("/")) for name in names]
+        if len(portable_keys) != len(set(portable_keys)):
+            raise ReleaseVerificationError("Release archive contains portable-path collisions.")
         file_names = [name for name in names if not name.endswith("/")]
         roots: set[str] = set()
         total_uncompressed = 0

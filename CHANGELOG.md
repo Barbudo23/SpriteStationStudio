@@ -30,6 +30,7 @@
 - Hardened release verification against symlinks, encrypted/duplicate members, oversized extraction and abnormal compression ratios.
 - Made ZIP, manifest and checksum publication transactional with cleanup after injected failures.
 - Added strict release-manifest type and format validation with controlled checksum read failures.
+- Added portable ZIP path validation for Windows separators, reserved names and case-insensitive Unicode collisions.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

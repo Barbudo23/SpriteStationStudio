@@ -135,6 +135,20 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
             with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "duplicate members"):
                 MODULE.verify_release(archive, manifest, checksum)
 
+    def test_rejects_backslash_member_before_windows_extraction(self) -> None:
+        with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "Backslashes"):
+            MODULE.portable_member_key("SpriteStationStudio-test\\..\\outside.txt")
+
+    def test_rejects_case_insensitive_portable_path_collision(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            archive, manifest, checksum = self.fixture(root)
+            with ZipFile(archive, "a") as package:
+                package.writestr("SpriteStationStudio-test/RUN.PY", "collision")
+            self.rebind_manifest(archive, manifest, checksum, file_count=4)
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "portable-path collisions"):
+                MODULE.verify_release(archive, manifest, checksum)
+
     def rebind_manifest(
         self, archive: Path, manifest: Path, checksum: Path, *, file_count: int
     ) -> None:
