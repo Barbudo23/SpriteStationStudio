@@ -20,6 +20,7 @@
 - Enabled a separate minimal SpriteBuilder workflow window without changing existing Render, Unity or AI Center routes.
 - Added no-overwrite disposable fixture preparation for manual Static Sprite Workflow GUI QA.
 - Added a real Tk controller end-to-end test covering approved/rejected publication and final audit.
+- Covered mismatched manifests, immutable review reuse, restart and no-overwrite in the Tk workflow controller.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

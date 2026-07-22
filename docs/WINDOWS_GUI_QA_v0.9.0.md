@@ -14,11 +14,12 @@
 | Tk controller happy-path | `PASS` | реальное Tk-окно загрузило три Preview, опубликовало workflow и прошло финальный audit |
 | Rejected item | `PASS` | один из трёх Preview оставлен `rejected` и исключён из опубликованного набора |
 | Визуальный happy-path мышью | `PENDING` | требуется ручной выбор plan/contact через системный файловый диалог |
-| Invalid plan/contact pair | `PENDING` | требуется отдельная безопасная fixture-пара |
-| Immutable review и overwrite | `PENDING` | проверять только на disposable output |
-| Audit existing | `PENDING` | требуется завершённый disposable workflow |
+| Invalid plan/contact pair | `PASS` | контроллер отклоняет contact manifest, который ссылается на другой BatchPlan |
+| Immutable review и restart | `PASS` | повторный контроллер использует совпадающее решение для нового output |
+| No-overwrite | `PASS` | повторная публикация в существующий output отклоняется |
+| Final audit | `PASS` | исходная и повторно запущенная публикации завершаются статусом `audit valid` |
 
-Итог: логика GUI-контроллера подтверждена end-to-end, но визуальный ручной gate остаётся `PARTIAL`; RC/Stable не объявляется. AI Center не изменялся.
+Итог: логика GUI-контроллера подтверждена end-to-end, включая mismatch, immutable review, restart и no-overwrite. Визуальный ручной gate системного file dialog остаётся `PARTIAL`; RC/Stable не объявляется. AI Center не изменялся.
 
 Для продолжения ручного QA можно создать новый набор в ранее не существующей папке:
 

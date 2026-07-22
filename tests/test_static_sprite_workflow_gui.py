@@ -29,6 +29,16 @@ prepare_inputs = _TOOL_MODULE.prepare_inputs
 
 
 class StaticSpriteWorkflowGuiTests(unittest.TestCase):
+    def create_window(self) -> tuple[tk.Tk, StaticSpriteWorkflowWindow]:
+        try:
+            root = tk.Tk()
+        except tk.TclError as exc:
+            self.skipTest(f"Tk display unavailable: {exc}")
+        root.withdraw()
+        window = StaticSpriteWorkflowWindow(root)
+        window.withdraw()
+        return root, window
+
     def test_empty_gui_paths_are_rejected_before_resolution(self) -> None:
         with self.assertRaisesRegex(BatchPlanError, "Select a BatchPlan"):
             require_selected_paths("  ", "contact.json")
@@ -64,13 +74,7 @@ class StaticSpriteWorkflowGuiTests(unittest.TestCase):
     def test_real_tk_controller_runs_approved_rejected_workflow(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             plan_path, contact_path = self.prepare(Path(tmp))
-            try:
-                root = tk.Tk()
-            except tk.TclError as exc:
-                self.skipTest(f"Tk display unavailable: {exc}")
-            root.withdraw()
-            window = StaticSpriteWorkflowWindow(root)
-            window.withdraw()
+            root, window = self.create_window()
             try:
                 window.plan_var.set(str(plan_path))
                 window.contact_var.set(str(contact_path))
@@ -92,6 +96,66 @@ class StaticSpriteWorkflowGuiTests(unittest.TestCase):
             finally:
                 window.destroy()
                 root.destroy()
+
+    def test_real_tk_controller_rejects_mismatched_pair(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            plan_path, _ = self.prepare(base / "first")
+            _, other_contact_path = self.prepare(base / "second")
+            root, window = self.create_window()
+            try:
+                window.plan_var.set(str(plan_path))
+                window.contact_var.set(str(other_contact_path))
+                with patch.object(messagebox, "showerror") as showerror:
+                    window._load_items()
+                showerror.assert_called_once()
+                self.assertIn("does not reference the selected BatchPlan", window.status_var.get())
+                self.assertFalse(window.decision_vars)
+            finally:
+                window.destroy()
+                root.destroy()
+
+    def test_real_tk_controller_restart_reuses_review_but_never_overwrites(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            plan_path, contact_path = self.prepare(base)
+
+            def run(output: str) -> tuple[str, bool, bool]:
+                root, window = self.create_window()
+                try:
+                    window.plan_var.set(str(plan_path))
+                    window.contact_var.set(str(contact_path))
+                    window.output_var.set(output)
+                    with (
+                        patch.object(messagebox, "showinfo") as showinfo,
+                        patch.object(messagebox, "showerror") as showerror,
+                    ):
+                        window._load_items()
+                        window.decision_vars["smoke-preview-1"].set("approved")
+                        window.decision_vars["smoke-preview-3"].set("approved")
+                        window._run()
+                    return window.status_var.get(), showinfo.called, showerror.called
+                finally:
+                    window.destroy()
+                    root.destroy()
+
+            first_status, first_info, first_error = run("workflow/first")
+            overwrite_status, overwrite_info, overwrite_error = run("workflow/first")
+            restart_status, restart_info, restart_error = run("workflow/restarted")
+
+            self.assertIn("audit valid", first_status)
+            self.assertTrue(first_info)
+            self.assertFalse(first_error)
+            self.assertIn("already exists", overwrite_status)
+            self.assertFalse(overwrite_info)
+            self.assertTrue(overwrite_error)
+            self.assertIn("audit valid", restart_status)
+            self.assertTrue(restart_info)
+            self.assertFalse(restart_error)
+            self.assertTrue((base / "review/contact-sheet/review_decision.json").is_file())
+            self.assertTrue(
+                (base / "workflow/restarted/static_sprite_workflow_manifest.json").is_file()
+            )
 
 
 if __name__ == "__main__":
