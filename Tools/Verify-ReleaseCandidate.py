@@ -177,10 +177,21 @@ def verify_release(
     }
 
 
-def run_clean_checks(archive_path: Path, root: str) -> None:
+def run_clean_checks(archive_path: Path, root: str, expected_sha256: str) -> None:
     with tempfile.TemporaryDirectory(prefix="sss-release-verify-") as tmp:
-        with ZipFile(archive_path) as archive:
-            archive.extractall(tmp)
+        # Bind extraction to the exact bytes verified earlier. Keeping the same
+        # file handle open prevents a path replacement between hashing and use.
+        with archive_path.open("rb") as stream:
+            digest = hashlib.sha256()
+            for block in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(block)
+            if digest.hexdigest() != expected_sha256:
+                raise ReleaseVerificationError(
+                    "Archive changed after verification and before clean checks."
+                )
+            stream.seek(0)
+            with ZipFile(stream) as archive:
+                archive.extractall(tmp)
         source = Path(tmp) / root
         commands = (
             [sys.executable, "-S", "run.py", "--help"],
@@ -200,7 +211,11 @@ def main() -> int:
     args = parser.parse_args()
     result = verify_release(args.archive, args.manifest, args.checksum)
     if args.run_clean_checks:
-        run_clean_checks(args.archive.resolve(), result["rootDirectory"])
+        run_clean_checks(
+            args.archive.resolve(),
+            result["rootDirectory"],
+            result["archiveSha256"],
+        )
         result["cleanChecks"] = "PASS"
     print(json.dumps(result, indent=2))
     return 0

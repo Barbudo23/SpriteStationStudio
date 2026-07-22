@@ -149,6 +149,19 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
             with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "portable-path collisions"):
                 MODULE.verify_release(archive, manifest, checksum)
 
+    def test_clean_checks_reject_archive_replaced_after_verification(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            archive, manifest, checksum = self.fixture(Path(tmp))
+            result = MODULE.verify_release(archive, manifest, checksum)
+            archive.write_bytes(b"replacement after verification")
+
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "changed after verification"):
+                MODULE.run_clean_checks(
+                    archive,
+                    result["rootDirectory"],
+                    result["archiveSha256"],
+                )
+
     def rebind_manifest(
         self, archive: Path, manifest: Path, checksum: Path, *, file_count: int
     ) -> None:
