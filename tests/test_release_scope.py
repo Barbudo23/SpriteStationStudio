@@ -56,7 +56,8 @@ class ReleaseScopeTests(unittest.TestCase):
         ast.parse(source)
         self.assertIn('"published": False', source)
         self.assertIn("Release output already exists", source)
-        self.assertIn("git\", \"archive", source)
+        self.assertIn('"archive", "--format=zip"', source)
+        self.assertIn("provide --git PATH", source)
 
 
 if __name__ == "__main__":

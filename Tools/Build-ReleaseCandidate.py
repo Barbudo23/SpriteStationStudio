@@ -7,6 +7,7 @@ import json
 from pathlib import Path, PurePosixPath
 import subprocess
 import sys
+import shutil
 from zipfile import ZipFile
 
 REPOSITORY = Path(__file__).resolve().parents[1]
@@ -16,9 +17,9 @@ if str(REPOSITORY) not in sys.path:
 from app.version import RELEASE_CHANNEL, VERSION
 
 
-def git(*args: str) -> str:
+def git(git_executable: Path, *args: str) -> str:
     result = subprocess.run(
-        ["git", *args], cwd=REPOSITORY, check=True,
+        [str(git_executable), *args], cwd=REPOSITORY, check=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8",
     )
     return result.stdout.strip()
@@ -32,11 +33,11 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def build(output_dir: Path) -> tuple[Path, Path, Path]:
-    if git("status", "--porcelain", "--untracked-files=no"):
+def build(output_dir: Path, git_executable: Path) -> tuple[Path, Path, Path]:
+    if git(git_executable, "status", "--porcelain", "--untracked-files=no"):
         raise RuntimeError("Tracked working tree changes must be committed before packaging.")
-    commit = git("rev-parse", "HEAD")
-    tracked_files = tuple(line for line in git("ls-files").splitlines() if line)
+    commit = git(git_executable, "rev-parse", "HEAD")
+    tracked_files = tuple(line for line in git(git_executable, "ls-files").splitlines() if line)
     output_dir = output_dir.expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     base_name = f"SpriteStationStudio-v{VERSION}-{commit[:8]}"
@@ -47,7 +48,7 @@ def build(output_dir: Path) -> tuple[Path, Path, Path]:
         if path.exists():
             raise RuntimeError(f"Release output already exists: {path}")
     subprocess.run(
-        ["git", "archive", "--format=zip", f"--prefix={base_name}/", f"--output={archive_path}", commit],
+        [str(git_executable), "archive", "--format=zip", f"--prefix={base_name}/", f"--output={archive_path}", commit],
         cwd=REPOSITORY, check=True,
     )
     with ZipFile(archive_path) as archive:
@@ -84,8 +85,11 @@ def build(output_dir: Path) -> tuple[Path, Path, Path]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build an unpublished Sprite Station Studio RC artifact.")
     parser.add_argument("--output-dir", type=Path, default=REPOSITORY / "output/release-candidate")
+    parser.add_argument("--git", type=Path, default=shutil.which("git"), help="Path to git executable.")
     args = parser.parse_args()
-    archive, manifest, checksum = build(args.output_dir)
+    if args.git is None or not args.git.is_file():
+        parser.error("git executable was not found; provide --git PATH")
+    archive, manifest, checksum = build(args.output_dir, args.git.resolve())
     print(json.dumps({
         "archive": str(archive), "manifest": str(manifest), "checksum": str(checksum)
     }, indent=2))
