@@ -11,13 +11,14 @@
 | Компоновка панели | `PASS` | видимы BatchPlan, Contact manifest, explicit decisions, output, build и audit |
 | Пустые пути | `PASS AFTER FIX` | вместо разрешения `Path("")` в рабочую папку выводится явное требование выбрать JSON-файл |
 | Disposable fixture | `PASS` | `Tools/Invoke-StaticSpriteWorkflowSmoke.py --prepare-gui-fixture <DIR>` создаёт новую plan/contact-пару без Blender, Unity и API |
-| Happy-path на реальном plan/contact | `PENDING` | требуется подготовленный незаписанный output-каталог |
-| Rejected item | `PENDING` | требуется реальная пара plan/contact |
+| Tk controller happy-path | `PASS` | реальное Tk-окно загрузило три Preview, опубликовало workflow и прошло финальный audit |
+| Rejected item | `PASS` | один из трёх Preview оставлен `rejected` и исключён из опубликованного набора |
+| Визуальный happy-path мышью | `PENDING` | требуется ручной выбор plan/contact через системный файловый диалог |
 | Invalid plan/contact pair | `PENDING` | требуется отдельная безопасная fixture-пара |
 | Immutable review и overwrite | `PENDING` | проверять только на disposable output |
 | Audit existing | `PENDING` | требуется завершённый disposable workflow |
 
-Итог: GUI gate остаётся `PARTIAL`; RC/Stable не объявляется. AI Center не изменялся.
+Итог: логика GUI-контроллера подтверждена end-to-end, но визуальный ручной gate остаётся `PARTIAL`; RC/Stable не объявляется. AI Center не изменялся.
 
 Для продолжения ручного QA можно создать новый набор в ранее не существующей папке:
 

@@ -19,6 +19,7 @@
 - Closed the fresh physical E2E gate with new Blender renders and Unity 6000.4.0f1 read-only validation (2/2, no warnings).
 - Enabled a separate minimal SpriteBuilder workflow window without changing existing Render, Unity or AI Center routes.
 - Added no-overwrite disposable fixture preparation for manual Static Sprite Workflow GUI QA.
+- Added a real Tk controller end-to-end test covering approved/rejected publication and final audit.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
