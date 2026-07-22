@@ -186,6 +186,38 @@ def _decode_rgba_png(path: Path) -> tuple[int, int, int, bytes]:
     return width, height, bit_depth, _unfilter(scanlines, width, height)
 
 
+def decode_rgba_png(path: Path) -> tuple[int, int, bytes]:
+    """Decode a validated, non-interlaced 8-bit RGBA PNG."""
+    width, height, _, rgba = _decode_rgba_png(path.expanduser().resolve())
+    return width, height, rgba
+
+
+def encode_rgba_png(width: int, height: int, rgba: bytes) -> bytes:
+    """Encode RGBA pixels with deterministic filter-0 scanlines."""
+    if width < 1 or height < 1 or width > MAX_DIMENSION or height > MAX_DIMENSION:
+        raise PreviewValidationError("PNG dimensions are outside safe limits.")
+    if width * height > MAX_PIXELS or len(rgba) != width * height * 4:
+        raise PreviewValidationError("RGBA payload does not match PNG dimensions.")
+    scanlines = bytearray()
+    stride = width * 4
+    for row in range(height):
+        scanlines.append(0)
+        start = row * stride
+        scanlines.extend(rgba[start:start + stride])
+
+    def chunk(kind: bytes, payload: bytes) -> bytes:
+        crc = zlib.crc32(payload, zlib.crc32(kind)) & 0xFFFFFFFF
+        return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", crc)
+
+    header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
+    return (
+        PNG_SIGNATURE
+        + chunk(b"IHDR", header)
+        + chunk(b"IDAT", zlib.compress(bytes(scanlines), level=9))
+        + chunk(b"IEND", b"")
+    )
+
+
 def _unfilter(scanlines: bytes, width: int, height: int) -> bytes:
     stride = width * 4
     previous = bytearray(stride)

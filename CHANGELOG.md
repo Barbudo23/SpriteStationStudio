@@ -5,6 +5,8 @@
 - Unity exports now prefer `Assets/SpriteStationImports`.
 - Legacy `.afs` projects, `AssetForgeUnityBridge` commands, settings and Unity import folders remain supported.
 - Historical changelog and release-note entries retain the former product name for traceability.
+- Added a read-only, atomic Batch Preview contact sheet with source hashes and review manifest.
+- Added brand-regression checks to distinguish supported legacy identifiers from stale public naming.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

@@ -30,6 +30,21 @@ class BrandMigrationTests(unittest.TestCase):
         self.assertIn("Assets/SpriteStationImports", migration)
         self.assertIn("`.afs`", migration)
 
+    def test_old_public_name_does_not_return_to_active_surfaces(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        active_surfaces = (
+            "README.md", "pyproject.toml", "app/gui.py", "app/ai_center/window.py",
+            "docs/AI_CENTER.md", "docs/CORE_FRAMEWORK.md", "docs/RC_SCOPE_v0.9.0.md",
+            "docs/STATIC_SPRITE_PIPELINE.md", "docs/UI_ARCHITECTURE.md",
+            "docs/UNITY_ASSET_LIBRARY.md", "docs/UNITY_BRIDGE.md",
+            "docs/UNITY_SPRITE_EXPORT.md",
+        )
+        stale = [
+            relative for relative in active_surfaces
+            if "AssetForge Studio" in (root / relative).read_text(encoding="utf-8")
+        ]
+        self.assertEqual(stale, [], f"Stale public brand found in: {stale}")
+
 
 if __name__ == "__main__":
     unittest.main()
