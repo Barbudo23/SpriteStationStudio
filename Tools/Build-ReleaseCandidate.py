@@ -4,10 +4,12 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import subprocess
 import sys
 import shutil
+import tempfile
 from zipfile import ZipFile
 
 REPOSITORY = Path(__file__).resolve().parents[1]
@@ -33,6 +35,24 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def publish_transactionally(
+    pairs: tuple[tuple[Path, Path], ...], *, replace=None
+) -> None:
+    replace = os.replace if replace is None else replace
+    for _, destination in pairs:
+        if destination.exists():
+            raise RuntimeError(f"Release output already exists: {destination}")
+    published: list[Path] = []
+    try:
+        for staged, destination in pairs:
+            replace(staged, destination)
+            published.append(destination)
+    except Exception:
+        for destination in reversed(published):
+            destination.unlink(missing_ok=True)
+        raise
+
+
 def build(output_dir: Path, git_executable: Path) -> tuple[Path, Path, Path]:
     if git(git_executable, "status", "--porcelain", "--untracked-files=no"):
         raise RuntimeError("Tracked working tree changes must be committed before packaging.")
@@ -44,41 +64,48 @@ def build(output_dir: Path, git_executable: Path) -> tuple[Path, Path, Path]:
     archive_path = output_dir / f"{base_name}.zip"
     manifest_path = output_dir / f"{base_name}.manifest.json"
     checksum_path = output_dir / f"{base_name}.sha256"
-    for path in (archive_path, manifest_path, checksum_path):
-        if path.exists():
-            raise RuntimeError(f"Release output already exists: {path}")
-    subprocess.run(
-        [str(git_executable), "archive", "--format=zip", f"--prefix={base_name}/", f"--output={archive_path}", commit],
-        cwd=REPOSITORY, check=True,
-    )
-    with ZipFile(archive_path) as archive:
-        names = archive.namelist()
-        for name in names:
-            member = PurePosixPath(name)
-            if member.is_absolute() or ".." in member.parts:
-                raise RuntimeError(f"Unsafe archive member: {name}")
-        required = {
-            f"{base_name}/run.py",
-            f"{base_name}/pyproject.toml",
-            f"{base_name}/RELEASE_NOTES_v0.9.0-rc1.md",
+    with tempfile.TemporaryDirectory(prefix=".sss-rc-staging-", dir=output_dir) as tmp:
+        staging = Path(tmp)
+        staged_archive = staging / archive_path.name
+        staged_manifest = staging / manifest_path.name
+        staged_checksum = staging / checksum_path.name
+        subprocess.run(
+            [str(git_executable), "archive", "--format=zip", f"--prefix={base_name}/", f"--output={staged_archive}", commit],
+            cwd=REPOSITORY, check=True,
+        )
+        with ZipFile(staged_archive) as archive:
+            names = archive.namelist()
+            for name in names:
+                member = PurePosixPath(name)
+                if member.is_absolute() or ".." in member.parts:
+                    raise RuntimeError(f"Unsafe archive member: {name}")
+            required = {
+                f"{base_name}/run.py",
+                f"{base_name}/pyproject.toml",
+                f"{base_name}/RELEASE_NOTES_v0.9.0-rc1.md",
+            }
+            if not required.issubset(names):
+                raise RuntimeError("Release archive is missing required entry points or notes.")
+        checksum = sha256(staged_archive)
+        manifest = {
+            "application": "Sprite Station Studio",
+            "version": VERSION,
+            "releaseChannel": RELEASE_CHANNEL,
+            "commit": commit,
+            "archive": archive_path.name,
+            "archiveSha256": checksum,
+            "archiveBytes": staged_archive.stat().st_size,
+            "trackedFileCount": len(tracked_files),
+            "createdUtc": datetime.now(timezone.utc).isoformat(),
+            "published": False,
         }
-        if not required.issubset(names):
-            raise RuntimeError("Release archive is missing required entry points or notes.")
-    checksum = sha256(archive_path)
-    manifest = {
-        "application": "Sprite Station Studio",
-        "version": VERSION,
-        "releaseChannel": RELEASE_CHANNEL,
-        "commit": commit,
-        "archive": archive_path.name,
-        "archiveSha256": checksum,
-        "archiveBytes": archive_path.stat().st_size,
-        "trackedFileCount": len(tracked_files),
-        "createdUtc": datetime.now(timezone.utc).isoformat(),
-        "published": False,
-    }
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    checksum_path.write_text(f"{checksum}  {archive_path.name}\n", encoding="ascii")
+        staged_manifest.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        staged_checksum.write_text(f"{checksum}  {archive_path.name}\n", encoding="ascii")
+        publish_transactionally((
+            (staged_archive, archive_path),
+            (staged_manifest, manifest_path),
+            (staged_checksum, checksum_path),
+        ))
     return archive_path, manifest_path, checksum_path
 
 

@@ -28,6 +28,7 @@
 - Published tag `v0.9.0-rc1` and the verified ZIP, manifest and checksum as a GitHub prerelease.
 - Added a standalone release verifier with SHA-256, contract, path-traversal and clean-check execution.
 - Hardened release verification against symlinks, encrypted/duplicate members, oversized extraction and abnormal compression ratios.
+- Made ZIP, manifest and checksum publication transactional with cleanup after injected failures.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
