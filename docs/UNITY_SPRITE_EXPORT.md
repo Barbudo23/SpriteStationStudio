@@ -10,6 +10,8 @@ Approved Static Sprite Set также может быть преобразова
 
 Реальный smoke-test адаптера выполнен в Unity 6000.4.0f1 через изолированный bridge project: два Single Sprite прошли read-only preview, результат `2/2 valid`, предупреждений нет. Воспроизводимый запуск находится в `Tools/Invoke-StaticSpriteUnitySmoke.py`.
 
+Fresh physical E2E также выполнен на локальной GLB: Blender 5.1 создал два новых Preview 128×128, полный approved workflow прошёл аудит до и после Unity, итоговый Unity read-only preview подтвердил 2/2 valid без предупреждений. Сценарий воспроизводится `Tools/Invoke-PhysicalStaticSpriteE2E.py`.
+
 ## Записываемые настройки
 
 - `Texture Type`: Sprite;

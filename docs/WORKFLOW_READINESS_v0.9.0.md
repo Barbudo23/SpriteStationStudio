@@ -26,7 +26,8 @@
 | Транзакционный workflow | `PASS` | all-or-nothing coordinator и очистка после искусственного сбоя |
 | Финальный аудит | `PASS` | read-only проверка contracts, item IDs, safe paths и вложенных SHA-256 |
 | Воспроизводимый synthetic E2E | `PASS` | 3 Preview: 2 approved, 1 rejected, 4 artifacts / 10 checked files |
-| Полная Python regression | `PASS` | 122/122 tests на момент readiness review |
+| Fresh physical E2E | `PASS` | локальная 49-МБ GLB, Blender 5.1, 2 новых Preview 128×128, audit до/после Unity, Unity 6000.4.0f1: 2/2 valid, warnings 0 |
+| Полная Python regression | `PASS` | 124/124 tests после закрытия fresh physical E2E gate |
 | Переименование | `PASS` | Sprite Station Studio/SSS на активных поверхностях; legacy allowlist тестируется |
 | GitHub | `PASS` | приватный `Barbudo23/SpriteStationStudio`, рабочая ветка синхронизирована |
 
@@ -34,7 +35,6 @@
 
 | Gate | Статус | Условие закрытия |
 |---|---|---|
-| Fresh physical E2E | `PENDING` | одна свежая 3D-модель проходит Blender render → review → workflow audit → Unity read-only preview без повторного использования старых результатов |
 | GUI integration | `PENDING` | минимальная отдельная панель запуска/статуса без массового изменения `gui.py` |
 | Manual Windows GUI QA | `PENDING` | ручной happy-path, cancel, invalid path, overwrite и restart/resume |
 | Clean-install QA | `PENDING` | запуск из чистой копии с документированными Python/Blender/Unity requirements |
@@ -44,4 +44,4 @@ Animation workflow и AI Center не блокируют ограниченное
 
 ## Следующая точная задача
 
-Выполнить **fresh physical E2E** на локальной GLB-модели: создать новый временный BatchPlan, получить новые Blender Preview, сформировать review/workflow, выполнить read-only audit и проверить итоговый Unity preset через изолированный Unity Bridge. Пользовательские Unity-проекты не изменять.
+Подключить workflow к минимальной отдельной GUI-панели: выбор BatchPlan/contact sheet, явные решения пользователя и запуск проверенного coordinator. Не изменять AI Center и существующие Render/Unity маршруты.

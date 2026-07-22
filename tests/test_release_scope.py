@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import re
 import tomllib
 import unittest
@@ -35,6 +36,15 @@ class ReleaseScopeTests(unittest.TestCase):
         self.assertIn("Fresh physical E2E", readiness)
         self.assertIn("Sprite Station Studio", readiness)
         self.assertNotIn("AssetForge Studio", readiness)
+
+    def test_physical_e2e_tool_is_reproducible_python(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        tool = root / "Tools" / "Invoke-PhysicalStaticSpriteE2E.py"
+        source = tool.read_text(encoding="utf-8")
+        ast.parse(source)
+        self.assertIn("freshBlenderPreviewCount", source)
+        self.assertIn("workflowAuditAfterUnity", source)
+        self.assertIn('"application": "Sprite Station Studio"', source)
 
 
 if __name__ == "__main__":

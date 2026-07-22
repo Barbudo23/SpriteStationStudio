@@ -72,4 +72,4 @@
 
 ## Следующая точная задача
 
-Выполнить fresh physical E2E на одной локальной GLB-модели по gate из `docs/WORKFLOW_READINESS_v0.9.0.md`. До его завершения статус остаётся `NOT RC`.
+Добавить ограниченную GUI-интеграцию Static Sprite Workflow по `docs/WORKFLOW_READINESS_v0.9.0.md`. Статус остаётся `NOT RC` до ручного GUI и clean-install QA.
