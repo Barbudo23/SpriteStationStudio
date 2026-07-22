@@ -72,4 +72,4 @@
 
 ## Следующая точная задача
 
-Добавить независимый модуль `core/batch/` с моделью и валидатором `BatchPlan 1.0`, атомарным JSON-хранилищем и unit/contract tests. На этом шаге не подключать план к GUI, BlenderRunner или существующей Job Queue.
+Выполнить fresh physical E2E на одной локальной GLB-модели по gate из `docs/WORKFLOW_READINESS_v0.9.0.md`. До его завершения статус остаётся `NOT RC`.

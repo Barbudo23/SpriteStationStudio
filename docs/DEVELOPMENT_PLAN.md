@@ -76,6 +76,7 @@
 - [x] Транзакционный end-to-end coordinator review → staging → SpriteBuilder → Unity preview package.
 - [x] Read-only аудит опубликованного workflow: контракты, бренд, пути, SHA-256 и идентичность items.
 - [x] Воспроизводимый end-to-end smoke на трёх Preview с двумя approved, одним rejected и финальным аудитом.
+- [x] Workflow readiness checklist: backend готов к limited GUI integration, продукт остаётся NOT RC.
 - Импорт утверждённых кадров в Animation pipeline.
 
 ## Этап 4 — v0.9.5 Provider Reliability
@@ -94,4 +95,4 @@
 
 ## Ближайшее действие
 
-Зафиксировать v0.9.0 workflow readiness checklist и определить оставшиеся release gates перед подключением workflow к GUI. AI Center не изменять.
+Выполнить fresh physical E2E на локальной GLB: новые Blender Preview → review → workflow audit → Unity read-only preview. Пользовательские Unity-проекты и AI Center не изменять.

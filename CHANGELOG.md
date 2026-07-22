@@ -15,6 +15,7 @@
 - Added an all-or-nothing coordinator for review, approved staging, SpriteBuilder and Unity preview preparation.
 - Added strict read-only auditing for published workflow contracts, paths, item identities and hashes.
 - Added a reproducible three-Preview end-to-end workflow smoke tool with final read-only audit.
+- Recorded v0.9.0 backend readiness and the remaining physical E2E, GUI and clean-install gates.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

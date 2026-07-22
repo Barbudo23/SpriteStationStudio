@@ -27,6 +27,15 @@ class ReleaseScopeTests(unittest.TestCase):
         self.assertIn("максимум трёх", scope)
         self.assertIn("`UNKNOWN`", scope)
 
+    def test_workflow_readiness_does_not_claim_rc(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        readiness = (root / "docs" / "WORKFLOW_READINESS_v0.9.0.md").read_text(encoding="utf-8")
+        self.assertIn("READY FOR LIMITED GUI INTEGRATION", readiness)
+        self.assertIn("NOT RC / NOT PRODUCTION READY", readiness)
+        self.assertIn("Fresh physical E2E", readiness)
+        self.assertIn("Sprite Station Studio", readiness)
+        self.assertNotIn("AssetForge Studio", readiness)
+
 
 if __name__ == "__main__":
     unittest.main()
