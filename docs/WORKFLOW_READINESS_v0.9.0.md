@@ -32,17 +32,17 @@
 | Полная Python regression | `PASS` | 130/130 tests, включая Tk mismatch, restart и no-overwrite |
 | Переименование | `PASS` | Sprite Station Studio/SSS на активных поверхностях; legacy allowlist тестируется |
 | GitHub | `PASS` | приватный `Barbudo23/SpriteStationStudio`, рабочая ветка синхронизирована |
+| Clean-install QA | `PASS` | Git archive, Python `-S`, CLI help, 130 tests с Tk и synthetic E2E без site-packages |
 
 ## Непройденные release gates
 
 | Gate | Статус | Условие закрытия |
 |---|---|---|
 | Manual Windows GUI QA | `PARTIAL` | запуск, компоновка, Tk E2E, mismatch, no-overwrite и restart проверены; нужен визуальный file-dialog path |
-| Clean-install QA | `PENDING` | запуск из чистой копии с документированными Python/Blender/Unity requirements |
 | Release artifact | `PENDING` | ZIP, SHA-256 manifest, release notes и tag после закрытия предыдущих gates |
 
 Animation workflow и AI Center не блокируют ограниченное подключение статического workflow к GUI, но остаются вне готовности v1.0.
 
 ## Следующая точная задача
 
-Провести ручной Windows GUI QA новой панели: happy-path, rejected item, invalid plan/contact pair, immutable review, overwrite и audit. Не изменять AI Center.
+Завершить единственный оставшийся ручной GUI-сценарий: выбрать BatchPlan и contact manifest через системный Windows file dialog и визуально подтвердить загрузку трёх review items. Не изменять AI Center и не объявлять RC до этой проверки.

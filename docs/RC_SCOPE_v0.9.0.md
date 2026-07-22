@@ -72,4 +72,4 @@
 
 ## Следующая точная задача
 
-Провести ручной Windows GUI QA отдельной панели Static Sprite Workflow: happy-path, rejected item, invalid plan/contact pair, immutable review, overwrite и audit. Статус остаётся `NOT RC` до ручного GUI и clean-install QA.
+Вручную подтвердить выбор BatchPlan и contact manifest через системный Windows file dialog. Clean-install QA уже пройден; статус остаётся `NOT RC` до закрытия последнего визуального GUI gate.

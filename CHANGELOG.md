@@ -21,6 +21,7 @@
 - Added no-overwrite disposable fixture preparation for manual Static Sprite Workflow GUI QA.
 - Added a real Tk controller end-to-end test covering approved/rejected publication and final audit.
 - Covered mismatched manifests, immutable review reuse, restart and no-overwrite in the Tk workflow controller.
+- Passed clean-install QA from a Git archive with Python `-S`, all tests and synthetic workflow E2E.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
