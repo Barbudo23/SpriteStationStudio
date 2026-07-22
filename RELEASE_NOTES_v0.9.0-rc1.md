@@ -1,6 +1,6 @@
 # Sprite Station Studio v0.9.0 RC1 — Local Candidate
 
-Статус: локальный кандидат для проверки. Git tag и GitHub Release не созданы. Версия не является Stable или production-ready до проверки release artifact.
+Статус: опубликованный GitHub prerelease. Тег `v0.9.0-rc1` указывает на проверенный artifact commit `df8613c5`. Версия не является Stable или production-ready.
 
 ## Основной результат
 

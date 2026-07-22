@@ -2,7 +2,7 @@
 
 Дата проверки: 2026-07-22.
 
-Статус: **LOCAL CANDIDATE VERIFIED / NOT PUBLISHED**.
+Статус: **VERIFIED / PUBLISHED AS GITHUB PRERELEASE**.
 
 ## Artifact
 
@@ -13,7 +13,8 @@
 | Размер | 44,211,717 bytes |
 | SHA-256 | `b1ec23daae4dc18548cbd85b6cfb4254ceb2c8808f686b72e1cefccc135756cb` |
 | Tracked files | 160 |
-| Published | `false` |
+| Artifact manifest `published` | `false` — фиксирует состояние на момент локальной сборки |
+| GitHub prerelease | `true`, опубликован 2026-07-22 |
 
 Локальные файлы находятся в `output/release-candidate/` и намеренно не добавлены в Git.
 
@@ -30,4 +31,4 @@
 
 ## Решение
 
-Artifact технически готов к рассмотрению для GitHub prerelease. Git tag, GitHub Release и Stable-статус не создавались.
+Artifact опубликован как GitHub prerelease `v0.9.0-rc1`. Тег разрешается в `df8613c5d44be876672273692c32520e0631b59d`; три assets имеют статус `uploaded`, а GitHub digest ZIP совпадает с локальным SHA-256. Stable-статус не присваивался.

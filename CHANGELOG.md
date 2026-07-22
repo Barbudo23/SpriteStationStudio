@@ -25,6 +25,7 @@
 - Closed Manual Windows GUI QA with real system file selection and three loaded review items.
 - Promoted internal metadata to the unpublished v0.9.0 RC1 local-candidate line and added reproducible packaging.
 - Verified the local RC1 ZIP, SHA-256, clean extraction, 131 tests and synthetic workflow E2E.
+- Published tag `v0.9.0-rc1` and the verified ZIP, manifest and checksum as a GitHub prerelease.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
