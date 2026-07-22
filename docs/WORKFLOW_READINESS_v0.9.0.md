@@ -29,7 +29,7 @@
 | Fresh physical E2E | `PASS` | локальная 49-МБ GLB, Blender 5.1, 2 новых Preview 128×128, audit до/после Unity, Unity 6000.4.0f1: 2/2 valid, warnings 0 |
 | GUI integration | `PASS` | отдельное окно SpriteBuilder, выбор plan/contact, explicit decisions, transactional build и audit |
 | Windows GUI launch | `PASS` | реальный запуск Python 3.14, главное окно и отдельная панель открываются без ошибок |
-| Полная Python regression | `PASS` | 130/130 tests, включая Tk mismatch, restart и no-overwrite |
+| Полная Python regression | `PASS` | 131/131 tests, включая Tk edge cases и release builder contract |
 | Переименование | `PASS` | Sprite Station Studio/SSS на активных поверхностях; legacy allowlist тестируется |
 | GitHub | `PASS` | приватный `Barbudo23/SpriteStationStudio`, рабочая ветка синхронизирована |
 | Clean-install QA | `PASS` | Git archive, Python `-S`, CLI help, 130 tests с Tk и synthetic E2E без site-packages |
@@ -39,10 +39,10 @@
 
 | Gate | Статус | Условие закрытия |
 |---|---|---|
-| Release artifact | `PENDING` | ZIP, SHA-256 manifest, release notes и tag после закрытия предыдущих gates |
+| Release artifact | `PASS` | локальный v0.9.0rc1 ZIP, SHA-256 manifest, clean extraction, 131 tests и synthetic E2E |
 
 Animation workflow и AI Center не блокируют ограниченное подключение статического workflow к GUI, но остаются вне готовности v1.0.
 
 ## Следующая точная задача
 
-Подготовить локальный проверяемый release-candidate artifact: ZIP из tracked-файлов, SHA-256 manifest и release notes. Не создавать Git tag или GitHub Release до отдельной проверки артефакта. AI Center не изменять.
+Провести отдельное решение о публикации: оставить v0.9.0rc1 локальным кандидатом либо создать Git tag и GitHub prerelease для проверенного commit `df8613c5`. Без явного решения публикацию не выполнять. AI Center не изменять.

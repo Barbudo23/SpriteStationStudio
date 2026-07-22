@@ -1,0 +1,33 @@
+# Sprite Station Studio v0.9.0 RC1 — Release Artifact QA
+
+Дата проверки: 2026-07-22.
+
+Статус: **LOCAL CANDIDATE VERIFIED / NOT PUBLISHED**.
+
+## Artifact
+
+| Поле | Значение |
+|---|---|
+| Source commit | `df8613c5d44be876672273692c32520e0631b59d` |
+| ZIP | `SpriteStationStudio-v0.9.0rc1-df8613c5.zip` |
+| Размер | 44,211,717 bytes |
+| SHA-256 | `b1ec23daae4dc18548cbd85b6cfb4254ceb2c8808f686b72e1cefccc135756cb` |
+| Tracked files | 160 |
+| Published | `false` |
+
+Локальные файлы находятся в `output/release-candidate/` и намеренно не добавлены в Git.
+
+## Проверки
+
+- ZIP создан только из tracked-файлов через `git archive`.
+- Все пути внутри ZIP проверены на absolute path и `..` traversal.
+- В архиве присутствуют `run.py`, `pyproject.toml` и `RELEASE_NOTES_v0.9.0-rc1.md`.
+- SHA-256 ZIP повторно вычислен после сборки и совпал с manifest.
+- ZIP распакован в новый одноразовый каталог.
+- `python -S run.py --help` — `PASS`.
+- `python -S -m unittest discover -s tests -q` — `PASS`, 131/131.
+- `python -S Tools/Invoke-StaticSpriteWorkflowSmoke.py` — `PASS`, audit valid, 10 файлов проверено.
+
+## Решение
+
+Artifact технически готов к рассмотрению для GitHub prerelease. Git tag, GitHub Release и Stable-статус не создавались.

@@ -72,4 +72,4 @@
 
 ## Следующая точная задача
 
-Подготовить и проверить локальный release-candidate artifact. Manual Windows GUI QA и clean-install QA пройдены; Git tag и GitHub Release создаются только после отдельной проверки ZIP и SHA-256 manifest.
+Локальный release-candidate artifact проверен. Следующее действие требует отдельного решения: создать Git tag и GitHub prerelease для commit `df8613c5` либо оставить кандидат локальным.
