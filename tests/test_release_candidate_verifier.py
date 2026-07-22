@@ -3,10 +3,12 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import stat
 import tempfile
 import unittest
+import warnings
 from pathlib import Path
-from zipfile import ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,6 +72,52 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
             archive, manifest, checksum = self.fixture(Path(tmp), unsafe=True)
             with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "Unsafe archive member"):
                 MODULE.verify_release(archive, manifest, checksum)
+
+    def test_rejects_symbolic_link_before_extraction(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            archive, manifest, checksum = self.fixture(root)
+            with ZipFile(archive, "a") as package:
+                link = ZipInfo("SpriteStationStudio-test/link")
+                link.create_system = 3
+                link.external_attr = (stat.S_IFLNK | 0o777) << 16
+                package.writestr(link, "../../outside")
+            self.rebind_manifest(archive, manifest, checksum, file_count=4)
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "Symbolic links"):
+                MODULE.verify_release(archive, manifest, checksum)
+
+    def test_rejects_suspicious_compression_ratio(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            archive, manifest, checksum = self.fixture(root)
+            with ZipFile(archive, "a", compression=ZIP_DEFLATED) as package:
+                package.writestr("SpriteStationStudio-test/zeros.bin", bytes(1024 * 1024))
+            self.rebind_manifest(archive, manifest, checksum, file_count=4)
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "compression ratio"):
+                MODULE.verify_release(archive, manifest, checksum)
+
+    def test_rejects_duplicate_members(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            archive, manifest, checksum = self.fixture(root)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", UserWarning)
+                with ZipFile(archive, "a") as package:
+                    package.writestr("SpriteStationStudio-test/run.py", "duplicate\n")
+            self.rebind_manifest(archive, manifest, checksum, file_count=4)
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "duplicate members"):
+                MODULE.verify_release(archive, manifest, checksum)
+
+    def rebind_manifest(
+        self, archive: Path, manifest: Path, checksum: Path, *, file_count: int
+    ) -> None:
+        digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["archiveSha256"] = digest
+        payload["archiveBytes"] = archive.stat().st_size
+        payload["trackedFileCount"] = file_count
+        manifest.write_text(json.dumps(payload), encoding="utf-8")
+        checksum.write_text(f"{digest}  {archive.name}\n", encoding="ascii")
 
 
 if __name__ == "__main__":

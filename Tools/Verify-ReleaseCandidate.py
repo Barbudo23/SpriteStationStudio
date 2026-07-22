@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
+import stat
 import subprocess
 import sys
 import tempfile
@@ -13,6 +14,11 @@ from zipfile import ZipFile
 
 class ReleaseVerificationError(RuntimeError):
     pass
+
+
+MAX_MEMBER_BYTES = 1024 * 1024 * 1024
+MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024
+MAX_COMPRESSION_RATIO = 250
 
 
 def sha256(path: Path) -> str:
@@ -64,13 +70,32 @@ def verify_release(
             raise ReleaseVerificationError("Checksum file does not match archive and manifest.")
 
     with ZipFile(archive_path) as archive:
-        names = archive.namelist()
+        entries = archive.infolist()
+        names = [entry.filename for entry in entries]
+        if len(names) != len(set(names)):
+            raise ReleaseVerificationError("Release archive contains duplicate members.")
         file_names = [name for name in names if not name.endswith("/")]
         roots: set[str] = set()
-        for name in names:
+        total_uncompressed = 0
+        for entry in entries:
+            name = entry.filename
             member = PurePosixPath(name)
             if member.is_absolute() or ".." in member.parts or not member.parts:
                 raise ReleaseVerificationError(f"Unsafe archive member: {name}")
+            unix_mode = entry.external_attr >> 16
+            if unix_mode and stat.S_ISLNK(unix_mode):
+                raise ReleaseVerificationError(f"Symbolic links are not allowed: {name}")
+            if entry.flag_bits & 0x1:
+                raise ReleaseVerificationError(f"Encrypted members are not allowed: {name}")
+            if entry.file_size > MAX_MEMBER_BYTES:
+                raise ReleaseVerificationError(f"Archive member exceeds size limit: {name}")
+            total_uncompressed += entry.file_size
+            if total_uncompressed > MAX_TOTAL_BYTES:
+                raise ReleaseVerificationError("Release archive exceeds total uncompressed size limit.")
+            if entry.file_size and entry.compress_size == 0:
+                raise ReleaseVerificationError(f"Invalid compressed size: {name}")
+            if entry.compress_size and entry.file_size / entry.compress_size > MAX_COMPRESSION_RATIO:
+                raise ReleaseVerificationError(f"Suspicious compression ratio: {name}")
             roots.add(member.parts[0])
         if len(roots) != 1:
             raise ReleaseVerificationError("Release archive must have exactly one root directory.")
