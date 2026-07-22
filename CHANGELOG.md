@@ -10,6 +10,7 @@
 - Added atomic Batch Review 1.0 decisions with contact-sheet and source integrity checks.
 - Added an atomic approved-only Preview staging package for the future SpriteBuilder boundary.
 - Added Static Sprite Set 1.0 builder with pivot, alpha-bounds and source-integrity validation.
+- Added a read-only Static Sprite Set adapter for the existing Unity preset preview workflow.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

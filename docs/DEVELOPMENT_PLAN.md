@@ -71,6 +71,7 @@
 - [x] Атомарный контракт ручных решений `approved` / `rejected` с проверкой SHA-256 исходников.
 - [x] Изолированный staging-пакет только для `approved` Preview с повторной проверкой целостности.
 - [x] Контракт SpriteBuilder для атомарной сборки статического Sprite Set из approved staging.
+- [x] Read-only адаптер Static Sprite Set в переносимый Unity preset-пакет без запуска Unity.
 - Импорт утверждённых кадров в Animation pipeline.
 
 ## Этап 4 — v0.9.5 Provider Reliability
@@ -89,4 +90,4 @@
 
 ## Ближайшее действие
 
-Подготовить адаптер approved Static Sprite Set к существующему Unity preset/preview workflow без записи в пользовательский Unity-проект. GUI, Job Queue и AI Center не изменять.
+Проверить созданный Static Sprite Unity-пакет реальным read-only preview в изолированном Unity Bridge. Пользовательский Unity-проект, GUI, Job Queue и AI Center не изменять.
