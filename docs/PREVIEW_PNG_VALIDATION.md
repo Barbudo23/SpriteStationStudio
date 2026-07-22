@@ -1,6 +1,6 @@
 # Preview PNG Validation
 
-Статус: **VERIFIED** на PNG из Blender 5.1.2.
+Статус: **VERIFIED** на PNG из Blender 5.1.2 и подключён перед Batch Preview staging-публикацией.
 
 Независимый модуль `core.validation.preview_png` проверяет опубликованный одиночный Preview без изменения файлов и без внешних Python-зависимостей.
 
@@ -21,4 +21,6 @@
 
 Реальная проверка Preview 128×128 из Blender 5.1.2: RGBA/8-bit, 2607 видимых пикселей, 14645 пикселей с прозрачностью, alpha bounds `(31, 21, 92, 112)`, coverage ratio `0.159119`.
 
-Следующий этап — подключить validator в `BatchPreviewCoordinator` перед публикацией staging-папки.
+`BatchPreviewCoordinator` вызывает validator до атомарной публикации. Ошибка проверки удаляет только внутренний staging, оставляет конечный путь отсутствующим и переводит элемент плана в `failed`.
+
+Интеграционный smoke в Blender 5.1.2 подтвердил тот же отчёт на staging до публикации: 128×128, 2607 видимых пикселей, 14645 пикселей с прозрачностью и status `completed` после успешной проверки.

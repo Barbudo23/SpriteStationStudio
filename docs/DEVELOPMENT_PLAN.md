@@ -60,7 +60,8 @@
 - [x] Выполнить реальный Blender smoke Batch Preview и подтвердить checkpoint/result manifest.
 - [x] Добавить независимую read-only проверку PNG/alpha и соответствия manifest 1.1.
 - [x] Проверить PNG validator на реальном Blender 5.1.2 Preview.
-- [ ] Подключить PNG validator перед staging-публикацией Batch Preview.
+- [x] Подключить PNG validator перед staging-публикацией Batch Preview.
+- [x] Выполнить real smoke интегрированной PNG-проверки в Blender 5.1.2.
 - Пакетная генерация до трёх кадров за запуск.
 - Возобновляемый batch plan.
 - Проверка PNG, alpha и геометрии объекта.
@@ -83,4 +84,4 @@
 
 ## Ближайшее действие
 
-Подключить проверенный PNG validator к Batch Preview перед staging-публикацией. GUI, Job Queue и AI Center не изменять.
+Добавить выполнение до трёх Preview-элементов за один явный batch-запуск с остановкой после первой ошибки. GUI, Job Queue и AI Center не изменять.

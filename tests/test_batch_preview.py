@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import struct
 import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+import zlib
 
 from app.batch_preview import BatchPreviewCoordinator
 from app.blender_runner import ForgeError
@@ -18,9 +20,31 @@ from core.batch import (
 )
 
 
+def _chunk(kind: bytes, payload: bytes) -> bytes:
+    crc = zlib.crc32(payload, zlib.crc32(kind)) & 0xFFFFFFFF
+    return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", crc)
+
+
+def _preview_png(visible: bool = True) -> bytes:
+    alpha = (255, 0, 0, 0) if visible else (0, 0, 0, 0)
+    rows = bytearray()
+    for y in range(2):
+        rows.append(0)
+        for x in range(2):
+            rows.extend((30, 60, 90, alpha[y * 2 + x]))
+    ihdr = struct.pack(">IIBBBBB", 2, 2, 8, 6, 0, 0, 0)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + _chunk(b"IHDR", ihdr)
+        + _chunk(b"IDAT", zlib.compress(bytes(rows)))
+        + _chunk(b"IEND", b"")
+    )
+
+
 class FakePreviewRunner:
-    def __init__(self, fail: bool = False) -> None:
+    def __init__(self, fail: bool = False, visible: bool = True) -> None:
         self.fail = fail
+        self.visible = visible
         self.requests = []
 
     def run(self, request, on_output=None):
@@ -28,11 +52,17 @@ class FakePreviewRunner:
         if self.fail:
             raise ForgeError("simulated Blender failure")
         request.output_dir.mkdir(parents=True)
-        (request.output_dir / "Preview.png").write_bytes(b"png")
+        (request.output_dir / "Preview.png").write_bytes(_preview_png(self.visible))
         manifest = request.output_dir / "preview_manifest.json"
         manifest.write_text(json.dumps({
             "schemaVersion": "1.1",
             "sprite": "Preview.png",
+            "canvas": {
+                "width": 2,
+                "height": 2,
+                "transparent": True,
+                "colorMode": "RGBA",
+            },
         }), encoding="utf-8")
         return SimpleNamespace(manifest_path=manifest)
 
@@ -109,6 +139,19 @@ class BatchPreviewCoordinatorTests(unittest.TestCase):
                 BatchStatus.PENDING,
             )
 
+    def test_invalid_png_is_not_published_and_is_checkpointed_failed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            blender, plan_path = self.prepare(root)
+            with self.assertRaisesRegex(ForgeError, "contains no visible pixels"):
+                BatchPreviewCoordinator(
+                    blender, runner=FakePreviewRunner(visible=False)
+                ).run_next(plan_path)
+            self.assertFalse((root / "renders/preview-1").exists())
+            failed = BatchPlanStore().load(plan_path).items[0]
+            self.assertEqual(failed.status, BatchStatus.FAILED)
+            self.assertIn("Preview PNG validation failed", failed.error)
+
     def test_rejects_non_preview_plan_without_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -129,10 +172,16 @@ class BatchPreviewCoordinatorTests(unittest.TestCase):
             store.save(running, plan_path)
             target = root / "renders" / "preview-1"
             target.mkdir(parents=True)
-            (target / "Preview.png").write_bytes(b"png")
+            (target / "Preview.png").write_bytes(_preview_png())
             (target / "preview_manifest.json").write_text(json.dumps({
                 "schemaVersion": "1.1",
                 "sprite": "Preview.png",
+                "canvas": {
+                    "width": 2,
+                    "height": 2,
+                    "transparent": True,
+                    "colorMode": "RGBA",
+                },
             }))
 
             result = BatchPreviewCoordinator(

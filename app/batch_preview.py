@@ -15,6 +15,7 @@ from core.batch import (
     BatchPlanStore,
     BatchStatus,
 )
+from core.validation import PreviewValidationError, validate_preview_png
 
 
 @dataclass(frozen=True)
@@ -162,19 +163,10 @@ class BatchPreviewCoordinator:
             manifest_path.relative_to(staging.resolve())
         except ValueError as exc:
             raise ForgeError("Preview manifest was created outside the staging directory.") from exc
-        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-        if payload.get("schemaVersion") != "1.1":
-            raise ForgeError("Preview manifest must use schemaVersion 1.1.")
-        sprite = payload.get("sprite")
-        if not isinstance(sprite, str) or not sprite:
-            raise ForgeError("Preview manifest does not reference a sprite.")
-        sprite_path = (staging / sprite).resolve()
         try:
-            sprite_path.relative_to(staging.resolve())
-        except ValueError as exc:
-            raise ForgeError("Preview sprite path escapes the staging directory.") from exc
-        if not sprite_path.is_file():
-            raise ForgeError(f"Preview sprite not found: {sprite_path}")
+            validate_preview_png(manifest_path)
+        except PreviewValidationError as exc:
+            raise ForgeError(f"Preview PNG validation failed: {exc}") from exc
 
     @classmethod
     def _is_valid_completed_output(cls, target: Path) -> bool:
