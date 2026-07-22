@@ -14,6 +14,7 @@
 - Verified the adapter in Unity 6000.4.0f1: 2/2 Single Sprites valid in read-only preview with no warnings.
 - Added an all-or-nothing coordinator for review, approved staging, SpriteBuilder and Unity preview preparation.
 - Added strict read-only auditing for published workflow contracts, paths, item identities and hashes.
+- Added a reproducible three-Preview end-to-end workflow smoke tool with final read-only audit.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

@@ -5,6 +5,8 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+import subprocess
+import sys
 
 from app.batch_contact_sheet import build_batch_contact_sheet
 from app.static_sprite_workflow import run_static_sprite_workflow
@@ -14,6 +16,19 @@ from core.validation import encode_rgba_png
 
 
 class StaticSpriteWorkflowTests(unittest.TestCase):
+    def test_reproducible_end_to_end_smoke_tool(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        tool = root / "Tools" / "Invoke-StaticSpriteWorkflowSmoke.py"
+        completed = subprocess.run(
+            [sys.executable, str(tool)], cwd=root,
+            capture_output=True, text=True, check=True, timeout=30,
+        )
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["application"], "Sprite Station Studio")
+        self.assertTrue(payload["auditValid"])
+        self.assertEqual(payload["approvedItemIds"], ["smoke-preview-1", "smoke-preview-3"])
+        self.assertTrue(payload["readOnlyUnityPreparation"])
+
     def prepare(self, root: Path):
         items = []
         for index in range(1, 3):

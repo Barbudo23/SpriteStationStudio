@@ -75,6 +75,7 @@
 - [x] Реальный read-only smoke-test Static Sprite Unity-пакета в Unity 6000.4.0f1: 2/2 valid, warnings отсутствуют.
 - [x] Транзакционный end-to-end coordinator review → staging → SpriteBuilder → Unity preview package.
 - [x] Read-only аудит опубликованного workflow: контракты, бренд, пути, SHA-256 и идентичность items.
+- [x] Воспроизводимый end-to-end smoke на трёх Preview с двумя approved, одним rejected и финальным аудитом.
 - Импорт утверждённых кадров в Animation pipeline.
 
 ## Этап 4 — v0.9.5 Provider Reliability
@@ -93,4 +94,4 @@
 
 ## Ближайшее действие
 
-Добавить воспроизводимый end-to-end smoke-инструмент на синтетических Preview с финальным read-only аудитом. GUI, Job Queue и AI Center не изменять.
+Зафиксировать v0.9.0 workflow readiness checklist и определить оставшиеся release gates перед подключением workflow к GUI. AI Center не изменять.
