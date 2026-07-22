@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
+import os
+import os
 import shutil
 from uuid import uuid4
 
@@ -84,6 +86,8 @@ def build_batch_contact_sheet(
             "kind": "batch_preview_contact_sheet",
             "readOnlyReview": True,
             "planId": plan.plan_id,
+            "plan": os.path.relpath(plan_path, output_dir).replace("\\", "/"),
+            "plan": os.path.relpath(plan_path, output_dir).replace("\\", "/"),
             "createdUtc": datetime.now(timezone.utc).isoformat(),
             "image": image_path.name,
             "canvas": {"width": sheet_width, "height": sheet_height, "colorMode": "RGBA"},

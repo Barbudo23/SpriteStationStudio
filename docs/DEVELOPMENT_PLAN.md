@@ -68,6 +68,7 @@
 - Возобновляемый batch plan.
 - Проверка PNG, alpha и геометрии объекта.
 - [x] Read-only contact sheet и manifest для визуального пакетного согласования без изменения исходных PNG.
+- [x] Атомарный контракт ручных решений `approved` / `rejected` с проверкой SHA-256 исходников.
 - Импорт утверждённых кадров в SpriteBuilder/Animation pipeline.
 
 ## Этап 4 — v0.9.5 Provider Reliability
@@ -86,4 +87,4 @@
 
 ## Ближайшее действие
 
-Добавить независимый контракт решений ручного согласования (`approved` / `rejected`) поверх read-only contact sheet. Исходные PNG, GUI, Job Queue и AI Center не изменять.
+Передавать только `approved` Preview в отдельный staging-пакет SpriteBuilder без изменения исходников. GUI, Job Queue, AI Center и Unity export пока не изменять.

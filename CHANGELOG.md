@@ -7,6 +7,7 @@
 - Historical changelog and release-note entries retain the former product name for traceability.
 - Added a read-only, atomic Batch Preview contact sheet with source hashes and review manifest.
 - Added brand-regression checks to distinguish supported legacy identifiers from stale public naming.
+- Added atomic Batch Review 1.0 decisions with contact-sheet and source integrity checks.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
