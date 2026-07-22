@@ -59,6 +59,16 @@ class ReleaseScopeTests(unittest.TestCase):
         self.assertIn('"archive", "--format=zip"', source)
         self.assertIn("provide --git PATH", source)
 
+    def test_post_rc_policy_keeps_feature_scope_frozen(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        policy = (root / "docs" / "POST_RC_STABILIZATION.md").read_text(encoding="utf-8")
+        plan = (root / "docs" / "DEVELOPMENT_PLAN.md").read_text(encoding="utf-8")
+        self.assertIn("post-rc/0.9.0-stabilization", policy)
+        self.assertIn("post-rc/0.9.0-stabilization", plan)
+        self.assertIn("возобновление AI Center", policy)
+        self.assertIn("Когда нужен RC2", policy)
+        self.assertIn("Stable требует отдельного решения", policy)
+
 
 if __name__ == "__main__":
     unittest.main()

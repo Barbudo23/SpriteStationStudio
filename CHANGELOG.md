@@ -31,6 +31,7 @@
 - Made ZIP, manifest and checksum publication transactional with cleanup after injected failures.
 - Added strict release-manifest type and format validation with controlled checksum read failures.
 - Added portable ZIP path validation for Windows separators, reserved names and case-insensitive Unicode collisions.
+- Established a dedicated post-RC stabilization branch and regression-first scope policy.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

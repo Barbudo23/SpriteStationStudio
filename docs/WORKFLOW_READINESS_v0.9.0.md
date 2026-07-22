@@ -29,7 +29,7 @@
 | Fresh physical E2E | `PASS` | локальная 49-МБ GLB, Blender 5.1, 2 новых Preview 128×128, audit до/после Unity, Unity 6000.4.0f1: 2/2 valid, warnings 0 |
 | GUI integration | `PASS` | отдельное окно SpriteBuilder, выбор plan/contact, explicit decisions, transactional build и audit |
 | Windows GUI launch | `PASS` | реальный запуск Python 3.14, главное окно и отдельная панель открываются без ошибок |
-| Полная Python regression | `PASS` | 144/144 tests, включая portable Windows ZIP paths и case-insensitive collision checks |
+| Полная Python regression | `PASS` | 145/145 tests, включая frozen post-RC scope policy |
 | Переименование | `PASS` | Sprite Station Studio/SSS на активных поверхностях; legacy allowlist тестируется |
 | GitHub | `PASS` | приватный `Barbudo23/SpriteStationStudio`, рабочая ветка синхронизирована |
 | Clean-install QA | `PASS` | Git archive, Python `-S`, CLI help, 130 tests с Tk и synthetic E2E без site-packages |
@@ -42,6 +42,7 @@
 | Release artifact | `PASS` | локальный v0.9.0rc1 ZIP, SHA-256 manifest, clean extraction, 131 tests и synthetic E2E |
 | GitHub prerelease | `PASS` | tag `v0.9.0-rc1` → `df8613c5`, 3 uploaded assets, ZIP digest совпадает |
 | Automated artifact re-verification | `PASS` | manifest/hash/version/file-count/safe-path validation и clean checks |
+| Post-RC branch | `PASS` | `post-rc/0.9.0-stabilization`, regression-first scope, RC1 tag остаётся неизменным |
 
 Animation workflow и AI Center не блокируют ограниченное подключение статического workflow к GUI, но остаются вне готовности v1.0.
 
