@@ -10,6 +10,15 @@ from app.static_sprite_workflow_audit import audit_static_sprite_workflow
 from core.batch import BatchPlanError, BatchPlanStore, record_batch_review
 
 
+def require_selected_paths(plan_value: str, contact_value: str) -> tuple[Path, Path]:
+    """Reject empty GUI selections before Path('') resolves to the working directory."""
+    if not plan_value.strip():
+        raise BatchPlanError("Select a BatchPlan JSON file.")
+    if not contact_value.strip():
+        raise BatchPlanError("Select a contact sheet manifest JSON file.")
+    return Path(plan_value.strip()), Path(contact_value.strip())
+
+
 def read_contact_item_ids(plan_path: Path, contact_manifest_path: Path) -> tuple[str, ...]:
     """Validate the selected pair and return reviewable item identities."""
     plan_path = plan_path.expanduser().resolve()
@@ -108,7 +117,10 @@ class StaticSpriteWorkflowWindow(tk.Toplevel):
 
     def _load_items(self) -> None:
         try:
-            item_ids = read_contact_item_ids(Path(self.plan_var.get()), Path(self.contact_var.get()))
+            plan_path, contact_path = require_selected_paths(
+                self.plan_var.get(), self.contact_var.get()
+            )
+            item_ids = read_contact_item_ids(plan_path, contact_path)
             for child in self.review_frame.winfo_children():
                 child.destroy()
             self.decision_vars.clear()
@@ -128,8 +140,9 @@ class StaticSpriteWorkflowWindow(tk.Toplevel):
 
     def _run(self) -> None:
         try:
-            plan_path = Path(self.plan_var.get())
-            contact_path = Path(self.contact_var.get())
+            plan_path, contact_path = require_selected_paths(
+                self.plan_var.get(), self.contact_var.get()
+            )
             item_ids = read_contact_item_ids(plan_path, contact_path)
             if set(item_ids) != set(self.decision_vars):
                 raise BatchPlanError("Reload review items before building the workflow.")

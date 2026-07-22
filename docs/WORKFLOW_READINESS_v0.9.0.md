@@ -28,7 +28,8 @@
 | Воспроизводимый synthetic E2E | `PASS` | 3 Preview: 2 approved, 1 rejected, 4 artifacts / 10 checked files |
 | Fresh physical E2E | `PASS` | локальная 49-МБ GLB, Blender 5.1, 2 новых Preview 128×128, audit до/после Unity, Unity 6000.4.0f1: 2/2 valid, warnings 0 |
 | GUI integration | `PASS` | отдельное окно SpriteBuilder, выбор plan/contact, explicit decisions, transactional build и audit |
-| Полная Python regression | `PASS` | 126/126 tests после подключения минимальной GUI-панели |
+| Windows GUI launch | `PASS` | реальный запуск Python 3.14, главное окно и отдельная панель открываются без ошибок |
+| Полная Python regression | `PASS` | 127/127 tests после первого Windows GUI QA |
 | Переименование | `PASS` | Sprite Station Studio/SSS на активных поверхностях; legacy allowlist тестируется |
 | GitHub | `PASS` | приватный `Barbudo23/SpriteStationStudio`, рабочая ветка синхронизирована |
 
@@ -36,7 +37,7 @@
 
 | Gate | Статус | Условие закрытия |
 |---|---|---|
-| Manual Windows GUI QA | `PENDING` | ручной happy-path, cancel, invalid path, overwrite и restart/resume |
+| Manual Windows GUI QA | `PARTIAL` | открытие и пустой ввод проверены; нужны happy-path, rejected item, invalid pair, overwrite и restart/resume |
 | Clean-install QA | `PENDING` | запуск из чистой копии с документированными Python/Blender/Unity requirements |
 | Release artifact | `PENDING` | ZIP, SHA-256 manifest, release notes и tag после закрытия предыдущих gates |
 

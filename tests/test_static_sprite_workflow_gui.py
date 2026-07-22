@@ -7,12 +7,18 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from app.static_sprite_workflow_window import read_contact_item_ids
+from app.static_sprite_workflow_window import read_contact_item_ids, require_selected_paths
 from app.ui.module_registry import create_default_registry
 from core.batch import BatchItem, BatchOperation, BatchPlan, BatchPlanError, BatchPlanStore
 
 
 class StaticSpriteWorkflowGuiTests(unittest.TestCase):
+    def test_empty_gui_paths_are_rejected_before_resolution(self) -> None:
+        with self.assertRaisesRegex(BatchPlanError, "Select a BatchPlan"):
+            require_selected_paths("  ", "contact.json")
+        with self.assertRaisesRegex(BatchPlanError, "Select a contact sheet"):
+            require_selected_paths("plan.json", "")
+
     def prepare(self, root: Path) -> tuple[Path, Path]:
         items = []
         for index in range(1, 3):
