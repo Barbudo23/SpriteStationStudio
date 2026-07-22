@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import tempfile
@@ -12,6 +13,13 @@ from core.validation import encode_rgba_png
 
 
 class StaticSpriteUnityAdapterTests(unittest.TestCase):
+    def test_reproducible_smoke_tool_is_valid_python(self) -> None:
+        tool = Path(__file__).resolve().parents[1] / "Tools" / "Invoke-StaticSpriteUnitySmoke.py"
+        source = tool.read_text(encoding="utf-8")
+        ast.parse(source)
+        self.assertIn('"application": "Sprite Station Studio"', source)
+        self.assertIn('"readOnlyPreview": True', source)
+
     def prepare(self, root: Path, count: int = 2) -> Path:
         sprite_root = root / "sprite-set"
         sprites = []

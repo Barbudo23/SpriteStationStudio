@@ -11,6 +11,7 @@
 - Added an atomic approved-only Preview staging package for the future SpriteBuilder boundary.
 - Added Static Sprite Set 1.0 builder with pivot, alpha-bounds and source-integrity validation.
 - Added a read-only Static Sprite Set adapter for the existing Unity preset preview workflow.
+- Verified the adapter in Unity 6000.4.0f1: 2/2 Single Sprites valid in read-only preview with no warnings.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

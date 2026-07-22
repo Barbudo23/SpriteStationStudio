@@ -8,6 +8,8 @@ Preset не копирует файлы в пользовательский Unit
 
 Approved Static Sprite Set также может быть преобразован в отдельный переносимый preview-пакет. Адаптер повторно проверяет SHA-256, RGBA-размеры, alpha bounds, pivot и актуальный бренд Sprite Station Studio, затем копирует спрайты и создаёт preset атомарно. На этом шаге Unity не запускается, пользовательский проект не изменяется.
 
+Реальный smoke-test адаптера выполнен в Unity 6000.4.0f1 через изолированный bridge project: два Single Sprite прошли read-only preview, результат `2/2 valid`, предупреждений нет. Воспроизводимый запуск находится в `Tools/Invoke-StaticSpriteUnitySmoke.py`.
+
 ## Записываемые настройки
 
 - `Texture Type`: Sprite;

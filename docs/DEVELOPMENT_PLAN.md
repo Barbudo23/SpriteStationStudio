@@ -72,6 +72,7 @@
 - [x] Изолированный staging-пакет только для `approved` Preview с повторной проверкой целостности.
 - [x] Контракт SpriteBuilder для атомарной сборки статического Sprite Set из approved staging.
 - [x] Read-only адаптер Static Sprite Set в переносимый Unity preset-пакет без запуска Unity.
+- [x] Реальный read-only smoke-test Static Sprite Unity-пакета в Unity 6000.4.0f1: 2/2 valid, warnings отсутствуют.
 - Импорт утверждённых кадров в Animation pipeline.
 
 ## Этап 4 — v0.9.5 Provider Reliability
@@ -90,4 +91,4 @@
 
 ## Ближайшее действие
 
-Проверить созданный Static Sprite Unity-пакет реальным read-only preview в изолированном Unity Bridge. Пользовательский Unity-проект, GUI, Job Queue и AI Center не изменять.
+Добавить изолированный end-to-end coordinator цепочки review → approved staging → SpriteBuilder → Unity preview package без подключения GUI, Job Queue и AI Center.
