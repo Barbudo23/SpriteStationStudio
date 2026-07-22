@@ -23,6 +23,7 @@
 - Covered mismatched manifests, immutable review reuse, restart and no-overwrite in the Tk workflow controller.
 - Passed clean-install QA from a Git archive with Python `-S`, all tests and synthetic workflow E2E.
 - Closed Manual Windows GUI QA with real system file selection and three loaded review items.
+- Promoted internal metadata to the unpublished v0.9.0 RC1 local-candidate line and added reproducible packaging.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

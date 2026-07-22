@@ -1,4 +1,4 @@
-# Sprite Station Studio (SSS) — v0.8.3 Static Sprite Pipeline Dev
+# Sprite Station Studio (SSS) — v0.9.0 RC1 Local Candidate
 
 Sprite Station Studio создаёт статические и анимированные 2D-спрайты из 3D-моделей. Текущая разработка сосредоточена на основном конвейере **3D-модель → статические 2D-спрайты**. Профили камеры управляют Blender-рендером, manifest 1.1 фиксирует холст, камеру, нормализацию и pivot, а `unity_import_preset.json` описывает безопасный импорт Sprite. Подробнее: `docs/STATIC_SPRITE_PIPELINE.md` и `docs/UNITY_SPRITE_EXPORT.md`.
 

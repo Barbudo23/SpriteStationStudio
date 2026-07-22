@@ -32,12 +32,13 @@ from app.ui.theme import apply_theme, COLORS
 from app.ai_center.window import AICenterWindow
 from app.static_sprite_workflow_window import StaticSpriteWorkflowWindow
 from app.brand import PRODUCT_NAME, PRODUCT_SHORT_NAME, UNITY_IMPORTS_DIR
+from app.version import DISPLAY_VERSION
 
 
 class AssetForgeApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
-        self.title(f"{PRODUCT_NAME} v0.8.3 Dev — Static Sprite Pipeline")
+        self.title(f"{PRODUCT_NAME} {DISPLAY_VERSION} — Static Sprite Workflow")
         self.geometry("1440x900")
         self.minsize(1120, 720)
 
@@ -145,7 +146,7 @@ class AssetForgeApp(tk.Tk):
         ).grid(row=0, column=0, sticky="e", padx=(0, 12))
         ttk.Label(
             right_status,
-            text="v0.8.3 Sprite Dev",
+            text=f"{DISPLAY_VERSION} Local Candidate",
             style="Badge.TLabel",
         ).grid(row=0, column=1, sticky="e")
 
