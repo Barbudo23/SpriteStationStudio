@@ -34,6 +34,7 @@
 - Portable-path gate отклоняет backslash paths, Windows reserved names, trailing dots/spaces, colon и case-insensitive Unicode collisions до распаковки.
 - Автоматизированный `--run-clean-checks` — `PASS`; опубликованный ZIP распакован во временный каталог, внутри повторены entry point, 131 tests и synthetic E2E.
 - Release builder создаёт ZIP, manifest и checksum в staging-каталоге и публикует их транзакционно; искусственный сбой подтверждает rollback без частичного набора.
+- Публикация использует same-volume hard links вместо overwrite-capable replace: поздняя коллизия атомарно отклоняется, внешний файл сохраняется, собственные частичные outputs откатываются.
 
 ## Решение
 

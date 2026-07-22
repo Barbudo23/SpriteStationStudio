@@ -36,17 +36,19 @@ def sha256(path: Path) -> str:
 
 
 def publish_transactionally(
-    pairs: tuple[tuple[Path, Path], ...], *, replace=None
+    pairs: tuple[tuple[Path, Path], ...], *, link=None
 ) -> None:
-    replace = os.replace if replace is None else replace
+    link = os.link if link is None else link
     for _, destination in pairs:
         if destination.exists():
             raise RuntimeError(f"Release output already exists: {destination}")
     published: list[Path] = []
     try:
         for staged, destination in pairs:
-            replace(staged, destination)
+            link(staged, destination)
             published.append(destination)
+        for staged, _ in pairs:
+            staged.unlink()
     except Exception:
         for destination in reversed(published):
             destination.unlink(missing_ok=True)
@@ -101,6 +103,8 @@ def build(output_dir: Path, git_executable: Path) -> tuple[Path, Path, Path]:
         }
         staged_manifest.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         staged_checksum.write_text(f"{checksum}  {archive_path.name}\n", encoding="ascii")
+        # Staging is created inside output_dir, so hard-link publication is
+        # same-volume and atomically refuses a late no-overwrite collision.
         publish_transactionally((
             (staged_archive, archive_path),
             (staged_manifest, manifest_path),

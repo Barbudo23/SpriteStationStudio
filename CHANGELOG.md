@@ -32,6 +32,7 @@
 - Added strict release-manifest type and format validation with controlled checksum read failures.
 - Added portable ZIP path validation for Windows separators, reserved names and case-insensitive Unicode collisions.
 - Established a dedicated post-RC stabilization branch and regression-first scope policy.
+- Closed a release-publish TOCTOU overwrite risk with same-volume atomic no-overwrite links and collision rollback.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
