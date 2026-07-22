@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
+from typing import BinaryIO
 import unicodedata
 from zipfile import ZipFile
 
@@ -31,12 +32,22 @@ WINDOWS_RESERVED_NAMES = {
 }
 
 
-def sha256(path: Path) -> str:
+def snapshot_archive(path: Path) -> tuple[BinaryIO, int, str]:
+    """Copy and hash one opened source so later ZIP reads use identical bytes."""
     digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
+    snapshot = tempfile.TemporaryFile(mode="w+b")
+    size = 0
+    try:
+        with path.open("rb") as source:
+            for block in iter(lambda: source.read(1024 * 1024), b""):
+                digest.update(block)
+                snapshot.write(block)
+                size += len(block)
+        snapshot.seek(0)
+        return snapshot, size, digest.hexdigest()
+    except Exception:
+        snapshot.close()
+        raise
 
 
 def read_manifest(path: Path) -> dict:
@@ -103,21 +114,24 @@ def verify_release(
     manifest = read_manifest(manifest_path)
     if archive_path.name != manifest["archive"]:
         raise ReleaseVerificationError("Archive filename does not match release manifest.")
-    actual_size = archive_path.stat().st_size
+    archive_stream, actual_size, actual_hash = snapshot_archive(archive_path)
     if actual_size != manifest["archiveBytes"]:
+        archive_stream.close()
         raise ReleaseVerificationError("Archive size does not match release manifest.")
-    actual_hash = sha256(archive_path)
     if actual_hash != manifest["archiveSha256"]:
+        archive_stream.close()
         raise ReleaseVerificationError("Archive SHA-256 does not match release manifest.")
     if checksum_path is not None:
         try:
             fields = checksum_path.read_text(encoding="ascii").strip().split()
         except (OSError, UnicodeError) as exc:
+            archive_stream.close()
             raise ReleaseVerificationError(f"Cannot read checksum file: {exc}") from exc
         if fields != [actual_hash, archive_path.name]:
+            archive_stream.close()
             raise ReleaseVerificationError("Checksum file does not match archive and manifest.")
 
-    with ZipFile(archive_path) as archive:
+    with archive_stream, ZipFile(archive_stream) as archive:
         entries = archive.infolist()
         names = [entry.filename for entry in entries]
         if len(names) != len(set(names)):

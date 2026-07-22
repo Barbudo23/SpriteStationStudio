@@ -34,6 +34,7 @@
 - Established a dedicated post-RC stabilization branch and regression-first scope policy.
 - Closed a release-publish TOCTOU overwrite risk with same-volume atomic no-overwrite links and collision rollback.
 - Bound clean-check extraction to the already verified archive SHA-256 and open file handle.
+- Made primary ZIP integrity and structure checks consume one immutable hashed snapshot.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

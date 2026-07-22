@@ -58,6 +58,17 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
             self.assertEqual(result["fileCount"], 3)
             self.assertEqual(result["version"], "0.9.0rc1")
 
+    def test_archive_snapshot_is_immutable_after_source_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            archive, _, _ = self.fixture(Path(tmp))
+            original = archive.read_bytes()
+            snapshot, size, digest = MODULE.snapshot_archive(archive)
+            archive.write_bytes(b"replacement")
+            with snapshot:
+                self.assertEqual(snapshot.read(), original)
+            self.assertEqual(size, len(original))
+            self.assertEqual(digest, hashlib.sha256(original).hexdigest())
+
     def test_rejects_hash_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             archive, manifest, checksum = self.fixture(Path(tmp))
