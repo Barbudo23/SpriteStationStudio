@@ -21,6 +21,7 @@ class ReleaseVerificationError(RuntimeError):
 
 MAX_MEMBER_BYTES = 1024 * 1024 * 1024
 MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024
+MAX_ARCHIVE_BYTES = 2 * 1024 * 1024 * 1024
 MAX_COMPRESSION_RATIO = 250
 VERSION_PATTERN = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:rc[0-9]+)?$")
 COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
@@ -40,9 +41,11 @@ def snapshot_archive(path: Path) -> tuple[BinaryIO, int, str]:
     try:
         with path.open("rb") as source:
             for block in iter(lambda: source.read(1024 * 1024), b""):
+                size += len(block)
+                if size > MAX_ARCHIVE_BYTES:
+                    raise ReleaseVerificationError("Release archive exceeds compressed size limit.")
                 digest.update(block)
                 snapshot.write(block)
-                size += len(block)
         snapshot.seek(0)
         return snapshot, size, digest.hexdigest()
     except Exception:
@@ -84,6 +87,8 @@ def read_manifest(path: Path) -> dict:
         value = payload[field]
         if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
             raise ReleaseVerificationError(f"Release manifest {field} must be a positive integer.")
+    if payload["archiveBytes"] > MAX_ARCHIVE_BYTES:
+        raise ReleaseVerificationError("Release manifest archiveBytes exceeds size limit.")
     if not isinstance(payload["published"], bool):
         raise ReleaseVerificationError("Release manifest published must be boolean.")
     return payload

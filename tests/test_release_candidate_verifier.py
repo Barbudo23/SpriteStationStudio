@@ -6,6 +6,7 @@ import json
 import stat
 import tempfile
 import unittest
+from unittest.mock import patch
 import warnings
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
@@ -68,6 +69,22 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
                 self.assertEqual(snapshot.read(), original)
             self.assertEqual(size, len(original))
             self.assertEqual(digest, hashlib.sha256(original).hexdigest())
+
+    def test_archive_snapshot_rejects_compressed_size_over_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            archive, _, _ = self.fixture(Path(tmp))
+            with patch.object(MODULE, "MAX_ARCHIVE_BYTES", 16):
+                with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "compressed size limit"):
+                    MODULE.snapshot_archive(archive)
+
+    def test_manifest_rejects_declared_archive_size_over_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            _, manifest, _ = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["archiveBytes"] = MODULE.MAX_ARCHIVE_BYTES + 1
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "archiveBytes exceeds"):
+                MODULE.read_manifest(manifest)
 
     def test_rejects_hash_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
