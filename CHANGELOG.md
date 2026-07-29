@@ -43,6 +43,7 @@
 - Added strict animation manifest, sequence, file-presence and safe-path validation before Unity export.
 - Validated animation frame pixels and long horizontal sheet dimensions under a bounded decoded-pixel budget.
 - Bound animation source, frames, sheets and contact sheet to manifest SHA-256 values verified read-only before Unity export.
+- Added immutable animation approval decisions and atomic approved-package publication without modifying render outputs.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

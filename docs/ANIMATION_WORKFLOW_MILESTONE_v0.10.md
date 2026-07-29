@@ -50,3 +50,10 @@ canvas и содержать видимые и прозрачные пиксел
 Manifest содержит SHA-256 исходной модели, каждого frame, каждого sheet и
 contact sheet. Read-only validator сверяет hashes и пиксельные контракты до
 создания Unity preset; изменение output после Blender render отклоняется.
+
+## Approval package
+
+Решение `approved` или `rejected` записывается один раз и связано с SHA-256
+animation manifest и исходной модели. Только approved review может создать
+новый изолированный package. Публикация выполняется через sibling staging и
+atomic directory rename; render outputs остаются read-only, overwrite запрещён.
