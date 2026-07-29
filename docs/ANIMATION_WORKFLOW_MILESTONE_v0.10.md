@@ -26,7 +26,14 @@ sprite sheets → review/audit → Unity-ready package.
 3. Добавить read-only audit и source/output hashes.
 4. Добавить явный review/approval и атомарную публикацию approved package.
 5. [x] Подтвердить synthetic E2E, реальный Blender smoke и Unity Multiple Sprite.
-6. Подключить завершённый workflow к отдельному GUI-модулю.
+6. [x] Подключить завершённый workflow к отдельному GUI-модулю.
+
+## GUI integration
+
+В оболочку добавлена отдельная плитка `Animation Workflow`. Окно позволяет
+выбрать manifest и исходную модель, выполнить strict validation, явно выбрать
+approved/rejected, атомарно опубликовать approved package и повторно проверить
+существующий package. Массовый рефакторинг `gui.py` не выполнялся.
 
 ## Первый дефект
 

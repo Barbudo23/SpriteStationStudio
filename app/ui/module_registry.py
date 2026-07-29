@@ -52,6 +52,10 @@ def create_default_registry() -> ModuleRegistry:
         "Approved Static Sprite workflow, audit и Unity preview package."
     ))
     registry.register(ModuleDescriptor(
+        "animation_workflow", "Animation Workflow", "▶",
+        "Review, approval, atomic package и audit анимационных спрайтов."
+    ))
+    registry.register(ModuleDescriptor(
         "atlas_builder", "AtlasBuilder", "▤",
         "Сборка и оптимизация атласов.", enabled=False
     ))

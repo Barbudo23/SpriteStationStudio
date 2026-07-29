@@ -31,6 +31,7 @@ from app.ui.module_registry import create_default_registry
 from app.ui.theme import apply_theme, COLORS
 from app.ai_center.window import AICenterWindow
 from app.static_sprite_workflow_window import StaticSpriteWorkflowWindow
+from app.animation_workflow_window import AnimationWorkflowWindow
 from app.brand import PRODUCT_NAME, PRODUCT_SHORT_NAME, UNITY_IMPORTS_DIR
 from app.version import DISPLAY_VERSION
 
@@ -570,6 +571,8 @@ class AssetForgeApp(tk.Tk):
             AICenterWindow(self)
         elif module_id == "sprite_builder":
             StaticSpriteWorkflowWindow(self)
+        elif module_id == "animation_workflow":
+            AnimationWorkflowWindow(self)
 
     def _update_source_mode(self) -> None:
         mode = self.source_mode_var.get()
