@@ -12,7 +12,7 @@ import tempfile
 import tomllib
 from typing import BinaryIO
 import unicodedata
-from zipfile import ZipFile
+from zipfile import BadZipFile, ZipFile
 
 
 class ReleaseVerificationError(RuntimeError):
@@ -231,14 +231,25 @@ def main() -> int:
     parser.add_argument("--checksum", type=Path)
     parser.add_argument("--run-clean-checks", action="store_true")
     args = parser.parse_args()
-    result = verify_release(args.archive, args.manifest, args.checksum)
-    if args.run_clean_checks:
-        run_clean_checks(
-            args.archive.resolve(),
-            result["rootDirectory"],
-            result["archiveSha256"],
-        )
-        result["cleanChecks"] = "PASS"
+    try:
+        result = verify_release(args.archive, args.manifest, args.checksum)
+        if args.run_clean_checks:
+            run_clean_checks(
+                args.archive.resolve(),
+                result["rootDirectory"],
+                result["archiveSha256"],
+            )
+            result["cleanChecks"] = "PASS"
+    except (
+        ReleaseVerificationError,
+        BadZipFile,
+        OSError,
+        UnicodeError,
+        tomllib.TOMLDecodeError,
+        subprocess.CalledProcessError,
+    ) as exc:
+        print(f"ERROR: release verification failed: {exc}", file=sys.stderr)
+        return 1
     print(json.dumps(result, indent=2))
     return 0
 

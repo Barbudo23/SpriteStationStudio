@@ -39,6 +39,7 @@
 - Первичная проверка SHA-256 и структуры ZIP использует единый immutable snapshot байтов, исключая подмену пути между хешированием и чтением members.
 - Размер входного compressed ZIP и заявленный `archiveBytes` ограничены 2 GiB до неограниченного роста временного snapshot.
 - Portable-name gate также отклоняет управляющие символы в members и Windows-reserved имя ZIP в manifest.
+- Повреждённый ZIP и ожидаемые ошибки clean checks завершают CLI кодом `1` с кратким `ERROR`, без технического traceback.
 
 ## Решение
 

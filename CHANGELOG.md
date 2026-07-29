@@ -37,6 +37,7 @@
 - Made primary ZIP integrity and structure checks consume one immutable hashed snapshot.
 - Capped compressed RC input and its declared manifest size before temporary snapshot growth.
 - Rejected control characters in ZIP members and Windows-reserved archive names in manifests.
+- Made verifier CLI failures concise and deterministic for corrupt archives and clean-check errors.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

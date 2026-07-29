@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import io
 import json
 import stat
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from unittest.mock import patch
 import warnings
 from pathlib import Path
@@ -94,6 +96,19 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
             manifest.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "SHA-256"):
                 MODULE.verify_release(archive, manifest, checksum)
+
+    def test_cli_reports_corrupt_zip_without_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            archive, manifest, checksum = self.fixture(Path(tmp))
+            archive.write_bytes(b"not a zip")
+            self.rebind_manifest(archive, manifest, checksum, file_count=3)
+            stderr = io.StringIO()
+            argv = [str(TOOL), str(archive), str(manifest), "--checksum", str(checksum)]
+            with patch.object(MODULE.sys, "argv", argv), redirect_stderr(stderr):
+                result = MODULE.main()
+            self.assertEqual(result, 1)
+            self.assertIn("ERROR: release verification failed", stderr.getvalue())
+            self.assertNotIn("Traceback", stderr.getvalue())
 
     def test_rejects_malformed_manifest_scalar_types(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
