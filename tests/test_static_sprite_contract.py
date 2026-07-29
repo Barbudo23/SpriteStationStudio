@@ -35,6 +35,9 @@ class StaticSpriteContractTests(unittest.TestCase):
             '"normalization"',
             '"pivot"',
             '"transparent": True',
+            '"sourceSha256"',
+            '"sheetSha256"',
+            '"sha256"',
         ):
             self.assertIn(required, source)
 

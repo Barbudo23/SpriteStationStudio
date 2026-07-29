@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import shutil
@@ -23,6 +24,14 @@ from render_preview import (
     setup_lighting,
     configure_render,
 )
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 DIRECTIONS_8 = (
@@ -247,6 +256,7 @@ def main() -> int:
                     "order": order,
                     "sourceFrame": frame_number,
                     "file": output_path.relative_to(output_dir).as_posix(),
+                    "sha256": sha256_file(output_path),
                 })
 
             if frame_paths:
@@ -258,6 +268,7 @@ def main() -> int:
                 "id": direction_id,
                 "yawDegrees": yaw_degrees,
                 "sheet": sheet_path.relative_to(output_dir).as_posix(),
+                "sheetSha256": sha256_file(sheet_path),
                 "frames": frame_records,
             })
 
@@ -270,6 +281,7 @@ def main() -> int:
             "module": "Animation Sprite Renderer",
             "assetName": model.stem,
             "source": str(model),
+            "sourceSha256": sha256_file(model),
             "directionCount": len(directions),
             "frameRange": {"start": start, "end": end},
             "sampledFrames": frames,
@@ -303,6 +315,7 @@ def main() -> int:
             "renderEngine": resolved_engine,
             "directions": direction_records,
             "contactSheet": contact_sheet_path.name,
+            "contactSheetSha256": sha256_file(contact_sheet_path),
             "createdUtc": datetime.now(timezone.utc).isoformat(),
         }
         manifest_path.write_text(

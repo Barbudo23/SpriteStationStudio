@@ -1,4 +1,5 @@
 from pathlib import Path
+import hashlib
 import json
 import subprocess
 import tempfile
@@ -119,17 +120,22 @@ class AnimationRunnerTests(unittest.TestCase):
                     directions.append({
                         "id": name,
                         "sheet": sheet.relative_to(request.output_dir).as_posix(),
+                        "sheetSha256": hashlib.sha256(sheet.read_bytes()).hexdigest(),
                         "frames": [{
                             "order": 0,
                             "sourceFrame": 1,
                             "file": frame.relative_to(request.output_dir).as_posix(),
+                            "sha256": hashlib.sha256(frame.read_bytes()).hexdigest(),
                         }],
                     })
+                contact = request.output_dir / "animation_contact_sheet.png"
+                contact.write_bytes(encode_rgba_png(8, 4, pixels * 8))
                 (request.output_dir / "animation_manifest.json").write_text(json.dumps({
                     "schemaVersion": "1.1",
                     "application": "Sprite Station Studio",
                     "module": "Animation Sprite Renderer",
                     "assetName": "soldier",
+                    "sourceSha256": hashlib.sha256(request.model_path.read_bytes()).hexdigest(),
                     "directionCount": 8,
                     "sampledFrames": [1],
                     "frameCountPerDirection": 1,
@@ -139,8 +145,9 @@ class AnimationRunnerTests(unittest.TestCase):
                     },
                     "normalization": {"pivot": {"normalized": [0.5, 0.0]}},
                     "directions": directions,
+                    "contactSheet": contact.name,
+                    "contactSheetSha256": hashlib.sha256(contact.read_bytes()).hexdigest(),
                 }))
-                (request.output_dir / "animation_contact_sheet.png").write_bytes(b"png")
                 with ZipFile(request.output_dir / "soldier_8dir_animation.zip", "w"):
                     pass
                 return process

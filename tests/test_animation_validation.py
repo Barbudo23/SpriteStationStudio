@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 import tempfile
 import unittest
@@ -31,8 +32,14 @@ class AnimationValidationTests(unittest.TestCase):
             directions.append({
                 "id": name,
                 "sheet": sheet.relative_to(root).as_posix(),
+                "sheetSha256": hashlib.sha256(sheet.read_bytes()).hexdigest(),
                 "frames": frames,
             })
+            for frame in frames:
+                frame_path = root / frame["file"]
+                frame["sha256"] = hashlib.sha256(frame_path.read_bytes()).hexdigest()
+        contact = root / "animation_contact_sheet.png"
+        contact.write_bytes(encode_rgba_png(8, 2, rgba * 4))
         manifest = root / "animation_manifest.json"
         manifest.write_text(json.dumps({
             "schemaVersion": "1.1",
@@ -43,6 +50,8 @@ class AnimationValidationTests(unittest.TestCase):
             "frameCountPerDirection": 2,
             "canvas": {"width": 2, "height": 2, "transparent": True, "colorMode": "RGBA"},
             "directions": directions,
+            "contactSheet": contact.name,
+            "contactSheetSha256": hashlib.sha256(contact.read_bytes()).hexdigest(),
         }), encoding="utf-8")
         return manifest
 
@@ -67,6 +76,11 @@ class AnimationValidationTests(unittest.TestCase):
             manifest = self.fixture(Path(tmp))
             frame = Path(tmp) / "animation_frames" / "north" / "000.png"
             frame.write_bytes(b"not png")
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["directions"][0]["frames"][0]["sha256"] = hashlib.sha256(
+                frame.read_bytes()
+            ).hexdigest()
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(ForgeError, "PNG is invalid"):
                 validate_animation_manifest(manifest)
 
@@ -75,5 +89,18 @@ class AnimationValidationTests(unittest.TestCase):
             manifest = self.fixture(Path(tmp))
             sheet = Path(tmp) / "animation_sheets" / "00_north.png"
             sheet.write_bytes(encode_rgba_png(2, 2, bytes((255, 0, 0, 255) * 4)))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["directions"][0]["sheetSha256"] = hashlib.sha256(
+                sheet.read_bytes()
+            ).hexdigest()
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(ForgeError, "dimensions mismatch"):
+                validate_animation_manifest(manifest)
+
+    def test_rejects_frame_hash_mismatch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            frame = Path(tmp) / "animation_frames" / "north" / "000.png"
+            frame.write_bytes(encode_rgba_png(2, 2, bytes((0, 255, 0, 128) * 4)))
+            with self.assertRaisesRegex(ForgeError, "SHA-256"):
                 validate_animation_manifest(manifest)

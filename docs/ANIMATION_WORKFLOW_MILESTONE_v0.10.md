@@ -44,3 +44,9 @@ Runner теперь до Unity export проверяет schema/application/modu
 canvas и содержать видимые и прозрачные пиксели. Horizontal sheets обязаны
 иметь размер `canvas.width × frameCount` на `canvas.height`; для них разрешена
 длина больше 4096 px, но общий decoded-pixel budget ограничен 16 Mi pixels.
+
+## Integrity audit
+
+Manifest содержит SHA-256 исходной модели, каждого frame, каждого sheet и
+contact sheet. Read-only validator сверяет hashes и пиксельные контракты до
+создания Unity preset; изменение output после Blender render отклоняется.

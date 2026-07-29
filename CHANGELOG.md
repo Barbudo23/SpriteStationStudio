@@ -42,6 +42,7 @@
 - Opened the v0.10 Animation Workflow milestone with no-overwrite output preflight and early frame-range validation.
 - Added strict animation manifest, sequence, file-presence and safe-path validation before Unity export.
 - Validated animation frame pixels and long horizontal sheet dimensions under a bounded decoded-pixel budget.
+- Bound animation source, frames, sheets and contact sheet to manifest SHA-256 values verified read-only before Unity export.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import json
 from pathlib import Path
 
@@ -18,9 +19,13 @@ class AnimationManifestReport:
     frame_count_per_direction: int
     frame_paths: tuple[Path, ...]
     sheet_paths: tuple[Path, ...]
+    contact_sheet_path: Path
+    checked_file_count: int
 
 
-def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
+def validate_animation_manifest(
+    manifest_path: Path, source_path: Path | None = None
+) -> AnimationManifestReport:
     manifest_path = manifest_path.expanduser().resolve()
     root = manifest_path.parent
     try:
@@ -35,6 +40,10 @@ def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
         raise ForgeError("Animation manifest application brand is invalid.")
     if manifest.get("module") != "Animation Sprite Renderer":
         raise ForgeError("Animation manifest module is invalid.")
+    if source_path is not None:
+        source_path = source_path.expanduser().resolve()
+        if not source_path.is_file() or _sha256(source_path) != manifest.get("sourceSha256"):
+            raise ForgeError("Animation source SHA-256 does not match manifest.")
 
     direction_count = manifest.get("directionCount")
     directions = manifest.get("directions")
@@ -86,6 +95,7 @@ def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
             raise ForgeError("Animation manifest direction IDs are invalid or duplicated.")
         direction_ids.add(direction_id)
         sheet_path = _resolve_file(root, direction.get("sheet"), "Animation sheet")
+        _verify_hash(sheet_path, direction.get("sheetSha256"), f"Animation sheet {direction_id}")
         sheet_paths.append(sheet_path)
         frames = direction.get("frames")
         if not isinstance(frames, list) or len(frames) != frame_count:
@@ -100,6 +110,7 @@ def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
             frame_path = _resolve_file(
                 root, frame.get("file"), f"Animation frame {direction_id}/{order}"
             )
+            _verify_hash(frame_path, frame.get("sha256"), f"Animation frame {direction_id}/{order}")
             _validate_png(frame_path, width, height, f"Animation frame {direction_id}/{order}")
             frame_paths.append(frame_path)
         _validate_png(
@@ -109,6 +120,19 @@ def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
             f"Animation sheet {direction_id}",
             require_transparency=False,
         )
+    contact_sheet_path = _resolve_file(
+        root, manifest.get("contactSheet"), "Animation contact sheet"
+    )
+    _verify_hash(
+        contact_sheet_path, manifest.get("contactSheetSha256"), "Animation contact sheet"
+    )
+    _validate_png(
+        contact_sheet_path,
+        width * min(direction_count, 4),
+        height * ((direction_count + 3) // 4),
+        "Animation contact sheet",
+        require_transparency=False,
+    )
 
     return AnimationManifestReport(
         manifest_path=manifest_path,
@@ -116,6 +140,8 @@ def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
         frame_count_per_direction=frame_count,
         frame_paths=tuple(frame_paths),
         sheet_paths=tuple(sheet_paths),
+        contact_sheet_path=contact_sheet_path,
+        checked_file_count=len(frame_paths) + len(sheet_paths) + 1 + (source_path is not None),
     )
 
 
@@ -159,3 +185,21 @@ def _resolve_file(root: Path, value: object, label: str) -> Path:
     if not path.is_file():
         raise ForgeError(f"{label} is missing: {path}")
     return path
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _verify_hash(path: Path, expected: object, label: str) -> None:
+    if (
+        not isinstance(expected, str)
+        or len(expected) != 64
+        or any(character not in "0123456789abcdef" for character in expected)
+        or _sha256(path) != expected
+    ):
+        raise ForgeError(f"{label} SHA-256 does not match manifest.")
