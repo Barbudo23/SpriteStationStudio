@@ -61,37 +61,65 @@ class AnimationRunnerTests(unittest.TestCase):
             with self.assertRaises(ForgeError):
                 AnimationRenderRunner(worker).build_command(request)
 
+    def test_inverted_frame_range_rejected_before_blender(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            request = AnimationRenderRequest(
+                **{**request.__dict__, "frame_start": 20, "frame_end": 10}
+            )
+            with self.assertRaisesRegex(ForgeError, "Frame Start"):
+                AnimationRenderRunner(worker).build_command(request)
+
+    @patch("app.animation_runner.subprocess.Popen")
+    def test_existing_animation_output_is_not_overwritten(self, popen):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            stale = request.output_dir / "animation_frames"
+            stale.mkdir(parents=True)
+            marker = stale / "keep.txt"
+            marker.write_text("user data", encoding="utf-8")
+
+            with self.assertRaisesRegex(ForgeError, "уже существует"):
+                AnimationRenderRunner(worker).run(request)
+
+            popen.assert_not_called()
+            self.assertEqual(marker.read_text(encoding="utf-8"), "user data")
+
     @patch("app.animation_runner.subprocess.Popen")
     def test_run_validates_outputs(self, popen):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             request, worker = self.make_request(root)
-            request.output_dir.mkdir()
             report = {
                 "status": "success",
                 "directionCount": 8,
                 "frameCountPerDirection": 12,
             }
-            (request.output_dir / "animation_report.json").write_text(json.dumps(report))
-            (request.output_dir / "animation_manifest.json").write_text(json.dumps({
-                "schemaVersion": "1.1",
-                "assetName": "soldier",
-                "canvas": {"width": 256, "height": 256},
-                "normalization": {"pivot": {"normalized": [0.5, 0.0]}},
-                "directions": [{
-                    "id": "north",
-                    "sheet": "animation_sheets/00_north.png",
-                    "frames": [{"sourceFrame": 1}],
-                }],
-            }))
-            (request.output_dir / "animation_contact_sheet.png").write_bytes(b"png")
-            with ZipFile(request.output_dir / "soldier_8dir_animation.zip", "w"):
-                pass
 
             process = MagicMock()
             process.stdout = iter([])
             process.wait.return_value = 0
-            popen.return_value = process
+
+            def launch(*args, **kwargs):
+                request.output_dir.mkdir(exist_ok=True)
+                (request.output_dir / "animation_report.json").write_text(json.dumps(report))
+                (request.output_dir / "animation_manifest.json").write_text(json.dumps({
+                    "schemaVersion": "1.1",
+                    "assetName": "soldier",
+                    "canvas": {"width": 256, "height": 256},
+                    "normalization": {"pivot": {"normalized": [0.5, 0.0]}},
+                    "directions": [{
+                        "id": "north",
+                        "sheet": "animation_sheets/00_north.png",
+                        "frames": [{"sourceFrame": 1}],
+                    }],
+                }))
+                (request.output_dir / "animation_contact_sheet.png").write_bytes(b"png")
+                with ZipFile(request.output_dir / "soldier_8dir_animation.zip", "w"):
+                    pass
+                return process
+
+            popen.side_effect = launch
 
             result = AnimationRenderRunner(worker).run(request)
             self.assertEqual(result.report["directionCount"], 8)

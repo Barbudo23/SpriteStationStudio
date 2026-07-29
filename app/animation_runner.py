@@ -56,6 +56,12 @@ class AnimationRenderRunner:
             raise ForgeError("Frame Step должен быть не меньше 1.")
         if not 1 <= request.max_frames <= 128:
             raise ForgeError("Max Frames должен быть от 1 до 128.")
+        if (
+            request.frame_start is not None
+            and request.frame_end is not None
+            and request.frame_start > request.frame_end
+        ):
+            raise ForgeError("Frame Start не должен быть больше Frame End.")
 
         args = [
             str(request.blender_path),
@@ -83,12 +89,38 @@ class AnimationRenderRunner:
             args.extend(["--frame-end", str(request.frame_end)])
         return args
 
+    @staticmethod
+    def output_contract_paths(request: AnimationRenderRequest) -> tuple[Path, ...]:
+        zip_path = (
+            request.output_dir
+            / f"{request.model_path.stem}_{request.direction_count}dir_animation.zip"
+        )
+        return (
+            request.output_dir / "animation_frames",
+            request.output_dir / "animation_sheets",
+            request.output_dir / "animation_report.json",
+            request.output_dir / "animation_manifest.json",
+            request.output_dir / "animation_contact_sheet.png",
+            request.output_dir / "unity_import_preset.json",
+            zip_path,
+            zip_path.with_suffix(zip_path.suffix + ".updating"),
+        )
+
     def run(
         self,
         request: AnimationRenderRequest,
         on_output: Callable[[str], None] | None = None,
     ) -> AnimationRenderResult:
         command = self.build_command(request)
+        collisions = [
+            path for path in self.output_contract_paths(request) if path.exists()
+        ]
+        if collisions:
+            formatted = "\n".join(f"- {path}" for path in collisions)
+            raise ForgeError(
+                "Animation output уже существует; удалите его или выберите "
+                f"новую папку:\n{formatted}"
+            )
         request.output_dir.mkdir(parents=True, exist_ok=True)
 
         process = subprocess.Popen(
