@@ -4,6 +4,8 @@
 
 Ветка: `milestone/0.10-animation-workflow`.
 
+Статус: **COMPLETE / PUBLISHED AS v0.10.0-rc1 PRERELEASE**.
+
 ## Цель
 
 Довести существующий Animation Sprite Renderer v0.1 до проверяемого workflow:
@@ -82,3 +84,9 @@ Blender 5.1.2 создал 4 направления × 2 реальных кад
 Approved package прошёл final audit. Unity 6000.4.0f1 read-only preview
 подтвердил 4/4 Multiple Sprite sheets, 8/8 slices и 0 warnings.
 Подробности: `ANIMATION_WORKFLOW_REAL_SMOKE_v0.10.md`.
+
+## Release closeout
+
+Tag `v0.10.0-rc1` указывает на artifact commit `ae88a25a`. Проверенный ZIP,
+manifest и checksum опубликованы как GitHub prerelease; GitHub digest ZIP
+совпадает с локальным SHA-256. Stable остаётся отдельным решением.
