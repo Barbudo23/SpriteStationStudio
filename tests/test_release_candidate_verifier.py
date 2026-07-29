@@ -113,6 +113,15 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
             with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "archive name"):
                 MODULE.verify_release(archive, manifest, checksum)
 
+    def test_rejects_windows_reserved_manifest_archive_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            _, manifest, _ = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["archive"] = "CON.zip"
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "Windows-reserved"):
+                MODULE.read_manifest(manifest)
+
     def test_rejects_non_hex_commit_contract(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             archive, manifest, checksum = self.fixture(Path(tmp))
@@ -166,6 +175,10 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
     def test_rejects_backslash_member_before_windows_extraction(self) -> None:
         with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "Backslashes"):
             MODULE.portable_member_key("SpriteStationStudio-test\\..\\outside.txt")
+
+    def test_rejects_control_character_in_member_name(self) -> None:
+        with self.assertRaisesRegex(MODULE.ReleaseVerificationError, "Control characters"):
+            MODULE.portable_member_key("SpriteStationStudio-test/bad\x01name.txt")
 
     def test_rejects_case_insensitive_portable_path_collision(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

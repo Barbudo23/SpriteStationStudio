@@ -81,6 +81,7 @@ def read_manifest(path: Path) -> dict:
         or not payload["archive"].endswith(".zip")
     ):
         raise ReleaseVerificationError("Release manifest archive name is invalid.")
+    portable_member_key(payload["archive"])
     if not isinstance(payload["archiveSha256"], str) or not SHA256_PATTERN.fullmatch(payload["archiveSha256"]):
         raise ReleaseVerificationError("Release manifest SHA-256 is invalid.")
     for field in ("archiveBytes", "trackedFileCount"):
@@ -97,6 +98,8 @@ def read_manifest(path: Path) -> dict:
 def portable_member_key(name: str) -> str:
     if "\\" in name:
         raise ReleaseVerificationError(f"Backslashes are not allowed in archive members: {name}")
+    if any(ord(character) < 32 or ord(character) == 127 for character in name):
+        raise ReleaseVerificationError("Control characters are not allowed in archive members.")
     member = PurePosixPath(name)
     for part in member.parts:
         if part in {"", ".", ".."}:

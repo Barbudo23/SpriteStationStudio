@@ -36,6 +36,7 @@
 - Bound clean-check extraction to the already verified archive SHA-256 and open file handle.
 - Made primary ZIP integrity and structure checks consume one immutable hashed snapshot.
 - Capped compressed RC input and its declared manifest size before temporary snapshot growth.
+- Rejected control characters in ZIP members and Windows-reserved archive names in manifests.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
