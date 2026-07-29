@@ -46,6 +46,7 @@
 - Added immutable animation approval decisions and atomic approved-package publication without modifying render outputs.
 - Added read-only approved-animation package audit with nested hashes, review linkage and pixel-contract verification.
 - Added a reproducible Python `-S` synthetic Animation Workflow E2E smoke.
+- Passed real Blender 5.1.2 → approved package → Unity 6000.4.0f1 read-only animation smoke (4 sheets, 8 slices, no warnings).
 
 # v0.8.3 Static Sprite Pipeline Dev
 

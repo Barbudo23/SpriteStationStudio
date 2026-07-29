@@ -25,7 +25,7 @@ sprite sheets → review/audit → Unity-ready package.
 2. Ввести строгую проверку animation manifest, PNG frames и sprite sheets.
 3. Добавить read-only audit и source/output hashes.
 4. Добавить явный review/approval и атомарную публикацию approved package.
-5. Подтвердить synthetic E2E, реальный Blender smoke и Unity Multiple Sprite.
+5. [x] Подтвердить synthetic E2E, реальный Blender smoke и Unity Multiple Sprite.
 6. Подключить завершённый workflow к отдельному GUI-модулю.
 
 ## Первый дефект
@@ -68,3 +68,10 @@ artifact list, safe paths, SHA-256 каждого файла, approved review �
 4 направления × 2 кадра: render fixture → validation → approval → atomic
 package → final read-only audit. Инструмент не требует Blender и пишет только
 во временный каталог.
+
+## Physical E2E
+
+Blender 5.1.2 создал 4 направления × 2 реальных кадра из анимированного FBX.
+Approved package прошёл final audit. Unity 6000.4.0f1 read-only preview
+подтвердил 4/4 Multiple Sprite sheets, 8/8 slices и 0 warnings.
+Подробности: `ANIMATION_WORKFLOW_REAL_SMOKE_v0.10.md`.
