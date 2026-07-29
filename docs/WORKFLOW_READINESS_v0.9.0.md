@@ -43,6 +43,7 @@
 | GitHub prerelease | `PASS` | tag `v0.9.0-rc1` → `df8613c5`, 3 uploaded assets, ZIP digest совпадает |
 | Automated artifact re-verification | `PASS` | manifest/hash/version/file-count/safe-path validation и clean checks |
 | Post-RC branch | `PASS` | `post-rc/0.9.0-stabilization`, regression-first scope, RC1 tag остаётся неизменным |
+| Post-RC closeout | `PASS` | 2026-07-30: published RC1 reverified end-to-end; technical stabilization complete, Stable remains a separate decision |
 
 Animation workflow и AI Center не блокируют ограниченное подключение статического workflow к GUI, но остаются вне готовности v1.0.
 

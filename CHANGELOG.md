@@ -38,6 +38,7 @@
 - Capped compressed RC input and its declared manifest size before temporary snapshot growth.
 - Rejected control characters in ZIP members and Windows-reserved archive names in manifests.
 - Made verifier CLI failures concise and deterministic for corrupt archives and clean-check errors.
+- Revalidated the published RC1 artifact and closed post-RC technical stabilization with no RC2 required.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
