@@ -110,7 +110,13 @@ def validate_preview_png(manifest_path: Path) -> PreviewPngReport:
     )
 
 
-def _decode_rgba_png(path: Path) -> tuple[int, int, int, bytes]:
+def _decode_rgba_png(
+    path: Path,
+    *,
+    max_width: int = MAX_DIMENSION,
+    max_height: int = MAX_DIMENSION,
+    max_pixels: int = MAX_PIXELS,
+) -> tuple[int, int, int, bytes]:
     if path.stat().st_size > MAX_PNG_BYTES:
         raise PreviewValidationError("Preview PNG exceeds the safe file-size limit.")
     data = path.read_bytes()
@@ -149,9 +155,9 @@ def _decode_rgba_png(path: Path) -> tuple[int, int, int, bytes]:
             if (
                 width < 1
                 or height < 1
-                or width > MAX_DIMENSION
-                or height > MAX_DIMENSION
-                or width * height > MAX_PIXELS
+                or width > max_width
+                or height > max_height
+                or width * height > max_pixels
             ):
                 raise PreviewValidationError("PNG dimensions are outside safe limits.")
             if bit_depth != 8 or color_type != 6:
@@ -186,9 +192,20 @@ def _decode_rgba_png(path: Path) -> tuple[int, int, int, bytes]:
     return width, height, bit_depth, _unfilter(scanlines, width, height)
 
 
-def decode_rgba_png(path: Path) -> tuple[int, int, bytes]:
+def decode_rgba_png(
+    path: Path,
+    *,
+    max_width: int = MAX_DIMENSION,
+    max_height: int = MAX_DIMENSION,
+    max_pixels: int = MAX_PIXELS,
+) -> tuple[int, int, bytes]:
     """Decode a validated, non-interlaced 8-bit RGBA PNG."""
-    width, height, _, rgba = _decode_rgba_png(path.expanduser().resolve())
+    width, height, _, rgba = _decode_rgba_png(
+        path.expanduser().resolve(),
+        max_width=max_width,
+        max_height=max_height,
+        max_pixels=max_pixels,
+    )
     return width, height, rgba
 
 

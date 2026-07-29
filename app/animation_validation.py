@@ -5,6 +5,10 @@ import json
 from pathlib import Path
 
 from app.blender_runner import ForgeError
+from core.validation import PreviewValidationError, decode_rgba_png
+
+
+MAX_ANIMATION_PIXELS = 16 * 1024 * 1024
 
 
 @dataclass(frozen=True)
@@ -50,6 +54,26 @@ def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
         raise ForgeError("Animation manifest sampledFrames are invalid.")
     if frame_count != len(sampled_frames):
         raise ForgeError("Animation manifest frameCountPerDirection is inconsistent.")
+    canvas = manifest.get("canvas")
+    if not isinstance(canvas, dict):
+        raise ForgeError("Animation manifest canvas is invalid.")
+    width = canvas.get("width")
+    height = canvas.get("height")
+    if (
+        isinstance(width, bool)
+        or isinstance(height, bool)
+        or not isinstance(width, int)
+        or not isinstance(height, int)
+        or not 1 <= width <= 4096
+        or not 1 <= height <= 4096
+        or width * height > MAX_ANIMATION_PIXELS
+        or canvas.get("transparent") is not True
+        or canvas.get("colorMode") != "RGBA"
+    ):
+        raise ForgeError("Animation manifest canvas must be safe transparent RGBA.")
+    sheet_width = width * frame_count
+    if sheet_width * height > MAX_ANIMATION_PIXELS:
+        raise ForgeError("Animation sheets exceed the safe decoded-pixel limit.")
 
     frame_paths: list[Path] = []
     sheet_paths: list[Path] = []
@@ -61,7 +85,8 @@ def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
         if not isinstance(direction_id, str) or not direction_id or direction_id in direction_ids:
             raise ForgeError("Animation manifest direction IDs are invalid or duplicated.")
         direction_ids.add(direction_id)
-        sheet_paths.append(_resolve_file(root, direction.get("sheet"), "Animation sheet"))
+        sheet_path = _resolve_file(root, direction.get("sheet"), "Animation sheet")
+        sheet_paths.append(sheet_path)
         frames = direction.get("frames")
         if not isinstance(frames, list) or len(frames) != frame_count:
             raise ForgeError(f"Animation frames are incomplete: {direction_id}")
@@ -72,9 +97,18 @@ def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
                 or frame.get("sourceFrame") != expected_source
             ):
                 raise ForgeError(f"Animation frame sequence is inconsistent: {direction_id}")
-            frame_paths.append(
-                _resolve_file(root, frame.get("file"), f"Animation frame {direction_id}/{order}")
+            frame_path = _resolve_file(
+                root, frame.get("file"), f"Animation frame {direction_id}/{order}"
             )
+            _validate_png(frame_path, width, height, f"Animation frame {direction_id}/{order}")
+            frame_paths.append(frame_path)
+        _validate_png(
+            sheet_path,
+            sheet_width,
+            height,
+            f"Animation sheet {direction_id}",
+            require_transparency=False,
+        )
 
     return AnimationManifestReport(
         manifest_path=manifest_path,
@@ -83,6 +117,35 @@ def validate_animation_manifest(manifest_path: Path) -> AnimationManifestReport:
         frame_paths=tuple(frame_paths),
         sheet_paths=tuple(sheet_paths),
     )
+
+
+def _validate_png(
+    path: Path,
+    expected_width: int,
+    expected_height: int,
+    label: str,
+    *,
+    require_transparency: bool = True,
+) -> None:
+    try:
+        width, height, rgba = decode_rgba_png(
+            path,
+            max_width=expected_width,
+            max_height=expected_height,
+            max_pixels=MAX_ANIMATION_PIXELS,
+        )
+    except PreviewValidationError as exc:
+        raise ForgeError(f"{label} PNG is invalid: {exc}") from exc
+    if (width, height) != (expected_width, expected_height):
+        raise ForgeError(
+            f"{label} dimensions mismatch: {width}x{height} != "
+            f"{expected_width}x{expected_height}."
+        )
+    alpha = rgba[3::4]
+    if not any(value > 0 for value in alpha):
+        raise ForgeError(f"{label} contains no visible pixels.")
+    if require_transparency and not any(value < 255 for value in alpha):
+        raise ForgeError(f"{label} contains no transparent pixels.")
 
 
 def _resolve_file(root: Path, value: object, label: str) -> Path:

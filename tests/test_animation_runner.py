@@ -11,6 +11,7 @@ from app.animation_runner import (
     AnimationRenderRunner,
 )
 from app.blender_runner import ForgeError
+from core.validation import encode_rgba_png
 
 
 class AnimationRunnerTests(unittest.TestCase):
@@ -110,10 +111,11 @@ class AnimationRunnerTests(unittest.TestCase):
                 ):
                     frame = request.output_dir / "animation_frames" / name / "000_frame_0001.png"
                     frame.parent.mkdir(parents=True)
-                    frame.write_bytes(b"frame")
+                    pixels = bytes((255, 0, 0, 255, 0, 0, 0, 0) * 2)
+                    frame.write_bytes(encode_rgba_png(2, 2, pixels))
                     sheet = request.output_dir / "animation_sheets" / f"{index:02d}_{name}.png"
                     sheet.parent.mkdir(parents=True, exist_ok=True)
-                    sheet.write_bytes(b"sheet")
+                    sheet.write_bytes(encode_rgba_png(2, 2, pixels))
                     directions.append({
                         "id": name,
                         "sheet": sheet.relative_to(request.output_dir).as_posix(),
@@ -131,7 +133,10 @@ class AnimationRunnerTests(unittest.TestCase):
                     "directionCount": 8,
                     "sampledFrames": [1],
                     "frameCountPerDirection": 1,
-                    "canvas": {"width": 256, "height": 256},
+                    "canvas": {
+                        "width": 2, "height": 2,
+                        "transparent": True, "colorMode": "RGBA",
+                    },
                     "normalization": {"pivot": {"normalized": [0.5, 0.0]}},
                     "directions": directions,
                 }))

@@ -40,5 +40,7 @@ Blender.
 Runner теперь до Unity export проверяет schema/application/module, число и
 уникальность направлений, точную последовательность sampled frames, наличие
 всех кадров и sheets, а также запрещает absolute и escaping paths.
-Пиксельная проверка PNG и отдельные bounds для длинных горизонтальных sheets
-остаются следующим подэтапом пункта 2.
+Кадры проходят CRC/decompression/8-bit RGBA validation, обязаны совпадать с
+canvas и содержать видимые и прозрачные пиксели. Horizontal sheets обязаны
+иметь размер `canvas.width × frameCount` на `canvas.height`; для них разрешена
+длина больше 4096 px, но общий decoded-pixel budget ограничен 16 Mi pixels.

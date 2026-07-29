@@ -41,6 +41,7 @@
 - Revalidated the published RC1 artifact and closed post-RC technical stabilization with no RC2 required.
 - Opened the v0.10 Animation Workflow milestone with no-overwrite output preflight and early frame-range validation.
 - Added strict animation manifest, sequence, file-presence and safe-path validation before Unity export.
+- Validated animation frame pixels and long horizontal sheet dimensions under a bounded decoded-pixel budget.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
