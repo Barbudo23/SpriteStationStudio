@@ -227,6 +227,7 @@ def run_clean_checks(archive_path: Path, root: str, expected_sha256: str) -> Non
             [sys.executable, "-S", "run.py", "--help"],
             [sys.executable, "-S", "-m", "unittest", "discover", "-s", "tests", "-q"],
             [sys.executable, "-S", "Tools/Invoke-StaticSpriteWorkflowSmoke.py"],
+            [sys.executable, "-S", "Tools/Invoke-AnimationWorkflowSmoke.py"],
         )
         for command in commands:
             subprocess.run(command, cwd=source, check=True)

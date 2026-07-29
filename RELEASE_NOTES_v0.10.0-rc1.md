@@ -26,6 +26,7 @@ Sprite Station Studio преобразует анимированную 3D-мо�
 - approved package: 16 integrity-bound артефактов;
 - Unity 6000.4.0f1: 4/4 Multiple Sprite sheets, 8/8 slices, warnings 0;
 - полный Python regression и реальное открытие Tk-окна.
+- clean-extraction gate запускает Static Sprite и Animation Workflow synthetic E2E.
 
 ## Ограничения
 

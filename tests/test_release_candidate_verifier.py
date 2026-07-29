@@ -24,6 +24,10 @@ SPEC.loader.exec_module(MODULE)
 
 
 class ReleaseCandidateVerifierTests(unittest.TestCase):
+    def test_clean_checks_include_animation_workflow_smoke(self) -> None:
+        source = TOOL.read_text(encoding="utf-8")
+        self.assertIn('"Tools/Invoke-AnimationWorkflowSmoke.py"', source)
+
     def test_derives_release_notes_filename_from_version(self) -> None:
         self.assertEqual(
             MODULE.release_notes_filename("0.10.0rc1"),
