@@ -27,6 +27,15 @@ class ApprovedAnimationPackage:
     copied_files: tuple[Path, ...]
 
 
+@dataclass(frozen=True)
+class ApprovedAnimationAudit:
+    package_root: Path
+    artifact_count: int
+    direction_count: int
+    frame_count_per_direction: int
+    valid: bool = True
+
+
 def record_animation_review(
     animation_manifest: Path,
     source_model: Path,
@@ -148,6 +157,63 @@ def publish_approved_animation(
         output_dir,
         output_dir / "approved_animation_package.json",
         tuple(output_dir / relative for relative in copied_relatives),
+    )
+
+
+def audit_approved_animation_package(
+    package_manifest_path: Path,
+) -> ApprovedAnimationAudit:
+    package_manifest_path = package_manifest_path.expanduser().resolve()
+    root = package_manifest_path.parent
+    package = _load_json(package_manifest_path, "Approved animation package")
+    if (
+        package.get("schemaVersion") != "1.0"
+        or package.get("application") != "Sprite Station Studio"
+        or package.get("kind") != "approved_animation_package"
+    ):
+        raise ForgeError("Approved animation package contract is unsupported.")
+    artifacts = package.get("artifacts")
+    if (
+        not isinstance(artifacts, list)
+        or not artifacts
+        or len(artifacts) != package.get("artifactCount")
+    ):
+        raise ForgeError("Approved animation package artifact list is inconsistent.")
+    resolved: dict[str, Path] = {}
+    for artifact in artifacts:
+        if not isinstance(artifact, dict):
+            raise ForgeError("Approved animation package artifact is invalid.")
+        value = artifact.get("path")
+        path = _resolve_file(root, value, "Approved animation artifact")
+        key = path.relative_to(root).as_posix()
+        if key in resolved:
+            raise ForgeError("Approved animation package contains duplicate artifacts.")
+        if _sha256(path) != artifact.get("sha256"):
+            raise ForgeError(f"Approved animation artifact hash mismatch: {key}")
+        resolved[key] = path
+    manifest = resolved.get("animation_manifest.json")
+    review_path = resolved.get("animation_review.json")
+    if manifest is None or review_path is None:
+        raise ForgeError("Approved animation package lacks manifest or review.")
+    review = _load_json(review_path, "Packaged animation review")
+    if (
+        review.get("decision") != "approved"
+        or review.get("animationManifest") != manifest.name
+        or review.get("animationManifestSha256") != _sha256(manifest)
+        or package.get("reviewSha256") != _sha256(review_path)
+    ):
+        raise ForgeError("Packaged animation review integrity is invalid.")
+    animation = validate_animation_manifest(manifest)
+    if (
+        package.get("directionCount") != animation.direction_count
+        or package.get("frameCountPerDirection") != animation.frame_count_per_direction
+    ):
+        raise ForgeError("Approved animation package counts do not match manifest.")
+    return ApprovedAnimationAudit(
+        package_root=root,
+        artifact_count=len(resolved),
+        direction_count=animation.direction_count,
+        frame_count_per_direction=animation.frame_count_per_direction,
     )
 
 

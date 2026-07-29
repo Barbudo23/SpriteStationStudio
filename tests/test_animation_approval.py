@@ -7,6 +7,7 @@ import tempfile
 import unittest
 
 from app.animation_approval import (
+    audit_approved_animation_package,
     publish_approved_animation,
     record_animation_review,
 )
@@ -80,6 +81,22 @@ class AnimationApprovalTests(unittest.TestCase):
                 json.loads(result.manifest_path.read_text(encoding="utf-8"))["artifactCount"],
                 11,
             )
+            audit = audit_approved_animation_package(result.manifest_path)
+            self.assertTrue(audit.valid)
+            self.assertEqual(audit.direction_count, 4)
+
+    def test_audit_rejects_published_frame_tampering(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            render = root / "render"
+            render.mkdir()
+            manifest, source = self.fixture(render)
+            review = record_animation_review(manifest, source, "approved")
+            result = publish_approved_animation(review.path, root / "approved")
+            frame = result.output_dir / "animation_frames" / "north" / "000.png"
+            frame.write_bytes(b"tampered")
+            with self.assertRaisesRegex(ForgeError, "hash mismatch"):
+                audit_approved_animation_package(result.manifest_path)
 
     def test_manifest_changed_after_approval_is_not_published(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

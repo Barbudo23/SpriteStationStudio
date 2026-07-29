@@ -57,3 +57,7 @@ contact sheet. Read-only validator сверяет hashes и пиксельные
 animation manifest и исходной модели. Только approved review может создать
 новый изолированный package. Публикация выполняется через sibling staging и
 atomic directory rename; render outputs остаются read-only, overwrite запрещён.
+
+Опубликованный package имеет отдельный read-only audit: повторно проверяются
+artifact list, safe paths, SHA-256 каждого файла, approved review → manifest
+связь, counts и вложенный PNG/animation contract.
