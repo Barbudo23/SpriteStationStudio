@@ -24,6 +24,12 @@ SPEC.loader.exec_module(MODULE)
 
 
 class ReleaseCandidateVerifierTests(unittest.TestCase):
+    def test_derives_release_notes_filename_from_version(self) -> None:
+        self.assertEqual(
+            MODULE.release_notes_filename("0.10.0rc1"),
+            "RELEASE_NOTES_v0.10.0-rc1.md",
+        )
+
     def fixture(self, root: Path, unsafe: bool = False) -> tuple[Path, Path, Path]:
         archive_path = root / "SpriteStationStudio-test.zip"
         prefix = "SpriteStationStudio-test"

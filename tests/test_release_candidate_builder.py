@@ -17,6 +17,10 @@ SPEC.loader.exec_module(MODULE)
 
 
 class ReleaseCandidateBuilderTests(unittest.TestCase):
+    def test_current_release_notes_name_is_version_bound(self) -> None:
+        self.assertEqual(MODULE.VERSION, "0.10.0rc1")
+        self.assertEqual(MODULE.RELEASE_NOTES_FILE, "RELEASE_NOTES_v0.10.0-rc1.md")
+
     def test_transactional_publish_moves_complete_set(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

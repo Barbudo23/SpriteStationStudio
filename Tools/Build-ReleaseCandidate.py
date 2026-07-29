@@ -16,7 +16,7 @@ REPOSITORY = Path(__file__).resolve().parents[1]
 if str(REPOSITORY) not in sys.path:
     sys.path.insert(0, str(REPOSITORY))
 
-from app.version import RELEASE_CHANNEL, VERSION
+from app.version import RELEASE_CHANNEL, RELEASE_NOTES_FILE, VERSION
 
 
 def git(git_executable: Path, *args: str) -> str:
@@ -84,7 +84,7 @@ def build(output_dir: Path, git_executable: Path) -> tuple[Path, Path, Path]:
             required = {
                 f"{base_name}/run.py",
                 f"{base_name}/pyproject.toml",
-                f"{base_name}/RELEASE_NOTES_v0.9.0-rc1.md",
+                f"{base_name}/{RELEASE_NOTES_FILE}",
             }
             if not required.issubset(names):
                 raise RuntimeError("Release archive is missing required entry points or notes.")

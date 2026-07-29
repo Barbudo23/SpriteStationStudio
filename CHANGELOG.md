@@ -48,6 +48,7 @@
 - Added a reproducible Python `-S` synthetic Animation Workflow E2E smoke.
 - Passed real Blender 5.1.2 → approved package → Unity 6000.4.0f1 read-only animation smoke (4 sheets, 8 slices, no warnings).
 - Connected the verified Animation Workflow through a separate validation, approval, publication and audit window.
+- Promoted metadata to the unpublished v0.10.0 RC1 local-candidate line with version-bound release notes.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

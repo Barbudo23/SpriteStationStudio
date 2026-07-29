@@ -14,7 +14,7 @@ class ReleaseScopeTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         metadata = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
         self.assertEqual(metadata["project"]["name"], "sprite-station-studio")
-        self.assertEqual(metadata["project"]["version"], "0.9.0rc1")
+        self.assertEqual(metadata["project"]["version"], "0.10.0rc1")
         self.assertEqual(metadata["project"]["version"], VERSION)
         self.assertEqual(RELEASE_CHANNEL, "local-rc-candidate")
         gui = (root / "app" / "gui.py").read_text(encoding="utf-8")

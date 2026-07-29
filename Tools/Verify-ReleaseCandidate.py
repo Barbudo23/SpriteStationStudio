@@ -33,6 +33,14 @@ WINDOWS_RESERVED_NAMES = {
 }
 
 
+def release_notes_filename(version: str) -> str:
+    match = re.fullmatch(r"([0-9]+\.[0-9]+\.[0-9]+)(?:rc([0-9]+))?", version)
+    if match is None:
+        raise ReleaseVerificationError("Cannot derive release notes from version.")
+    suffix = f"-rc{match.group(2)}" if match.group(2) else ""
+    return f"RELEASE_NOTES_v{match.group(1)}{suffix}.md"
+
+
 def snapshot_archive(path: Path) -> tuple[BinaryIO, int, str]:
     """Copy and hash one opened source so later ZIP reads use identical bytes."""
     digest = hashlib.sha256()
@@ -176,7 +184,7 @@ def verify_release(
         required = {
             f"{root}/run.py",
             f"{root}/pyproject.toml",
-            f"{root}/RELEASE_NOTES_v0.9.0-rc1.md",
+            f"{root}/{release_notes_filename(manifest['version'])}",
         }
         if not required.issubset(file_names):
             raise ReleaseVerificationError("Release archive is missing an entry point or release metadata.")
