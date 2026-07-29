@@ -45,6 +45,7 @@
 - Bound animation source, frames, sheets and contact sheet to manifest SHA-256 values verified read-only before Unity export.
 - Added immutable animation approval decisions and atomic approved-package publication without modifying render outputs.
 - Added read-only approved-animation package audit with nested hashes, review linkage and pixel-contract verification.
+- Added a reproducible Python `-S` synthetic Animation Workflow E2E smoke.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

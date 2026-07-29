@@ -61,3 +61,10 @@ atomic directory rename; render outputs остаются read-only, overwrite з
 Опубликованный package имеет отдельный read-only audit: повторно проверяются
 artifact list, safe paths, SHA-256 каждого файла, approved review → manifest
 связь, counts и вложенный PNG/animation contract.
+
+## Synthetic E2E
+
+`python -S Tools/Invoke-AnimationWorkflowSmoke.py` воспроизводит полный контур
+4 направления × 2 кадра: render fixture → validation → approval → atomic
+package → final read-only audit. Инструмент не требует Blender и пишет только
+во временный каталог.
