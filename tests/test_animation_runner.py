@@ -103,16 +103,37 @@ class AnimationRunnerTests(unittest.TestCase):
             def launch(*args, **kwargs):
                 request.output_dir.mkdir(exist_ok=True)
                 (request.output_dir / "animation_report.json").write_text(json.dumps(report))
+                directions = []
+                for index, name in enumerate(
+                    ("north", "north_east", "east", "south_east",
+                     "south", "south_west", "west", "north_west")
+                ):
+                    frame = request.output_dir / "animation_frames" / name / "000_frame_0001.png"
+                    frame.parent.mkdir(parents=True)
+                    frame.write_bytes(b"frame")
+                    sheet = request.output_dir / "animation_sheets" / f"{index:02d}_{name}.png"
+                    sheet.parent.mkdir(parents=True, exist_ok=True)
+                    sheet.write_bytes(b"sheet")
+                    directions.append({
+                        "id": name,
+                        "sheet": sheet.relative_to(request.output_dir).as_posix(),
+                        "frames": [{
+                            "order": 0,
+                            "sourceFrame": 1,
+                            "file": frame.relative_to(request.output_dir).as_posix(),
+                        }],
+                    })
                 (request.output_dir / "animation_manifest.json").write_text(json.dumps({
                     "schemaVersion": "1.1",
+                    "application": "Sprite Station Studio",
+                    "module": "Animation Sprite Renderer",
                     "assetName": "soldier",
+                    "directionCount": 8,
+                    "sampledFrames": [1],
+                    "frameCountPerDirection": 1,
                     "canvas": {"width": 256, "height": 256},
                     "normalization": {"pivot": {"normalized": [0.5, 0.0]}},
-                    "directions": [{
-                        "id": "north",
-                        "sheet": "animation_sheets/00_north.png",
-                        "frames": [{"sourceFrame": 1}],
-                    }],
+                    "directions": directions,
                 }))
                 (request.output_dir / "animation_contact_sheet.png").write_bytes(b"png")
                 with ZipFile(request.output_dir / "soldier_8dir_animation.zip", "w"):

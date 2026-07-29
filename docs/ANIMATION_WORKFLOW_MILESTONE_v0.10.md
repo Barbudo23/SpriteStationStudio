@@ -34,3 +34,11 @@ sprite sheets → review/audit → Unity-ready package.
 уже находились в output-каталоге, а runner мог принять старые result-файлы.
 Milestone начинается с no-overwrite preflight полного набора outputs до запуска
 Blender.
+
+## Manifest validation
+
+Runner теперь до Unity export проверяет schema/application/module, число и
+уникальность направлений, точную последовательность sampled frames, наличие
+всех кадров и sheets, а также запрещает absolute и escaping paths.
+Пиксельная проверка PNG и отдельные bounds для длинных горизонтальных sheets
+остаются следующим подэтапом пункта 2.

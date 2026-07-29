@@ -160,6 +160,9 @@ class AnimationRenderRunner:
         if report.get("status") != "success":
             raise ForgeError(report.get("error", "Ошибка animation render."))
 
+        from app.animation_validation import validate_animation_manifest
+        validate_animation_manifest(manifest_path)
+
         from app.engine_export import append_preset_to_zip, write_unity_import_preset
         unity_preset_path = write_unity_import_preset(manifest_path)
         append_preset_to_zip(zip_path, unity_preset_path)
