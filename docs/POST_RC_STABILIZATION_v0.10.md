@@ -89,3 +89,5 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
   Blender starts, matching the Animation Workflow no-overwrite guarantee.
 - Preview Workflow no longer deletes prior preview, report or manifest files;
   it rejects occupied output-contract paths before Blender starts.
+- Animation Workflow now rejects unsupported model formats and render engines,
+  coerced numeric types, and out-of-range render limits before Blender starts.

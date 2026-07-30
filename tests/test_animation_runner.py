@@ -72,6 +72,41 @@ class AnimationRunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(ForgeError, "Frame Start"):
                 AnimationRenderRunner(worker).build_command(request)
 
+    def test_invalid_resolution_engine_and_frame_types_are_rejected(self):
+        invalid_values = (
+            ("resolution", True, "resolution"),
+            ("resolution", 127, "resolution"),
+            ("resolution", 4097, "resolution"),
+            ("engine", "UNKNOWN", "engine"),
+            ("engine", ["AUTO"], "engine"),
+            ("direction_count", True, "4.*8"),
+            ("frame_step", True, "Frame Step"),
+            ("max_frames", 2.5, "Max Frames"),
+            ("frame_start", "1", "Frame Start"),
+            ("frame_end", False, "Frame End"),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            runner = AnimationRenderRunner(worker)
+            for field, value, message in invalid_values:
+                invalid = AnimationRenderRequest(
+                    **{**request.__dict__, field: value}
+                )
+                with self.subTest(field=field, value=value):
+                    with self.assertRaisesRegex(ForgeError, message):
+                        runner.build_command(invalid)
+
+    def test_unsupported_model_format_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            model = Path(tmp) / "soldier.blend"
+            model.write_bytes(b"x")
+            invalid = AnimationRenderRequest(
+                **{**request.__dict__, "model_path": model}
+            )
+            with self.assertRaisesRegex(ForgeError, "Unsupported model format"):
+                AnimationRenderRunner(worker).build_command(invalid)
+
     @patch("app.animation_runner.subprocess.Popen")
     def test_existing_animation_output_is_not_overwritten(self, popen):
         with tempfile.TemporaryDirectory() as tmp:

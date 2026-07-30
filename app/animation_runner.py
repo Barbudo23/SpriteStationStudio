@@ -6,7 +6,7 @@ import json
 import subprocess
 from typing import Callable
 
-from app.blender_runner import ForgeError
+from app.blender_runner import ForgeError, SUPPORTED_EXTENSIONS
 from app.camera_profiles import DEFAULT_CAMERA_PROFILE, get_camera_profile
 
 
@@ -48,14 +48,52 @@ class AnimationRenderRunner:
             raise ForgeError(f"Blender executable не найден: {request.blender_path}")
         if not request.model_path.is_file():
             raise ForgeError(f"Файл модели не найден: {request.model_path}")
+        if request.model_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
+            raise ForgeError(
+                f"Unsupported model format: {request.model_path.suffix}"
+            )
         if not self.worker_script.is_file():
             raise ForgeError(f"Animation worker не найден: {self.worker_script}")
-        if request.direction_count not in {4, 8}:
+        if (
+            isinstance(request.direction_count, bool)
+            or not isinstance(request.direction_count, int)
+            or request.direction_count not in {4, 8}
+        ):
             raise ForgeError("Количество направлений должно быть 4 или 8.")
-        if request.frame_step < 1:
+        if (
+            isinstance(request.resolution, bool)
+            or not isinstance(request.resolution, int)
+            or not 128 <= request.resolution <= 4096
+        ):
+            raise ForgeError("Animation resolution must be from 128 to 4096.")
+        if not isinstance(request.engine, str) or request.engine not in {
+            "AUTO",
+            "BLENDER_EEVEE",
+            "BLENDER_EEVEE_NEXT",
+            "BLENDER_WORKBENCH",
+            "CYCLES",
+        }:
+            raise ForgeError(f"Unsupported render engine: {request.engine}")
+        if (
+            isinstance(request.frame_step, bool)
+            or not isinstance(request.frame_step, int)
+            or request.frame_step < 1
+        ):
             raise ForgeError("Frame Step должен быть не меньше 1.")
-        if not 1 <= request.max_frames <= 128:
+        if (
+            isinstance(request.max_frames, bool)
+            or not isinstance(request.max_frames, int)
+            or not 1 <= request.max_frames <= 128
+        ):
             raise ForgeError("Max Frames должен быть от 1 до 128.")
+        for label, value in (
+            ("Frame Start", request.frame_start),
+            ("Frame End", request.frame_end),
+        ):
+            if value is not None and (
+                isinstance(value, bool) or not isinstance(value, int)
+            ):
+                raise ForgeError(f"{label} must be an integer.")
         if (
             request.frame_start is not None
             and request.frame_end is not None
