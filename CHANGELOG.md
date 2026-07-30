@@ -71,6 +71,7 @@
 - Corrected the root README release identity from stale v0.9 RC1 to v0.10 RC1.
 - Promoted local release metadata to the v0.10.0 RC2 candidate line.
 - Passed the commit-bound RC2 automated clean-extraction artifact gate.
+- Reconciled the development plan with the current RC2 release gate.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

@@ -80,5 +80,17 @@ class ReleaseScopeTests(unittest.TestCase):
         self.assertIn("Stable требует отдельного решения", policy)
 
 
+    def test_development_plan_tracks_current_rc2_gate(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        plan = (root / "docs" / "DEVELOPMENT_PLAN.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("post-rc/0.10.0-stabilization", plan)
+        self.assertIn("Local RC2 artifact", plan)
+        self.assertIn("197/197", plan)
+        self.assertIn("Remaining RC2 iterations", plan)
+        self.assertIn("AI Center and Provider Reliability remain paused", plan)
+
+
 if __name__ == "__main__":
     unittest.main()
