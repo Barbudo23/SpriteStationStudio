@@ -1,4 +1,10 @@
-# Sprite Station Studio (SSS) — v0.9.0 RC1 Local Candidate
+# Sprite Station Studio (SSS) — v0.10.0 RC1 / Post-RC Stabilization
+
+Published prerelease: `v0.10.0-rc1`. The current stabilization branch preserves
+the verified Static Sprite Workflow and Animation Workflow scope while applying
+regression-backed fixes. See `docs/ANIMATION_WORKFLOW_MILESTONE_v0.10.md` and
+`docs/POST_RC_STABILIZATION_v0.10.md`. AI Center remains paused and outside the
+current release scope.
 
 Sprite Station Studio создаёт статические и анимированные 2D-спрайты из 3D-моделей. Текущая разработка сосредоточена на основном конвейере **3D-модель → статические 2D-спрайты**. Профили камеры управляют Blender-рендером, manifest 1.1 фиксирует холст, камеру, нормализацию и pivot, а `unity_import_preset.json` описывает безопасный импорт Sprite. Подробнее: `docs/STATIC_SPRITE_PIPELINE.md` и `docs/UNITY_SPRITE_EXPORT.md`.
 

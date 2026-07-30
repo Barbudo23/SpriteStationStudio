@@ -99,3 +99,5 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
   an atomic no-overwrite link; late collisions preserve the existing preset.
 - Corrupt source archives and missing preset inputs now leave the source ZIP
   byte-identical, clean owned staging and return a controlled workflow error.
+- Root README now identifies the published v0.10.0 RC1 line and current
+  post-RC stabilization scope; a regression test binds it to runtime metadata.

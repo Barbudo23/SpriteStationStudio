@@ -6,7 +6,7 @@ import tomllib
 import unittest
 from pathlib import Path
 
-from app.version import RELEASE_CHANNEL, VERSION
+from app.version import DISPLAY_VERSION, RELEASE_CHANNEL, VERSION
 
 
 class ReleaseScopeTests(unittest.TestCase):
@@ -22,6 +22,16 @@ class ReleaseScopeTests(unittest.TestCase):
             gui,
             re.compile(r'self\.title\(f"\{PRODUCT_NAME\} \{DISPLAY_VERSION\}'),
         )
+
+    def test_readme_identifies_current_release_line(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        readme = (root / "README.md").read_text(encoding="utf-8")
+        self.assertIn(
+            f"# Sprite Station Studio (SSS) — {DISPLAY_VERSION}",
+            readme,
+        )
+        self.assertIn("v0.10.0-rc1", readme)
+        self.assertIn("POST_RC_STABILIZATION_v0.10.md", readme)
 
     def test_v090_scope_freezes_existing_contracts_and_ai(self) -> None:
         root = Path(__file__).resolve().parents[1]
