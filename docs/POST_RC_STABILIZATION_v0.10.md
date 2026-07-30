@@ -77,3 +77,9 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
   значения normalized pivot во всех sprite workflows.
 - Unity canvas принимает только целые размеры `1..4096` без неявного
   преобразования boolean, строк или дробных значений.
+
+### Unity export contract hardening
+
+- Unity preset export rejects incomplete animation directions, empty frame lists,
+  duplicate direction IDs or output files, invalid `sourceFrame` values and
+  non-increasing frame chronology.

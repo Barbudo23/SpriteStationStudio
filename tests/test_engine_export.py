@@ -48,6 +48,73 @@ class UnityExportPresetTests(unittest.TestCase):
         self.assertEqual(asset["spriteMode"], "Multiple")
         self.assertEqual(asset["slices"][1]["rect"], [256, 0, 256, 256])
 
+    def test_rejects_incomplete_or_aliased_animation_directions(self) -> None:
+        invalid_directions = (
+            [
+                {
+                    "id": "north",
+                    "sheet": "animation_sheets/00_north.png",
+                    "frames": [{"sourceFrame": 1}],
+                },
+                {"id": "east", "file": "directions/01_east.png"},
+            ],
+            [
+                {
+                    "id": "north",
+                    "sheet": "animation_sheets/shared.png",
+                    "frames": [{"sourceFrame": 1}],
+                },
+                {
+                    "id": "east",
+                    "sheet": "animation_sheets/shared.png",
+                    "frames": [{"sourceFrame": 1}],
+                },
+            ],
+        )
+        for directions in invalid_directions:
+            manifest = self.base_manifest()
+            manifest["directions"] = directions
+            with self.subTest(directions=directions):
+                with self.assertRaisesRegex(ForgeError, "animation direction"):
+                    build_unity_import_preset(manifest)
+
+    def test_rejects_invalid_animation_frame_identity_or_order(self) -> None:
+        for frames in (
+            [],
+            [{"sourceFrame": True}],
+            [{"sourceFrame": "1"}],
+            [{"sourceFrame": 2}, {"sourceFrame": 1}],
+            [{"sourceFrame": 1}, {"sourceFrame": 1}],
+        ):
+            manifest = self.base_manifest()
+            manifest["directions"] = [{
+                "id": "north",
+                "sheet": "animation_sheets/00_north.png",
+                "frames": frames,
+            }]
+            with self.subTest(frames=frames):
+                with self.assertRaisesRegex(
+                    ForgeError, "animation (direction|frame)"
+                ):
+                    build_unity_import_preset(manifest)
+
+    def test_rejects_duplicate_static_direction_identity_or_file(self) -> None:
+        for directions in (
+            [
+                {"id": "north", "file": "directions/00_north.png"},
+                {"id": "north", "file": "directions/01_east.png"},
+            ],
+            [
+                {"id": "north", "file": "directions/shared.png"},
+                {"id": "east", "file": "directions/shared.png"},
+            ],
+        ):
+            manifest = self.base_manifest()
+            manifest["directions"] = directions
+            with self.subTest(directions=directions):
+                with self.assertRaisesRegex(ForgeError, "sprite direction"):
+                    build_unity_import_preset(manifest)
+
     def test_rejects_non_finite_out_of_range_or_boolean_pivot(self) -> None:
         for pivot in ([1.1, 0.0], [float("nan"), 0.0], [True, 0.0]):
             manifest = self.base_manifest()

@@ -11,6 +11,10 @@ from app.blender_runner import ForgeError
 UNITY_PRESET_NAME = "unity_import_preset.json"
 
 
+def _required_text(value: object) -> str | None:
+    return value if isinstance(value, str) and value.strip() else None
+
+
 def build_unity_import_preset(manifest: dict) -> dict:
     canvas = manifest.get("canvas") or {}
     width = canvas.get("width")
@@ -53,40 +57,98 @@ def build_unity_import_preset(manifest: dict) -> dict:
     }
     assets: list[dict] = []
     directions = manifest.get("directions") or []
+    if not isinstance(directions, list):
+        raise ForgeError("Manifest contains invalid sprite directions.")
 
     if manifest.get("sprite"):
+        sprite = _required_text(manifest["sprite"])
+        if sprite is None:
+            raise ForgeError("Manifest contains an invalid sprite file.")
         assets.append({
             **common,
-            "file": manifest["sprite"],
+            "file": sprite,
             "spriteMode": "Single",
             "name": manifest.get("assetName", "sprite"),
         })
-    elif directions and "frames" in directions[0]:
+    elif directions and any(
+        isinstance(direction, dict)
+        and ("frames" in direction or "sheet" in direction)
+        for direction in directions
+    ):
+        seen_ids: set[str] = set()
+        seen_files: set[str] = set()
         for direction in directions:
-            frames = direction.get("frames") or []
+            if not isinstance(direction, dict):
+                raise ForgeError("Manifest contains an invalid animation direction.")
+            direction_id = _required_text(direction.get("id"))
+            sheet = _required_text(direction.get("sheet"))
+            frames = direction.get("frames")
+            if (
+                direction_id is None
+                or sheet is None
+                or not isinstance(frames, list)
+                or not frames
+                or direction_id in seen_ids
+                or sheet in seen_files
+            ):
+                raise ForgeError("Manifest contains an invalid animation direction.")
+            seen_ids.add(direction_id)
+            seen_files.add(sheet)
+            source_frames: list[int] = []
+            for frame in frames:
+                source_frame = (
+                    frame.get("sourceFrame") if isinstance(frame, dict) else None
+                )
+                if (
+                    isinstance(source_frame, bool)
+                    or not isinstance(source_frame, int)
+                    or source_frame < 0
+                ):
+                    raise ForgeError("Manifest contains an invalid animation frame.")
+                source_frames.append(source_frame)
+            if any(
+                current <= previous
+                for previous, current in zip(source_frames, source_frames[1:])
+            ):
+                raise ForgeError("Manifest contains invalid animation frame order.")
             slices = [
                 {
-                    "name": f"{direction['id']}_{index:03d}",
+                    "name": f"{direction_id}_{index:03d}",
                     "rect": [index * width, 0, width, height],
                     "pivot": common["pivot"],
-                    "sourceFrame": frame.get("sourceFrame"),
+                    "sourceFrame": source_frames[index],
                 }
-                for index, frame in enumerate(frames)
+                for index in range(len(frames))
             ]
             assets.append({
                 **common,
-                "file": direction["sheet"],
+                "file": sheet,
                 "spriteMode": "Multiple",
-                "name": direction["id"],
+                "name": direction_id,
                 "slices": slices,
             })
     else:
+        seen_ids = set()
+        seen_files = set()
         for direction in directions:
+            if not isinstance(direction, dict):
+                raise ForgeError("Manifest contains an invalid sprite direction.")
+            direction_id = _required_text(direction.get("id"))
+            file_name = _required_text(direction.get("file"))
+            if (
+                direction_id is None
+                or file_name is None
+                or direction_id in seen_ids
+                or file_name in seen_files
+            ):
+                raise ForgeError("Manifest contains an invalid sprite direction.")
+            seen_ids.add(direction_id)
+            seen_files.add(file_name)
             assets.append({
                 **common,
-                "file": direction["file"],
+                "file": file_name,
                 "spriteMode": "Single",
-                "name": direction["id"],
+                "name": direction_id,
             })
 
     if not assets:
