@@ -128,3 +128,10 @@ Corrected artifact commit `43c63e08` passed `199/199` clean-extraction tests,
 both synthetic E2E, repeated Windows GUI no-overwrite QA, two fresh Static
 Blender previews, real Animation rendering (8 frames / 4 sheets), Unity
 read-only Single `2/2` and Multiple `4/4` / `8/8` slices with zero warnings.
+
+## RC2 release closeout
+
+Tag `v0.10.0-rc2` points to corrected artifact commit `43c63e08`. GitHub
+prerelease publication completed with ZIP, manifest and checksum assets.
+GitHub server-side SHA-256 digests match all local files. RC2 stabilization is
+complete; Stable remains a separate decision after observation.

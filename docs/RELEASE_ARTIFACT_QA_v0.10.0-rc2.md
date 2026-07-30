@@ -1,6 +1,6 @@
 # Sprite Station Studio v0.10.0 RC2 — Release Artifact QA
 
-Status: **LOCAL CANDIDATE / ALL AUTOMATED AND PHYSICAL GATES PASS / NOT PUBLISHED**.
+Status: **PUBLISHED GITHUB PRERELEASE / ALL GATES PASS**.
 
 ## Artifact identity
 
@@ -38,9 +38,26 @@ Before GitHub prerelease publication:
 - affected Windows GUI no-overwrite scenario — `PASS`;
 - Blender 5.1 Static and Animation physical baseline — `PASS`;
 - Unity 6000.4 Single/Multiple Sprite read-only baseline — `PASS`;
-- make an explicit publication decision.
+- publication decision — `APPROVED AND COMPLETED`.
 
 RC1 tag and published assets remain immutable.
+
+## GitHub publication
+
+- tag: `v0.10.0-rc2`;
+- tag target: `43c63e0882912ed73401dc0bfd646e2154e46542`;
+- release: `https://github.com/Barbudo23/SpriteStationStudio/releases/tag/v0.10.0-rc2`;
+- prerelease: `true`;
+- draft: `false`;
+- all three assets: `uploaded`;
+- ZIP server digest:
+  `sha256:15820aa09bc05723a2ccd6a8731d4dcd8cdab2320873ee675bb5beab62ce32c9`;
+- manifest server digest:
+  `sha256:2902110b1d08a6a5fb26cb27667773a0e421e0b55b66168d8bad5e11bfbaf797`;
+- checksum-file server digest:
+  `sha256:4f543d1a689ef55634acf5cc67ca70767d204374cd89ece89d4e1d962be2f070`.
+
+Every server-side digest matches the corresponding local SHA-256.
 
 ## Superseded candidate
 
