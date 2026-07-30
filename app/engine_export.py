@@ -16,6 +16,8 @@ def _required_text(value: object) -> str | None:
 
 
 def build_unity_import_preset(manifest: dict) -> dict:
+    if not isinstance(manifest, dict):
+        raise ForgeError("Unity source manifest must be a JSON object.")
     canvas = manifest.get("canvas") or {}
     width = canvas.get("width")
     height = canvas.get("height")
@@ -165,7 +167,12 @@ def build_unity_import_preset(manifest: dict) -> dict:
 
 
 def write_unity_import_preset(manifest_path: Path) -> Path:
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ForgeError(
+            f"Cannot read Unity source manifest: {manifest_path}"
+        ) from exc
     preset = build_unity_import_preset(manifest)
     output_path = manifest_path.parent / UNITY_PRESET_NAME
     output_path.write_text(

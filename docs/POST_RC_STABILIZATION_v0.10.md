@@ -93,3 +93,5 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
   coerced numeric types, and out-of-range render limits before Blender starts.
 - Shared Preview and Direction requests now require an exact integer resolution
   and a supported string render-engine identifier.
+- Missing, unreadable, malformed or non-object Unity source manifests now fail
+  with a controlled workflow error instead of a raw parser/type traceback.

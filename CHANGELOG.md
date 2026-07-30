@@ -65,6 +65,7 @@
 - Replaced destructive Preview output cleanup with complete no-overwrite preflight.
 - Aligned Animation Workflow input validation with the supported Blender contract.
 - Rejected coerced Preview and Direction resolution or render-engine inputs.
+- Converted malformed Unity source manifests into controlled workflow errors.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

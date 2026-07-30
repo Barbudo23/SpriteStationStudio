@@ -6,7 +6,11 @@ from pathlib import Path
 from zipfile import ZipFile
 
 from app.blender_runner import ForgeError
-from app.engine_export import append_preset_to_zip, build_unity_import_preset
+from app.engine_export import (
+    append_preset_to_zip,
+    build_unity_import_preset,
+    write_unity_import_preset,
+)
 
 
 class UnityExportPresetTests(unittest.TestCase):
@@ -132,6 +136,22 @@ class UnityExportPresetTests(unittest.TestCase):
             with self.subTest(width=width, height=height):
                 with self.assertRaisesRegex(ForgeError, "valid sprite canvas"):
                     build_unity_import_preset(manifest)
+
+    def test_rejects_non_object_manifest_root(self) -> None:
+        with self.assertRaisesRegex(ForgeError, "JSON object"):
+            build_unity_import_preset([])
+
+    def test_reports_unreadable_or_malformed_manifest_as_forge_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            malformed = root / "malformed.json"
+            malformed.write_text("{", encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "Cannot read"):
+                write_unity_import_preset(malformed)
+
+            missing = root / "missing.json"
+            with self.assertRaisesRegex(ForgeError, "Cannot read"):
+                write_unity_import_preset(missing)
 
     def test_appends_preset_to_zip(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
