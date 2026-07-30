@@ -103,6 +103,38 @@ class CommandTests(unittest.TestCase):
             ):
                 self.assertEqual(BlenderRunner.find_blender(), blender.resolve())
 
+    def test_rejects_existing_preview_output_before_blender_start(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            blender = root / "blender.exe"
+            model = root / "hero.glb"
+            worker = root / "worker.py"
+            for path in (blender, model, worker):
+                path.write_bytes(b"x")
+            output = root / "out"
+            output.mkdir()
+            existing_preview = output / "Preview.png"
+            existing_preview.write_bytes(b"user-owned")
+            request = RenderRequest(blender, model, output)
+
+            with self.assertRaisesRegex(ForgeError, "already exists"):
+                BlenderRunner(worker).run(request)
+
+            self.assertEqual(existing_preview.read_bytes(), b"user-owned")
+
+    def test_preview_output_contract_includes_unity_preset(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            request = RenderRequest(
+                root / "blender.exe",
+                root / "hero.glb",
+                root / "out",
+            )
+
+            paths = BlenderRunner.output_contract_paths(request)
+
+            self.assertIn(root / "out" / "unity_import_preset.json", paths)
+
 
 if __name__ == "__main__":
     unittest.main()

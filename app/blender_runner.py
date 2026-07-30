@@ -57,6 +57,15 @@ class BlenderRunner:
         self.worker_script = worker_script or root / "worker" / "render_preview.py"
 
     @staticmethod
+    def output_contract_paths(request: RenderRequest) -> tuple[Path, ...]:
+        return (
+            request.output_dir / "Preview.png",
+            request.output_dir / "import_report.json",
+            request.output_dir / "preview_manifest.json",
+            request.output_dir / "unity_import_preset.json",
+        )
+
+    @staticmethod
     def _windows_registry_candidates() -> list[Path]:
         """Return Blender executables registered by Windows Installer."""
         try:
@@ -171,17 +180,20 @@ class BlenderRunner:
         on_output: Callable[[str], None] | None = None,
     ) -> RenderResult:
         command = self.build_command(request)
+        collisions = [
+            path for path in self.output_contract_paths(request) if path.exists()
+        ]
+        if collisions:
+            formatted = "\n".join(f"- {path}" for path in collisions)
+            raise ForgeError(
+                "Preview output already exists; remove it or choose a new "
+                f"folder:\n{formatted}"
+            )
         request.output_dir.mkdir(parents=True, exist_ok=True)
 
-        preview_path = request.output_dir / "Preview.png"
-        report_path = request.output_dir / "import_report.json"
-        manifest_path = request.output_dir / "preview_manifest.json"
-
-        for stale in (preview_path, report_path, manifest_path):
-            try:
-                stale.unlink()
-            except FileNotFoundError:
-                pass
+        preview_path, report_path, manifest_path, _ = (
+            self.output_contract_paths(request)
+        )
 
         if on_output:
             on_output("Запуск Blender Worker...")

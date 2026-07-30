@@ -62,6 +62,7 @@
 - Rejected incomplete, aliased or chronologically invalid Unity direction exports.
 - Preserved existing Unity ZIP update stages instead of silently overwriting them.
 - Added complete no-overwrite output preflight to Direction Workflow.
+- Replaced destructive Preview output cleanup with complete no-overwrite preflight.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

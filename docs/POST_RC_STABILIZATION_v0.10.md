@@ -87,3 +87,5 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
   pre-existing stage and original archive.
 - Direction Workflow now rejects every occupied output-contract path before
   Blender starts, matching the Animation Workflow no-overwrite guarantee.
+- Preview Workflow no longer deletes prior preview, report or manifest files;
+  it rejects occupied output-contract paths before Blender starts.
