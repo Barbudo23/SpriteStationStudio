@@ -66,3 +66,5 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
 - Final package audit требует точного покрытия всех manifest, review, contact,
   frame и sheet файлов верхнеуровневым artifact list; сокращённый или
   неожиданный список отклоняется.
+- Animation manifest отклоняется, если разные directions/frames/sheets/contact
+  ссылаются на один и тот же output-файл.

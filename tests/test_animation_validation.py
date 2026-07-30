@@ -104,3 +104,14 @@ class AnimationValidationTests(unittest.TestCase):
             frame.write_bytes(encode_rgba_png(2, 2, bytes((0, 255, 0, 128) * 4)))
             with self.assertRaisesRegex(ForgeError, "SHA-256"):
                 validate_animation_manifest(manifest)
+
+    def test_rejects_duplicate_output_paths_between_directions(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["directions"][1]["frames"][0] = dict(
+                payload["directions"][0]["frames"][0]
+            )
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "duplicate output file paths"):
+                validate_animation_manifest(manifest)

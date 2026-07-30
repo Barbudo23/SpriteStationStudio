@@ -133,6 +133,9 @@ def validate_animation_manifest(
         "Animation contact sheet",
         require_transparency=False,
     )
+    output_paths = [*frame_paths, *sheet_paths, contact_sheet_path]
+    if len(output_paths) != len(set(output_paths)):
+        raise ForgeError("Animation manifest contains duplicate output file paths.")
 
     return AnimationManifestReport(
         manifest_path=manifest_path,

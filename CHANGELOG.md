@@ -54,6 +54,7 @@
 - Opened a dedicated v0.10.0 post-RC stabilization branch with regression-first scope.
 - Bound Animation Workflow GUI approval to the exact manifest bytes validated by the reviewer.
 - Required approved-animation package artifact lists to cover every nested manifest file exactly.
+- Rejected animation manifests that alias one output file across frames, sheets or contact metadata.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
