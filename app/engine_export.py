@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
+from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from app.blender_runner import ForgeError
@@ -175,10 +177,23 @@ def write_unity_import_preset(manifest_path: Path) -> Path:
         ) from exc
     preset = build_unity_import_preset(manifest)
     output_path = manifest_path.parent / UNITY_PRESET_NAME
-    output_path.write_text(
-        json.dumps(preset, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+    temporary_path = (
+        output_path.parent / f".{output_path.name}.staging-{uuid4().hex}"
     )
+    try:
+        with temporary_path.open("x", encoding="utf-8", newline="\n") as stream:
+            json.dump(preset, stream, ensure_ascii=False, indent=2)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            os.link(temporary_path, output_path)
+        except FileExistsError as exc:
+            raise ForgeError(
+                f"Unity import preset already exists: {output_path}"
+            ) from exc
+    finally:
+        temporary_path.unlink(missing_ok=True)
     return output_path
 
 

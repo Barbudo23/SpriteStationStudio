@@ -66,6 +66,7 @@
 - Aligned Animation Workflow input validation with the supported Blender contract.
 - Rejected coerced Preview and Direction resolution or render-engine inputs.
 - Converted malformed Unity source manifests into controlled workflow errors.
+- Published Unity import presets atomically without overwriting existing files.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

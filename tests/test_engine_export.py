@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -152,6 +153,25 @@ class UnityExportPresetTests(unittest.TestCase):
             missing = root / "missing.json"
             with self.assertRaisesRegex(ForgeError, "Cannot read"):
                 write_unity_import_preset(missing)
+
+    def test_preset_publication_is_atomic_and_no_overwrite(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest = self.base_manifest()
+            manifest["sprite"] = "Preview.png"
+            manifest_path = root / "preview_manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            output = root / "unity_import_preset.json"
+            output.write_text("user-owned", encoding="utf-8")
+
+            with self.assertRaisesRegex(ForgeError, "already exists"):
+                write_unity_import_preset(manifest_path)
+
+            self.assertEqual(output.read_text(encoding="utf-8"), "user-owned")
+            self.assertEqual(
+                list(root.glob(".unity_import_preset.json.staging-*")),
+                [],
+            )
 
     def test_appends_preset_to_zip(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
