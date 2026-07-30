@@ -10,6 +10,24 @@ from core.validation import PreviewValidationError, decode_rgba_png
 
 
 MAX_ANIMATION_PIXELS = 16 * 1024 * 1024
+EXPECTED_DIRECTIONS = {
+    4: (
+        ("north_east", 45.0),
+        ("south_east", 135.0),
+        ("south_west", 225.0),
+        ("north_west", 315.0),
+    ),
+    8: (
+        ("north", 0.0),
+        ("north_east", 45.0),
+        ("east", 90.0),
+        ("south_east", 135.0),
+        ("south", 180.0),
+        ("south_west", 225.0),
+        ("west", 270.0),
+        ("north_west", 315.0),
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -105,13 +123,22 @@ def validate_animation_manifest(
     frame_paths: list[Path] = []
     sheet_paths: list[Path] = []
     direction_ids: set[str] = set()
-    for direction in directions:
+    for direction_index, direction in enumerate(directions):
         if not isinstance(direction, dict):
             raise ForgeError("Animation manifest direction is invalid.")
         direction_id = direction.get("id")
         if not isinstance(direction_id, str) or not direction_id or direction_id in direction_ids:
             raise ForgeError("Animation manifest direction IDs are invalid or duplicated.")
         direction_ids.add(direction_id)
+        expected_id, expected_yaw = EXPECTED_DIRECTIONS[direction_count][direction_index]
+        yaw = direction.get("yawDegrees")
+        if (
+            direction_id != expected_id
+            or isinstance(yaw, bool)
+            or not isinstance(yaw, (int, float))
+            or float(yaw) != expected_yaw
+        ):
+            raise ForgeError("Animation direction identity, order or yaw is invalid.")
         sheet_path = _resolve_file(root, direction.get("sheet"), "Animation sheet")
         _verify_hash(sheet_path, direction.get("sheetSha256"), f"Animation sheet {direction_id}")
         sheet_paths.append(sheet_path)

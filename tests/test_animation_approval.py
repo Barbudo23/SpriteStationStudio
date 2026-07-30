@@ -21,7 +21,11 @@ class AnimationApprovalTests(unittest.TestCase):
         source.write_bytes(b"model")
         pixels = bytes((255, 0, 0, 255, 0, 0, 0, 0) * 2)
         directions = []
-        for index, name in enumerate(("north", "east", "south", "west")):
+        expected = (
+            ("north_east", 45.0), ("south_east", 135.0),
+            ("south_west", 225.0), ("north_west", 315.0),
+        )
+        for index, (name, yaw) in enumerate(expected):
             frame = root / "animation_frames" / name / "000.png"
             frame.parent.mkdir(parents=True)
             frame.write_bytes(encode_rgba_png(2, 2, pixels))
@@ -30,6 +34,7 @@ class AnimationApprovalTests(unittest.TestCase):
             sheet.write_bytes(encode_rgba_png(2, 2, pixels))
             directions.append({
                 "id": name,
+                "yawDegrees": yaw,
                 "sheet": sheet.relative_to(root).as_posix(),
                 "sheetSha256": self.sha(sheet),
                 "frames": [{
@@ -94,7 +99,7 @@ class AnimationApprovalTests(unittest.TestCase):
             manifest, source = self.fixture(render)
             review = record_animation_review(manifest, source, "approved")
             result = publish_approved_animation(review.path, root / "approved")
-            frame = result.output_dir / "animation_frames" / "north" / "000.png"
+            frame = result.output_dir / "animation_frames" / "north_east" / "000.png"
             frame.write_bytes(b"tampered")
             with self.assertRaisesRegex(ForgeError, "hash mismatch"):
                 audit_approved_animation_package(result.manifest_path)
@@ -110,7 +115,7 @@ class AnimationApprovalTests(unittest.TestCase):
             payload = json.loads(result.manifest_path.read_text(encoding="utf-8"))
             payload["artifacts"] = [
                 artifact for artifact in payload["artifacts"]
-                if artifact["path"] != "animation_frames/north/000.png"
+                if artifact["path"] != "animation_frames/north_east/000.png"
             ]
             payload["artifactCount"] = len(payload["artifacts"])
             result.manifest_path.write_text(json.dumps(payload), encoding="utf-8")

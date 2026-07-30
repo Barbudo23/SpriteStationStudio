@@ -119,6 +119,7 @@ class AnimationRunnerTests(unittest.TestCase):
                     sheet.write_bytes(encode_rgba_png(2, 2, pixels))
                     directions.append({
                         "id": name,
+                        "yawDegrees": float(index * 45),
                         "sheet": sheet.relative_to(request.output_dir).as_posix(),
                         "sheetSha256": hashlib.sha256(sheet.read_bytes()).hexdigest(),
                         "frames": [{

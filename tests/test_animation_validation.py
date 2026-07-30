@@ -15,7 +15,11 @@ class AnimationValidationTests(unittest.TestCase):
     def fixture(self, root: Path) -> Path:
         rgba = bytes((255, 0, 0, 255, 0, 0, 0, 0) * 2)
         directions = []
-        for index, name in enumerate(("north", "east", "south", "west")):
+        expected = (
+            ("north_east", 45.0), ("south_east", 135.0),
+            ("south_west", 225.0), ("north_west", 315.0),
+        )
+        for index, (name, yaw) in enumerate(expected):
             frames = []
             for order, source in enumerate((1, 3)):
                 path = root / "animation_frames" / name / f"{order:03d}.png"
@@ -31,6 +35,7 @@ class AnimationValidationTests(unittest.TestCase):
             sheet.write_bytes(encode_rgba_png(4, 2, rgba * 2))
             directions.append({
                 "id": name,
+                "yawDegrees": yaw,
                 "sheet": sheet.relative_to(root).as_posix(),
                 "sheetSha256": hashlib.sha256(sheet.read_bytes()).hexdigest(),
                 "frames": frames,
@@ -75,7 +80,7 @@ class AnimationValidationTests(unittest.TestCase):
     def test_rejects_invalid_frame_png(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             manifest = self.fixture(Path(tmp))
-            frame = Path(tmp) / "animation_frames" / "north" / "000.png"
+            frame = Path(tmp) / "animation_frames" / "north_east" / "000.png"
             frame.write_bytes(b"not png")
             payload = json.loads(manifest.read_text(encoding="utf-8"))
             payload["directions"][0]["frames"][0]["sha256"] = hashlib.sha256(
@@ -88,7 +93,7 @@ class AnimationValidationTests(unittest.TestCase):
     def test_rejects_sheet_dimension_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             manifest = self.fixture(Path(tmp))
-            sheet = Path(tmp) / "animation_sheets" / "00_north.png"
+            sheet = Path(tmp) / "animation_sheets" / "00_north_east.png"
             sheet.write_bytes(encode_rgba_png(2, 2, bytes((255, 0, 0, 255) * 4)))
             payload = json.loads(manifest.read_text(encoding="utf-8"))
             payload["directions"][0]["sheetSha256"] = hashlib.sha256(
@@ -101,7 +106,7 @@ class AnimationValidationTests(unittest.TestCase):
     def test_rejects_frame_hash_mismatch(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             manifest = self.fixture(Path(tmp))
-            frame = Path(tmp) / "animation_frames" / "north" / "000.png"
+            frame = Path(tmp) / "animation_frames" / "north_east" / "000.png"
             frame.write_bytes(encode_rgba_png(2, 2, bytes((0, 255, 0, 128) * 4)))
             with self.assertRaisesRegex(ForgeError, "SHA-256"):
                 validate_animation_manifest(manifest)
@@ -127,4 +132,13 @@ class AnimationValidationTests(unittest.TestCase):
                 direction["frames"][1]["sourceFrame"] = 1
             manifest.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(ForgeError, "increase inside frameRange"):
+                validate_animation_manifest(manifest)
+
+    def test_rejects_wrong_direction_yaw(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["directions"][0]["yawDegrees"] = 0.0
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "identity, order or yaw"):
                 validate_animation_manifest(manifest)

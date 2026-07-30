@@ -30,7 +30,11 @@ def create_render(root: Path) -> tuple[Path, Path]:
     source.write_bytes(b"Sprite Station Studio synthetic animated model")
     pixels = bytes((40, 160, 220, 255, 0, 0, 0, 0) * 2)
     directions = []
-    for index, name in enumerate(("north", "east", "south", "west")):
+    expected = (
+        ("north_east", 45.0), ("south_east", 135.0),
+        ("south_west", 225.0), ("north_west", 315.0),
+    )
+    for index, (name, yaw) in enumerate(expected):
         frames = []
         for order, source_frame in enumerate((1, 3)):
             frame = render / "animation_frames" / name / f"{order:03d}.png"
@@ -47,6 +51,7 @@ def create_render(root: Path) -> tuple[Path, Path]:
         sheet.write_bytes(encode_rgba_png(4, 2, pixels * 2))
         directions.append({
             "id": name,
+            "yawDegrees": yaw,
             "sheet": sheet.relative_to(render).as_posix(),
             "sheetSha256": sha256(sheet),
             "frames": frames,

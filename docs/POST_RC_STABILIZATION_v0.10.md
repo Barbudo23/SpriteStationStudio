@@ -71,3 +71,5 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
 - `sampledFrames` обязаны строго возрастать и полностью находиться внутри
   корректного `frameRange`; порядок Unity slices больше нельзя переставить
   формально валидным manifest.
+- Direction ID, порядок и `yawDegrees` обязаны точно соответствовать
+  проверенному camera contract для 4 или 8 направлений.
