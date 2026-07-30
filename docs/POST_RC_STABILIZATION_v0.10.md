@@ -107,3 +107,9 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
 Local metadata was promoted to `0.10.0rc2` after the regression-backed
 stabilization series. RC1 remains the published immutable baseline. RC2 is not
 publishable until its commit-bound archive passes full clean-extraction checks.
+
+Automated gate result: commit `2f151a06`, 44,265,488-byte ZIP, SHA-256
+`7107bb19d6ba6987baa719bea89b58af581393519c0509c5ae8d3d33ad791e2d`,
+`197/197` regression tests and both synthetic workflow E2E passed from clean
+extraction. Physical affected-workflow confirmation remains required before
+publication.
