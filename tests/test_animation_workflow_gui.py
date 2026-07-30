@@ -5,7 +5,11 @@ from pathlib import Path
 import tkinter as tk
 import unittest
 
-from app.animation_workflow_window import AnimationWorkflowWindow, require_animation_paths
+from app.animation_workflow_window import (
+    AnimationWorkflowWindow,
+    require_animation_paths,
+    require_unchanged_validation,
+)
 from app.blender_runner import ForgeError
 from app.ui.module_registry import create_default_registry
 
@@ -41,3 +45,18 @@ class AnimationWorkflowGuiTests(unittest.TestCase):
         finally:
             window.destroy()
             root.destroy()
+
+    def test_review_requires_same_manifest_bytes_that_gui_validated(self) -> None:
+        import hashlib
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = Path(tmp) / "animation_manifest.json"
+            manifest.write_text('{"version": 1}\n', encoding="utf-8")
+            validated_hash = hashlib.sha256(manifest.read_bytes()).hexdigest()
+            require_unchanged_validation(manifest, manifest.resolve(), validated_hash)
+            manifest.write_text('{"version": 2}\n', encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "changed after GUI validation"):
+                require_unchanged_validation(
+                    manifest, manifest.resolve(), validated_hash
+                )

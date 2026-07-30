@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import tkinter as tk
@@ -28,6 +29,19 @@ def inspect_animation_for_review(
     return validate_animation_manifest(manifest_path, source_path)
 
 
+def require_unchanged_validation(
+    manifest_path: Path,
+    loaded_manifest: Path | None,
+    loaded_sha256: str | None,
+) -> None:
+    manifest_path = manifest_path.expanduser().resolve()
+    if loaded_manifest != manifest_path or loaded_sha256 is None:
+        raise ForgeError("Validate the selected animation before recording a decision.")
+    current = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    if current != loaded_sha256:
+        raise ForgeError("Animation manifest changed after GUI validation; validate it again.")
+
+
 class AnimationWorkflowWindow(tk.Toplevel):
     """Explicit review and approved-package UI over the verified v0.10 backend."""
 
@@ -44,6 +58,7 @@ class AnimationWorkflowWindow(tk.Toplevel):
             value="Выберите animation manifest и исходную анимированную модель."
         )
         self.loaded_manifest: Path | None = None
+        self.loaded_manifest_sha256: str | None = None
         self._build()
 
     def _build(self) -> None:
@@ -120,6 +135,9 @@ class AnimationWorkflowWindow(tk.Toplevel):
             )
             report = inspect_animation_for_review(manifest, source)
             self.loaded_manifest = report.manifest_path
+            self.loaded_manifest_sha256 = hashlib.sha256(
+                report.manifest_path.read_bytes()
+            ).hexdigest()
             self.status_var.set(
                 f"VALID: {report.direction_count} directions × "
                 f"{report.frame_count_per_direction} frames · "
@@ -127,6 +145,7 @@ class AnimationWorkflowWindow(tk.Toplevel):
             )
         except Exception as exc:
             self.loaded_manifest = None
+            self.loaded_manifest_sha256 = None
             self._show_error(exc)
 
     def _publish(self) -> None:
@@ -135,8 +154,11 @@ class AnimationWorkflowWindow(tk.Toplevel):
                 self.manifest_var.get(), self.source_var.get()
             )
             report = inspect_animation_for_review(manifest, source)
-            if self.loaded_manifest != report.manifest_path:
-                raise ForgeError("Validate the selected animation before recording a decision.")
+            require_unchanged_validation(
+                report.manifest_path,
+                self.loaded_manifest,
+                self.loaded_manifest_sha256,
+            )
             review_path = report.manifest_path.parent / "animation_review.json"
             decision = self.decision_var.get()
             if review_path.is_file():
