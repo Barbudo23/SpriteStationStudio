@@ -51,6 +51,7 @@
 - Promoted metadata to the unpublished v0.10.0 RC1 local-candidate line with version-bound release notes.
 - Added Animation Workflow synthetic E2E to mandatory clean-extraction RC verification.
 - Published the verified v0.10.0 RC1 ZIP, manifest and checksum as a GitHub prerelease.
+- Opened a dedicated v0.10.0 post-RC stabilization branch with regression-first scope.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
