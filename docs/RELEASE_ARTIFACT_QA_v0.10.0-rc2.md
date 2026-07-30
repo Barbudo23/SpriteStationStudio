@@ -1,27 +1,23 @@
 # Sprite Station Studio v0.10.0 RC2 — Release Artifact QA
 
-Status: **SUPERSEDED / NOT PUBLISHABLE**.
-
-Physical Animation QA found that this artifact rejected the established
-64-pixel Animation render contract. A corrected commit-bound RC2 artifact is
-required. The automated results below remain historical evidence only.
+Status: **LOCAL CANDIDATE / ALL AUTOMATED AND PHYSICAL GATES PASS / NOT PUBLISHED**.
 
 ## Artifact identity
 
 | Field | Value |
 |---|---|
 | Version | `0.10.0rc2` |
-| Artifact commit | `2f151a06df8756bdb470a02ff8715a3d0ac6b29e` |
-| ZIP | `SpriteStationStudio-v0.10.0rc2-2f151a06.zip` |
-| ZIP bytes | `44265488` |
-| SHA-256 | `7107bb19d6ba6987baa719bea89b58af581393519c0509c5ae8d3d33ad791e2d` |
-| Tracked files in archive | `182` |
+| Artifact commit | `43c63e0882912ed73401dc0bfd646e2154e46542` |
+| ZIP | `SpriteStationStudio-v0.10.0rc2-43c63e08.zip` |
+| ZIP bytes | `44269101` |
+| SHA-256 | `15820aa09bc05723a2ccd6a8731d4dcd8cdab2320873ee675bb5beab62ce32c9` |
+| Tracked files in archive | `184` |
 | Release channel | `local-rc-candidate` |
 
 Companion files:
 
-- `SpriteStationStudio-v0.10.0rc2-2f151a06.manifest.json`
-- `SpriteStationStudio-v0.10.0rc2-2f151a06.sha256`
+- `SpriteStationStudio-v0.10.0rc2-43c63e08.manifest.json`
+- `SpriteStationStudio-v0.10.0rc2-43c63e08.sha256`
 
 ## Automated clean-extraction gate
 
@@ -30,7 +26,7 @@ Executed with `Tools/Verify-ReleaseCandidate.py --run-clean-checks`.
 - archive checksum, manifest identity and declared size — `PASS`;
 - portable paths, collision checks and bounded extraction — `PASS`;
 - application entry-point help from clean extraction — `PASS`;
-- full Python regression from clean extraction — `197/197 PASS`;
+- full Python regression from clean extraction — `199/199 PASS`;
 - Static Sprite Workflow synthetic E2E — `PASS`;
 - Animation Workflow synthetic E2E — `PASS`;
 - final verifier result — `valid: true`, `cleanChecks: PASS`.
@@ -40,8 +36,14 @@ Executed with `Tools/Verify-ReleaseCandidate.py --run-clean-checks`.
 Before GitHub prerelease publication:
 
 - affected Windows GUI no-overwrite scenario — `PASS`;
-- confirm the existing Blender physical Static/Animation render baseline;
-- confirm the existing Unity 6000.4 read-only import baseline;
+- Blender 5.1 Static and Animation physical baseline — `PASS`;
+- Unity 6000.4 Single/Multiple Sprite read-only baseline — `PASS`;
 - make an explicit publication decision.
 
 RC1 tag and published assets remain immutable.
+
+## Superseded candidate
+
+Artifact `SpriteStationStudio-v0.10.0rc2-2f151a06.zip` is not publishable.
+Physical Animation QA found that it rejected the established 64-pixel render
+contract. Commit `43c63e08` restored that boundary and passed all gates above.

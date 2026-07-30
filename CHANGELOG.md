@@ -74,6 +74,7 @@
 - Reconciled the development plan with the current RC2 release gate.
 - Passed clean-extracted RC2 Windows GUI no-overwrite QA.
 - Restored the established 64-pixel minimum for Animation renders after RC2 physical QA.
+- Passed corrected RC2 clean, GUI, Blender and Unity release gates.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

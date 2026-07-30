@@ -110,17 +110,17 @@ above as historical development trace.
 
 - Active branch: `post-rc/0.10.0-stabilization`.
 - Published immutable baseline: tag `v0.10.0-rc1`, artifact commit `ae88a25a`.
-- Local RC2 artifact: version `0.10.0rc2`, artifact commit `2f151a06`.
-- Automated RC2 gate: `197/197` tests, Static and Animation synthetic E2E,
+- Local RC2 artifact: version `0.10.0rc2`, artifact commit `43c63e08`.
+- Automated RC2 gate: `199/199` tests, Static and Animation synthetic E2E,
   clean extraction, manifest and SHA-256 verification — `PASS`.
 - AI Center and Provider Reliability remain paused and outside v0.10 RC2.
 - Stable remains a separate decision after RC2 publication and observation.
 
 ## Remaining RC2 iterations
 
-- [ ] 1. Repeat affected Windows GUI no-overwrite scenarios from the corrected RC2 build.
-- [ ] 2. Confirm the Blender 5.1 Static and Animation physical baseline.
-- [ ] 3. Confirm the Unity 6000.4 read-only Single/Multiple Sprite baseline.
+- [x] 1. Repeat affected Windows GUI no-overwrite scenarios from the corrected RC2 build.
+- [x] 2. Confirm the Blender 5.1 Static and Animation physical baseline.
+- [x] 3. Confirm the Unity 6000.4 read-only Single/Multiple Sprite baseline.
 - [ ] 4. Complete QA closeout, tag and publish the GitHub RC2 prerelease, then
   verify uploaded asset digests.
 

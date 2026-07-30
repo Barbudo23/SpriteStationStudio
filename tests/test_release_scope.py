@@ -87,7 +87,7 @@ class ReleaseScopeTests(unittest.TestCase):
         )
         self.assertIn("post-rc/0.10.0-stabilization", plan)
         self.assertIn("Local RC2 artifact", plan)
-        self.assertIn("197/197", plan)
+        self.assertIn("199/199", plan)
         self.assertIn("Remaining RC2 iterations", plan)
         self.assertIn("AI Center and Provider Reliability remain paused", plan)
 

@@ -3,7 +3,7 @@
 Date: 2026-07-30.
 
 Artifact under test:
-`SpriteStationStudio-v0.10.0rc2-2f151a06.zip`.
+`SpriteStationStudio-v0.10.0rc2-43c63e08.zip`.
 
 Environment:
 
@@ -39,3 +39,6 @@ Representative preserved hashes:
 | `unity_import_preset.json` | `F7D33BBFAF95AB5B8C0173589EAAF2745B29E1A2CE30B978BF81F89A9717728C` |
 
 Result: **PASS**.
+
+This scenario was repeated after the 64-pixel Animation boundary correction;
+the hashes, byte lengths and zero-Blender-process result remained identical.

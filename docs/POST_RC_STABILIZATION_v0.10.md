@@ -123,3 +123,8 @@ RC2 physical Animation QA exposed a stabilization regression: validation had
 raised the established Animation minimum from 64 to 128 pixels. The contract
 was restored to `64..4096` with an explicit boundary test. Artifact `2f151a06`
 is superseded and must not be published.
+
+Corrected artifact commit `43c63e08` passed `199/199` clean-extraction tests,
+both synthetic E2E, repeated Windows GUI no-overwrite QA, two fresh Static
+Blender previews, real Animation rendering (8 frames / 4 sheets), Unity
+read-only Single `2/2` and Multiple `4/4` / `8/8` slices with zero warnings.
