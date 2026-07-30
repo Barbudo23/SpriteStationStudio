@@ -68,3 +68,6 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
   неожиданный список отклоняется.
 - Animation manifest отклоняется, если разные directions/frames/sheets/contact
   ссылаются на один и тот же output-файл.
+- `sampledFrames` обязаны строго возрастать и полностью находиться внутри
+  корректного `frameRange`; порядок Unity slices больше нельзя переставить
+  формально валидным manifest.

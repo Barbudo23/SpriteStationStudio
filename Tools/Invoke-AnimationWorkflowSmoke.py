@@ -62,6 +62,7 @@ def create_render(root: Path) -> tuple[Path, Path]:
         "sourceSha256": sha256(source),
         "directionCount": 4,
         "sampledFrames": [1, 3],
+        "frameRange": {"start": 1, "end": 3},
         "frameCountPerDirection": 2,
         "canvas": {
             "width": 2, "height": 2,

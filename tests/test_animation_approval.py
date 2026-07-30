@@ -48,6 +48,7 @@ class AnimationApprovalTests(unittest.TestCase):
             "sourceSha256": self.sha(source),
             "directionCount": 4,
             "sampledFrames": [1],
+            "frameRange": {"start": 1, "end": 1},
             "frameCountPerDirection": 1,
             "canvas": {"width": 2, "height": 2, "transparent": True, "colorMode": "RGBA"},
             "directions": directions,

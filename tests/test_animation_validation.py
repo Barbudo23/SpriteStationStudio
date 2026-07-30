@@ -47,6 +47,7 @@ class AnimationValidationTests(unittest.TestCase):
             "module": "Animation Sprite Renderer",
             "directionCount": 4,
             "sampledFrames": [1, 3],
+            "frameRange": {"start": 1, "end": 3},
             "frameCountPerDirection": 2,
             "canvas": {"width": 2, "height": 2, "transparent": True, "colorMode": "RGBA"},
             "directions": directions,
@@ -114,4 +115,16 @@ class AnimationValidationTests(unittest.TestCase):
             )
             manifest.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(ForgeError, "duplicate output file paths"):
+                validate_animation_manifest(manifest)
+
+    def test_rejects_unordered_frames_and_inconsistent_range(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["sampledFrames"] = [3, 1]
+            for direction in payload["directions"]:
+                direction["frames"][0]["sourceFrame"] = 3
+                direction["frames"][1]["sourceFrame"] = 1
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "increase inside frameRange"):
                 validate_animation_manifest(manifest)

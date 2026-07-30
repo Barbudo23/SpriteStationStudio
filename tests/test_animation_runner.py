@@ -138,6 +138,7 @@ class AnimationRunnerTests(unittest.TestCase):
                     "sourceSha256": hashlib.sha256(request.model_path.read_bytes()).hexdigest(),
                     "directionCount": 8,
                     "sampledFrames": [1],
+                    "frameRange": {"start": 1, "end": 1},
                     "frameCountPerDirection": 1,
                     "canvas": {
                         "width": 2, "height": 2,

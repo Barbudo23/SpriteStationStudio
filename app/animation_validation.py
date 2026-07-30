@@ -63,6 +63,24 @@ def validate_animation_manifest(
         raise ForgeError("Animation manifest sampledFrames are invalid.")
     if frame_count != len(sampled_frames):
         raise ForgeError("Animation manifest frameCountPerDirection is inconsistent.")
+    frame_range = manifest.get("frameRange")
+    if (
+        not isinstance(frame_range, dict)
+        or isinstance(frame_range.get("start"), bool)
+        or isinstance(frame_range.get("end"), bool)
+        or not isinstance(frame_range.get("start"), int)
+        or not isinstance(frame_range.get("end"), int)
+        or frame_range["start"] > frame_range["end"]
+        or any(
+            current >= following
+            for current, following in zip(sampled_frames, sampled_frames[1:])
+        )
+        or sampled_frames[0] < frame_range["start"]
+        or sampled_frames[-1] > frame_range["end"]
+    ):
+        raise ForgeError(
+            "Animation manifest sampledFrames must increase inside frameRange."
+        )
     canvas = manifest.get("canvas")
     if not isinstance(canvas, dict):
         raise ForgeError("Animation manifest canvas is invalid.")
