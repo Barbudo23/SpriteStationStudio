@@ -118,7 +118,7 @@ above as historical development trace.
 
 ## Remaining RC2 iterations
 
-- [ ] 1. Repeat affected Windows GUI no-overwrite scenarios from the RC2 build.
+- [x] 1. Repeat affected Windows GUI no-overwrite scenarios from the RC2 build.
 - [ ] 2. Confirm the Blender 5.1 Static and Animation physical baseline.
 - [ ] 3. Confirm the Unity 6000.4 read-only Single/Multiple Sprite baseline.
 - [ ] 4. Complete QA closeout, tag and publish the GitHub RC2 prerelease, then

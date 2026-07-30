@@ -35,7 +35,7 @@ Executed with `Tools/Verify-ReleaseCandidate.py --run-clean-checks`.
 
 Before GitHub prerelease publication:
 
-- repeat the affected Windows GUI no-overwrite scenarios;
+- affected Windows GUI no-overwrite scenario — `PASS`;
 - confirm the existing Blender physical Static/Animation render baseline;
 - confirm the existing Unity 6000.4 read-only import baseline;
 - make an explicit publication decision.

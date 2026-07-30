@@ -113,3 +113,8 @@ Automated gate result: commit `2f151a06`, 44,265,488-byte ZIP, SHA-256
 `197/197` regression tests and both synthetic workflow E2E passed from clean
 extraction. Physical affected-workflow confirmation remains required before
 publication.
+
+Windows GUI no-overwrite QA from the clean-extracted RC2 artifact passed:
+the occupied Direction output contract was rejected before Blender launch,
+all nine existing files retained identical SHA-256 and byte lengths, and
+Blender process count remained zero.
