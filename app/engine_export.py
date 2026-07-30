@@ -13,9 +13,17 @@ UNITY_PRESET_NAME = "unity_import_preset.json"
 
 def build_unity_import_preset(manifest: dict) -> dict:
     canvas = manifest.get("canvas") or {}
-    width = int(canvas.get("width", 0))
-    height = int(canvas.get("height", 0))
-    if width < 1 or height < 1:
+    width = canvas.get("width")
+    height = canvas.get("height")
+    if (
+        isinstance(width, bool)
+        or isinstance(height, bool)
+        or not isinstance(width, int)
+        or not isinstance(height, int)
+        or not 1 <= width <= 4096
+        or not 1 <= height <= 4096
+        or width * height > 4096 * 4096
+    ):
         raise ForgeError("Manifest does not contain a valid sprite canvas.")
 
     normalization = manifest.get("normalization") or {}

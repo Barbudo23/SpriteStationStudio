@@ -57,6 +57,15 @@ class UnityExportPresetTests(unittest.TestCase):
                 with self.assertRaisesRegex(ForgeError, "invalid normalized pivot"):
                     build_unity_import_preset(manifest)
 
+    def test_rejects_coerced_or_oversized_canvas_dimensions(self) -> None:
+        for width, height in ((True, 64), ("64", 64), (64.5, 64), (4097, 64)):
+            manifest = self.base_manifest()
+            manifest["sprite"] = "Preview.png"
+            manifest["canvas"] = {"width": width, "height": height}
+            with self.subTest(width=width, height=height):
+                with self.assertRaisesRegex(ForgeError, "valid sprite canvas"):
+                    build_unity_import_preset(manifest)
+
     def test_appends_preset_to_zip(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
