@@ -60,6 +60,7 @@
 - Rejected non-finite, boolean and out-of-range normalized pivots before Unity preset export.
 - Rejected coerced, boolean and oversized canvas dimensions before Unity slice generation.
 - Rejected incomplete, aliased or chronologically invalid Unity direction exports.
+- Preserved existing Unity ZIP update stages instead of silently overwriting them.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

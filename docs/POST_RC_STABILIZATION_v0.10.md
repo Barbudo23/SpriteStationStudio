@@ -83,3 +83,5 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
 - Unity preset export rejects incomplete animation directions, empty frame lists,
   duplicate direction IDs or output files, invalid `sourceFrame` values and
   non-increasing frame chronology.
+- Unity ZIP updates reserve their `.updating` stage atomically and preserve any
+  pre-existing stage and original archive.

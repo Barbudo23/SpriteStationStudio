@@ -155,6 +155,24 @@ class UnityExportPresetTests(unittest.TestCase):
                     archive.read("unity_import_preset.json"), b'{"version": 2}'
                 )
 
+    def test_refuses_to_overwrite_existing_update_stage(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            archive_path = root / "asset.zip"
+            preset_path = root / "unity_import_preset.json"
+            update_path = root / "asset.zip.updating"
+            preset_path.write_text("{}", encoding="utf-8")
+            with ZipFile(archive_path, "w") as archive:
+                archive.writestr("sprite.png", b"original")
+            archive_before = archive_path.read_bytes()
+            update_path.write_bytes(b"user-owned-stage")
+
+            with self.assertRaisesRegex(ForgeError, "already staged"):
+                append_preset_to_zip(archive_path, preset_path)
+
+            self.assertEqual(archive_path.read_bytes(), archive_before)
+            self.assertEqual(update_path.read_bytes(), b"user-owned-stage")
+
 
 if __name__ == "__main__":
     unittest.main()

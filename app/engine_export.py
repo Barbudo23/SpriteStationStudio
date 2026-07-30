@@ -177,18 +177,28 @@ def write_unity_import_preset(manifest_path: Path) -> Path:
 
 def append_preset_to_zip(zip_path: Path, preset_path: Path) -> None:
     temporary_path = zip_path.with_suffix(zip_path.suffix + ".updating")
+    temporary_created = False
     try:
-        with (
-            ZipFile(zip_path, "r") as source,
-            ZipFile(temporary_path, "w", ZIP_DEFLATED) as target,
-        ):
-            for item in source.infolist():
-                if item.filename != UNITY_PRESET_NAME:
-                    target.writestr(item, source.read(item.filename))
-            target.write(preset_path, UNITY_PRESET_NAME)
+        try:
+            temporary_file = temporary_path.open("x+b")
+            temporary_created = True
+        except FileExistsError as exc:
+            raise ForgeError(
+                f"Unity preset update is already staged: {temporary_path}"
+            ) from exc
+        with temporary_file:
+            with (
+                ZipFile(zip_path, "r") as source,
+                ZipFile(temporary_file, "w", ZIP_DEFLATED) as target,
+            ):
+                for item in source.infolist():
+                    if item.filename != UNITY_PRESET_NAME:
+                        target.writestr(item, source.read(item.filename))
+                target.write(preset_path, UNITY_PRESET_NAME)
         temporary_path.replace(zip_path)
     finally:
-        try:
-            temporary_path.unlink()
-        except FileNotFoundError:
-            pass
+        if temporary_created:
+            try:
+                temporary_path.unlink()
+            except FileNotFoundError:
+                pass
