@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -19,7 +20,17 @@ def build_unity_import_preset(manifest: dict) -> dict:
 
     normalization = manifest.get("normalization") or {}
     pivot = (normalization.get("pivot") or {}).get("normalized", [0.5, 0.0])
-    if not isinstance(pivot, list) or len(pivot) != 2:
+    if (
+        not isinstance(pivot, list)
+        or len(pivot) != 2
+        or any(
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(float(value))
+            or not 0.0 <= float(value) <= 1.0
+            for value in pivot
+        )
+    ):
         raise ForgeError("Manifest contains an invalid normalized pivot.")
 
     common = {

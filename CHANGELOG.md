@@ -57,6 +57,7 @@
 - Rejected animation manifests that alias one output file across frames, sheets or contact metadata.
 - Required strictly increasing sampled animation frames within the declared frame range.
 - Enforced canonical animation direction identities, ordering and yaw angles for 4/8-direction renders.
+- Rejected non-finite, boolean and out-of-range normalized pivots before Unity preset export.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

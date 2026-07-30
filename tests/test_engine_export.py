@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 from zipfile import ZipFile
 
+from app.blender_runner import ForgeError
 from app.engine_export import append_preset_to_zip, build_unity_import_preset
 
 
@@ -46,6 +47,15 @@ class UnityExportPresetTests(unittest.TestCase):
         asset = preset["assets"][0]
         self.assertEqual(asset["spriteMode"], "Multiple")
         self.assertEqual(asset["slices"][1]["rect"], [256, 0, 256, 256])
+
+    def test_rejects_non_finite_out_of_range_or_boolean_pivot(self) -> None:
+        for pivot in ([1.1, 0.0], [float("nan"), 0.0], [True, 0.0]):
+            manifest = self.base_manifest()
+            manifest["sprite"] = "Preview.png"
+            manifest["normalization"]["pivot"]["normalized"] = pivot
+            with self.subTest(pivot=pivot):
+                with self.assertRaisesRegex(ForgeError, "invalid normalized pivot"):
+                    build_unity_import_preset(manifest)
 
     def test_appends_preset_to_zip(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -73,3 +73,5 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
   формально валидным manifest.
 - Direction ID, порядок и `yawDegrees` обязаны точно соответствовать
   проверенному camera contract для 4 или 8 направлений.
+- Unity preset отклоняет boolean, `NaN`, бесконечные и выходящие за `[0,1]`
+  значения normalized pivot во всех sprite workflows.
