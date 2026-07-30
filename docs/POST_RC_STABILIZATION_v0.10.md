@@ -63,3 +63,6 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
 - GUI review state теперь привязан не только к пути, но и к SHA-256
   `animation_manifest.json`; изменение manifest после `VALIDATE` требует
   повторной проверки перед записью решения.
+- Final package audit требует точного покрытия всех manifest, review, contact,
+  frame и sheet файлов верхнеуровневым artifact list; сокращённый или
+  неожиданный список отклоняется.

@@ -98,6 +98,24 @@ class AnimationApprovalTests(unittest.TestCase):
             with self.assertRaisesRegex(ForgeError, "hash mismatch"):
                 audit_approved_animation_package(result.manifest_path)
 
+    def test_audit_rejects_incomplete_top_level_artifact_list(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            render = root / "render"
+            render.mkdir()
+            manifest, source = self.fixture(render)
+            review = record_animation_review(manifest, source, "approved")
+            result = publish_approved_animation(review.path, root / "approved")
+            payload = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+            payload["artifacts"] = [
+                artifact for artifact in payload["artifacts"]
+                if artifact["path"] != "animation_frames/north/000.png"
+            ]
+            payload["artifactCount"] = len(payload["artifacts"])
+            result.manifest_path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "incomplete or unexpected"):
+                audit_approved_animation_package(result.manifest_path)
+
     def test_manifest_changed_after_approval_is_not_published(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

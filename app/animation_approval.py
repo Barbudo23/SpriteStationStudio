@@ -204,6 +204,22 @@ def audit_approved_animation_package(
     ):
         raise ForgeError("Packaged animation review integrity is invalid.")
     animation = validate_animation_manifest(manifest)
+    required_paths = {
+        manifest.relative_to(root).as_posix(),
+        review_path.relative_to(root).as_posix(),
+        animation.contact_sheet_path.relative_to(root).as_posix(),
+        *(path.relative_to(root).as_posix() for path in animation.frame_paths),
+        *(path.relative_to(root).as_posix() for path in animation.sheet_paths),
+    }
+    actual_paths = {
+        path.relative_to(root).as_posix()
+        for path in root.rglob("*")
+        if path.is_file() and path != package_manifest_path
+    }
+    if not required_paths.issubset(resolved) or set(resolved) != actual_paths:
+        raise ForgeError(
+            "Approved animation package artifact list is incomplete or unexpected."
+        )
     if (
         package.get("directionCount") != animation.direction_count
         or package.get("frameCountPerDirection") != animation.frame_count_per_direction

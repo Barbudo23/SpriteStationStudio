@@ -53,6 +53,7 @@
 - Published the verified v0.10.0 RC1 ZIP, manifest and checksum as a GitHub prerelease.
 - Opened a dedicated v0.10.0 post-RC stabilization branch with regression-first scope.
 - Bound Animation Workflow GUI approval to the exact manifest bytes validated by the reviewer.
+- Required approved-animation package artifact lists to cover every nested manifest file exactly.
 
 # v0.8.3 Static Sprite Pipeline Dev
 
