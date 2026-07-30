@@ -213,6 +213,38 @@ class UnityExportPresetTests(unittest.TestCase):
             self.assertEqual(archive_path.read_bytes(), archive_before)
             self.assertEqual(update_path.read_bytes(), b"user-owned-stage")
 
+    def test_zip_update_failure_preserves_source_and_cleans_stage(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            archive_path = root / "asset.zip"
+            archive_path.write_bytes(b"not-a-zip")
+            archive_before = archive_path.read_bytes()
+            preset_path = root / "unity_import_preset.json"
+            preset_path.write_text("{}", encoding="utf-8")
+
+            with self.assertRaisesRegex(ForgeError, "Cannot update"):
+                append_preset_to_zip(archive_path, preset_path)
+
+            self.assertEqual(archive_path.read_bytes(), archive_before)
+            self.assertFalse((root / "asset.zip.updating").exists())
+
+    def test_missing_preset_preserves_source_zip(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            archive_path = root / "asset.zip"
+            with ZipFile(archive_path, "w") as archive:
+                archive.writestr("sprite.png", b"original")
+            archive_before = archive_path.read_bytes()
+
+            with self.assertRaisesRegex(ForgeError, "Cannot update"):
+                append_preset_to_zip(
+                    archive_path,
+                    root / "missing_unity_import_preset.json",
+                )
+
+            self.assertEqual(archive_path.read_bytes(), archive_before)
+            self.assertFalse((root / "asset.zip.updating").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

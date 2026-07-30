@@ -97,3 +97,5 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
   with a controlled workflow error instead of a raw parser/type traceback.
 - Unity import presets are flushed to same-volume staging and published through
   an atomic no-overwrite link; late collisions preserve the existing preset.
+- Corrupt source archives and missing preset inputs now leave the source ZIP
+  byte-identical, clean owned staging and return a controlled workflow error.

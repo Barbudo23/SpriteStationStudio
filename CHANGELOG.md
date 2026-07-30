@@ -67,6 +67,7 @@
 - Rejected coerced Preview and Direction resolution or render-engine inputs.
 - Converted malformed Unity source manifests into controlled workflow errors.
 - Published Unity import presets atomically without overwriting existing files.
+- Preserved source ZIPs and normalized failures during Unity preset injection.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

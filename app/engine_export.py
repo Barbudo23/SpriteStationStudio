@@ -5,7 +5,7 @@ import math
 import os
 from pathlib import Path
 from uuid import uuid4
-from zipfile import ZIP_DEFLATED, ZipFile
+from zipfile import BadZipFile, ZIP_DEFLATED, ZipFile
 
 from app.blender_runner import ForgeError
 
@@ -218,6 +218,8 @@ def append_preset_to_zip(zip_path: Path, preset_path: Path) -> None:
                         target.writestr(item, source.read(item.filename))
                 target.write(preset_path, UNITY_PRESET_NAME)
         temporary_path.replace(zip_path)
+    except (OSError, BadZipFile) as exc:
+        raise ForgeError(f"Cannot update Unity preset ZIP: {zip_path}") from exc
     finally:
         if temporary_created:
             try:
