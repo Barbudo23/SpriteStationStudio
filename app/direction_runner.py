@@ -66,6 +66,25 @@ class DirectionRenderRunner:
             profile.pivot_mode,
         ]
 
+    @staticmethod
+    def output_contract_paths(
+        request: RenderRequest,
+        direction_count: int,
+    ) -> tuple[Path, ...]:
+        zip_path = (
+            request.output_dir
+            / f"{request.model_path.stem}_{direction_count}dir.zip"
+        )
+        return (
+            request.output_dir / "directions",
+            request.output_dir / "directions_report.json",
+            request.output_dir / "manifest.json",
+            request.output_dir / "contact_sheet.png",
+            request.output_dir / "unity_import_preset.json",
+            zip_path,
+            zip_path.with_suffix(zip_path.suffix + ".updating"),
+        )
+
     def run(
         self,
         request: RenderRequest,
@@ -74,6 +93,17 @@ class DirectionRenderRunner:
         on_output: Callable[[str], None] | None = None,
     ) -> DirectionRenderResult:
         command = self.build_command(request, direction_count, camera_profile)
+        collisions = [
+            path
+            for path in self.output_contract_paths(request, direction_count)
+            if path.exists()
+        ]
+        if collisions:
+            formatted = "\n".join(f"- {path}" for path in collisions)
+            raise ForgeError(
+                "Direction output already exists; remove it or choose a new "
+                f"folder:\n{formatted}"
+            )
         request.output_dir.mkdir(parents=True, exist_ok=True)
 
         process = subprocess.Popen(
