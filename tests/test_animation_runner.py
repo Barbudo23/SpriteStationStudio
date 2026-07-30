@@ -75,7 +75,7 @@ class AnimationRunnerTests(unittest.TestCase):
     def test_invalid_resolution_engine_and_frame_types_are_rejected(self):
         invalid_values = (
             ("resolution", True, "resolution"),
-            ("resolution", 127, "resolution"),
+            ("resolution", 63, "resolution"),
             ("resolution", 4097, "resolution"),
             ("engine", "UNKNOWN", "engine"),
             ("engine", ["AUTO"], "engine"),
@@ -95,6 +95,15 @@ class AnimationRunnerTests(unittest.TestCase):
                 with self.subTest(field=field, value=value):
                     with self.assertRaisesRegex(ForgeError, message):
                         runner.build_command(invalid)
+
+    def test_established_64_pixel_animation_resolution_is_supported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            request = AnimationRenderRequest(
+                **{**request.__dict__, "resolution": 64}
+            )
+            command = AnimationRenderRunner(worker).build_command(request)
+            self.assertEqual(command[command.index("--resolution") + 1], "64")
 
     def test_unsupported_model_format_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

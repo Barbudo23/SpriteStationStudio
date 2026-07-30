@@ -118,3 +118,8 @@ Windows GUI no-overwrite QA from the clean-extracted RC2 artifact passed:
 the occupied Direction output contract was rejected before Blender launch,
 all nine existing files retained identical SHA-256 and byte lengths, and
 Blender process count remained zero.
+
+RC2 physical Animation QA exposed a stabilization regression: validation had
+raised the established Animation minimum from 64 to 128 pixels. The contract
+was restored to `64..4096` with an explicit boundary test. Artifact `2f151a06`
+is superseded and must not be published.

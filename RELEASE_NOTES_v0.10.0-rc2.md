@@ -16,6 +16,7 @@ feature scope. AI Center remains paused. No new rendering features are included.
 - made Unity preset and ZIP update stages atomic, no-overwrite and rollback-safe;
 - added complete output collision preflight to Preview and Direction workflows;
 - aligned Preview, Direction and Animation render input validation;
+- preserved the established `64..4096` Animation resolution range;
 - converted malformed manifest and ZIP failures into controlled workflow errors;
 - aligned the root README with the active release line.
 

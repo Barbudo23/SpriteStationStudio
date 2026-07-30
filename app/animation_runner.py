@@ -63,9 +63,9 @@ class AnimationRenderRunner:
         if (
             isinstance(request.resolution, bool)
             or not isinstance(request.resolution, int)
-            or not 128 <= request.resolution <= 4096
+            or not 64 <= request.resolution <= 4096
         ):
-            raise ForgeError("Animation resolution must be from 128 to 4096.")
+            raise ForgeError("Animation resolution must be from 64 to 4096.")
         if not isinstance(request.engine, str) or request.engine not in {
             "AUTO",
             "BLENDER_EEVEE",

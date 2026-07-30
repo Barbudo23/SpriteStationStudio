@@ -1,6 +1,10 @@
 # Sprite Station Studio v0.10.0 RC2 — Release Artifact QA
 
-Status: **LOCAL CANDIDATE / AUTOMATED GATE PASS / NOT PUBLISHED**.
+Status: **SUPERSEDED / NOT PUBLISHABLE**.
+
+Physical Animation QA found that this artifact rejected the established
+64-pixel Animation render contract. A corrected commit-bound RC2 artifact is
+required. The automated results below remain historical evidence only.
 
 ## Artifact identity
 
