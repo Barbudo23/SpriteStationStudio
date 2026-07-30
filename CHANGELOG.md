@@ -64,6 +64,7 @@
 - Added complete no-overwrite output preflight to Direction Workflow.
 - Replaced destructive Preview output cleanup with complete no-overwrite preflight.
 - Aligned Animation Workflow input validation with the supported Blender contract.
+- Rejected coerced Preview and Direction resolution or render-engine inputs.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

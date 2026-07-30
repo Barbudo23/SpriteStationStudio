@@ -47,6 +47,28 @@ class RenderRequestTests(unittest.TestCase):
         with self.assertRaises(ForgeError):
             RenderRequest(self.blender, self.model, self.output, resolution=64).validate()
 
+    def test_rejects_coerced_or_fractional_resolution(self) -> None:
+        for resolution in (True, "512", 512.5):
+            with self.subTest(resolution=resolution):
+                with self.assertRaises(ForgeError):
+                    RenderRequest(
+                        self.blender,
+                        self.model,
+                        self.output,
+                        resolution=resolution,
+                    ).validate()
+
+    def test_rejects_invalid_engine_type(self) -> None:
+        for engine in (["AUTO"], True, 1):
+            with self.subTest(engine=engine):
+                with self.assertRaises(ForgeError):
+                    RenderRequest(
+                        self.blender,
+                        self.model,
+                        self.output,
+                        engine=engine,
+                    ).validate()
+
 
 class CommandTests(unittest.TestCase):
     def test_command_contains_worker_arguments(self) -> None:

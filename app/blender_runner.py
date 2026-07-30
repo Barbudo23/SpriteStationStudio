@@ -36,9 +36,19 @@ class RenderRequest:
                 f"Неподдерживаемый формат {self.model_path.suffix}. "
                 f"Разрешены: {', '.join(sorted(SUPPORTED_EXTENSIONS))}"
             )
-        if not 128 <= self.resolution <= 4096:
+        if (
+            isinstance(self.resolution, bool)
+            or not isinstance(self.resolution, int)
+            or not 128 <= self.resolution <= 4096
+        ):
             raise ForgeError("Разрешение должно быть от 128 до 4096 пикселей.")
-        if self.engine not in {"AUTO", "BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH", "CYCLES"}:
+        if not isinstance(self.engine, str) or self.engine not in {
+            "AUTO",
+            "BLENDER_EEVEE",
+            "BLENDER_EEVEE_NEXT",
+            "BLENDER_WORKBENCH",
+            "CYCLES",
+        }:
             raise ForgeError(f"Неподдерживаемый render engine: {self.engine}")
 
 
