@@ -69,6 +69,7 @@
 - Published Unity import presets atomically without overwriting existing files.
 - Preserved source ZIPs and normalized failures during Unity preset injection.
 - Corrected the root README release identity from stale v0.9 RC1 to v0.10 RC1.
+- Promoted local release metadata to the v0.10.0 RC2 candidate line.
 
 # v0.8.3 Static Sprite Pipeline Dev
 

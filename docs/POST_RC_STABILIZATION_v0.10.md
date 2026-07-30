@@ -101,3 +101,9 @@ Milestone closeout commit: `c1460772448be9d70bf4bd82c694f82078b47665`.
   byte-identical, clean owned staging and return a controlled workflow error.
 - Root README now identifies the published v0.10.0 RC1 line and current
   post-RC stabilization scope; a regression test binds it to runtime metadata.
+
+## RC2 candidate
+
+Local metadata was promoted to `0.10.0rc2` after the regression-backed
+stabilization series. RC1 remains the published immutable baseline. RC2 is not
+publishable until its commit-bound archive passes full clean-extraction checks.

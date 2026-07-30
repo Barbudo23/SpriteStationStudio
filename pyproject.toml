@@ -1,6 +1,6 @@
 [project]
 name = "sprite-station-studio"
-version = "0.10.0rc1"
+version = "0.10.0rc2"
 description = "Sprite creation studio powered by Blender and Unity workflows"
 requires-python = ">=3.10"
 

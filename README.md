@@ -1,6 +1,6 @@
-# Sprite Station Studio (SSS) — v0.10.0 RC1 / Post-RC Stabilization
+# Sprite Station Studio (SSS) — v0.10.0 RC2 Local Candidate
 
-Published prerelease: `v0.10.0-rc1`. The current stabilization branch preserves
+Published baseline: `v0.10.0-rc1`. The RC2 candidate preserves
 the verified Static Sprite Workflow and Animation Workflow scope while applying
 regression-backed fixes. See `docs/ANIMATION_WORKFLOW_MILESTONE_v0.10.md` and
 `docs/POST_RC_STABILIZATION_v0.10.md`. AI Center remains paused and outside the
