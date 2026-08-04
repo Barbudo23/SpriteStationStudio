@@ -15,7 +15,7 @@ validation. AI Center remains paused and outside this milestone.
 ## Planned vertical slices
 
 - [x] Explicit Blender Action name in request, worker, manifest, report and GUI.
-- [ ] Read-only Action discovery before a paid render operation.
+- [x] Read-only Action discovery before a render operation.
 - [ ] Stable animation timing contract (FPS, duration and loop policy).
 - [ ] Unity AnimationClip descriptor generated from approved sprite slices.
 - [ ] Transactional Unity AnimationClip creation in the isolated bridge project.
@@ -33,3 +33,25 @@ binds the completed manifest back to the requested name.
 The common single-armature FBX/GLB case is supported. If the requested Action is
 not already active and the imported scene does not contain exactly one armature,
 the worker stops with an ambiguity error instead of guessing a target.
+
+## Slice 2 contract
+
+`DISCOVER ACTIONS (READ-ONLY)` starts Blender in background/factory mode, imports
+the selected model and returns one bounded JSON report through stdout. No render
+is started and no output path is supplied. The application validates unique,
+sorted names, finite frame ranges and active-state flags before updating the
+editable Action selector. Discovery and animation rendering cannot run at the
+same time.
+
+## Slice 2 physical QA
+
+Blender `5.1` read-only discovery was run against the animated FBX used by the
+v0.10 physical Animation baseline. The probe completed without a render or an
+output argument and returned exactly one active Action:
+
+- name: `Armature|Armature|Armature|running|baselayer`;
+- frame range: `1..20`;
+- active: `true`.
+
+Automated closeout: `209/209` tests, Static Sprite synthetic E2E and Animation
+Workflow synthetic E2E all pass.

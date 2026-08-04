@@ -13,6 +13,7 @@ from tkinter import filedialog, messagebox, ttk
 from app.blender_runner import BlenderRunner, ForgeError, RenderRequest
 from app.direction_runner import DirectionRenderRunner
 from app.animation_runner import AnimationRenderRunner, AnimationRenderRequest
+from app.animation_action_discovery import AnimationActionDiscovery
 from app.unity_runner import UnityRunner, UnityBridgeError
 from app.unity_sprite_preview import UnitySpritePreviewRunner
 from app.unity_package_export import export_verified_package
@@ -48,6 +49,7 @@ class AssetForgeApp(tk.Tk):
         self.runner = BlenderRunner()
         self.direction_runner = DirectionRenderRunner()
         self.animation_runner = AnimationRenderRunner()
+        self.animation_action_discovery = AnimationActionDiscovery()
         self.unity_runner = UnityRunner()
         self.unity_sprite_preview_runner = UnitySpritePreviewRunner(self.unity_runner)
         self.unity_sprite_import_runner = UnitySpriteImportRunner(self.unity_runner)
@@ -426,7 +428,16 @@ class AssetForgeApp(tk.Tk):
         ).pack(anchor="w", pady=(0, 10))
 
         ttk.Label(animation, text="Action Name (optional)", style="Section.TLabel").pack(anchor="w")
-        ttk.Entry(animation, textvariable=self.animation_action_name_var).pack(fill="x", pady=(4, 8))
+        self.animation_action_combo = ttk.Combobox(
+            animation, textvariable=self.animation_action_name_var, state="normal"
+        )
+        self.animation_action_combo.pack(fill="x", pady=(4, 6))
+        self.animation_action_discover_button = ttk.Button(
+            animation,
+            text="DISCOVER ACTIONS (READ-ONLY)",
+            command=self._discover_animation_actions,
+        )
+        self.animation_action_discover_button.pack(fill="x", pady=(0, 8))
 
         ttk.Label(animation, text="Frame Start", style="Section.TLabel").pack(anchor="w")
         ttk.Entry(animation, textvariable=self.animation_frame_start_var).pack(fill="x", pady=(4, 8))
@@ -1576,6 +1587,9 @@ class AssetForgeApp(tk.Tk):
 
 
     def _start_animation_render(self, direction_count: int) -> None:
+        if self.task_guard.is_active("animation_action_discovery"):
+            messagebox.showinfo("Animation Sprites", "Animation Action discovery is still running.")
+            return
         token = self.task_guard.begin("animation_render")
         if token is None:
             messagebox.showinfo("Animation Sprites", "Рендер анимации уже выполняется.")
@@ -1636,6 +1650,41 @@ class AssetForgeApp(tk.Tk):
                     "animation_error",
                     {"token": token, "message": str(exc)},
                 ))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _discover_animation_actions(self) -> None:
+        if self.task_guard.is_active("animation_render"):
+            messagebox.showinfo("Animation Actions", "Animation render is still running.")
+            return
+        token = self.task_guard.begin("animation_action_discovery")
+        if token is None:
+            messagebox.showinfo("Animation Actions", "Action discovery is already running.")
+            return
+        blender_path = Path(self.blender_var.get().strip())
+        model_path = Path(self.model_var.get().strip())
+        try:
+            self.animation_action_discovery.build_command(blender_path, model_path)
+        except ForgeError as exc:
+            self.task_guard.finish(token)
+            messagebox.showerror("Animation Actions", str(exc))
+            return
+        self.animation_action_discover_button.configure(state="disabled")
+        self.progress.start(10)
+        self.status_var.set("Discovering Blender Actions (read-only)…")
+
+        def worker() -> None:
+            try:
+                actions = self.animation_action_discovery.discover(blender_path, model_path)
+                self.events.put(("animation_actions_found", {
+                    "token": token,
+                    "actions": actions,
+                }))
+            except Exception as exc:
+                self.events.put(("animation_actions_error", {
+                    "token": token,
+                    "message": str(exc),
+                }))
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -1760,6 +1809,39 @@ class AssetForgeApp(tk.Tk):
                     self.status_var.set("Ошибка рендера анимации")
                     self._append_log(f"Animation render error: {message}")
                     messagebox.showerror("Animation Sprites", message)
+                elif kind == "animation_actions_found":
+                    self.progress.stop()
+                    self.animation_action_discover_button.configure(state="normal")
+                    data = payload if isinstance(payload, dict) else {}
+                    token = data.get("token")
+                    if token:
+                        self.task_guard.finish(token)
+                    actions = tuple(data.get("actions", ()))
+                    names = tuple(item.name for item in actions)
+                    self.animation_action_combo.configure(values=names)
+                    if not self.animation_action_name_var.get().strip() and actions:
+                        active = next((item for item in actions if item.active), actions[0])
+                        self.animation_action_name_var.set(active.name)
+                    self.status_var.set(f"Discovered Blender Actions: {len(actions)}")
+                    self._append_log("BLENDER ACTIONS (READ-ONLY)")
+                    for item in actions:
+                        marker = " active" if item.active else ""
+                        self._append_log(
+                            f"- {item.name}: {item.frame_start:g}..{item.frame_end:g}{marker}"
+                        )
+                    if not actions:
+                        messagebox.showinfo("Animation Actions", "No Blender Actions were found.")
+                elif kind == "animation_actions_error":
+                    self.progress.stop()
+                    self.animation_action_discover_button.configure(state="normal")
+                    data = payload if isinstance(payload, dict) else {}
+                    token = data.get("token")
+                    if token:
+                        self.task_guard.finish(token)
+                    message = str(data.get("message", "Unknown error"))
+                    self.status_var.set("Animation Action discovery error")
+                    self._append_log(f"Animation Action discovery error: {message}")
+                    messagebox.showerror("Animation Actions", message)
                 elif kind == "unity_projects_found":
                     data = payload if isinstance(payload, dict) else {}
                     window = data.get("window")
