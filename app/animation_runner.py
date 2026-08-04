@@ -23,6 +23,7 @@ class AnimationRenderRequest:
     frame_step: int = 2
     max_frames: int = 32
     camera_profile: str = DEFAULT_CAMERA_PROFILE
+    action_name: str | None = None
 
 
 @dataclass(frozen=True)
@@ -100,6 +101,14 @@ class AnimationRenderRunner:
             and request.frame_start > request.frame_end
         ):
             raise ForgeError("Frame Start не должен быть больше Frame End.")
+        if request.action_name is not None and (
+            not isinstance(request.action_name, str)
+            or not request.action_name.strip()
+            or request.action_name != request.action_name.strip()
+            or len(request.action_name) > 128
+            or any(ord(character) < 32 or ord(character) == 127 for character in request.action_name)
+        ):
+            raise ForgeError("Animation Action name must be a trimmed non-empty string up to 128 characters.")
 
         args = [
             str(request.blender_path),
@@ -125,6 +134,8 @@ class AnimationRenderRunner:
             args.extend(["--frame-start", str(request.frame_start)])
         if request.frame_end is not None:
             args.extend(["--frame-end", str(request.frame_end)])
+        if request.action_name is not None:
+            args.extend(["--action-name", request.action_name])
         return args
 
     @staticmethod
@@ -199,7 +210,12 @@ class AnimationRenderRunner:
             raise ForgeError(report.get("error", "Ошибка animation render."))
 
         from app.animation_validation import validate_animation_manifest
-        validate_animation_manifest(manifest_path, request.model_path)
+        manifest_report = validate_animation_manifest(manifest_path, request.model_path)
+        if (
+            request.action_name is not None
+            and manifest_report.action_name != request.action_name
+        ):
+            raise ForgeError("Rendered Animation Action does not match the request.")
 
         from app.engine_export import append_preset_to_zip, write_unity_import_preset
         unity_preset_path = write_unity_import_preset(manifest_path)

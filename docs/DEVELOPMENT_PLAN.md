@@ -132,3 +132,13 @@ above as historical development trace.
   `APPROVED FOR STABLE`; 199 tests, both E2E and all physical baselines pass).
 - [x] Build and publish commit-bound Stable ZIP, manifest, checksum and tag
   (`v0.10.0`, artifact commit `b8d4c923`, post-download clean verification PASS).
+
+# Current authoritative status — v0.11 Animation Production
+
+Updated: 2026-08-04.
+
+- Active branch: `codex/v0.11-animation-production`.
+- Stable baseline: tag `v0.10.0`, artifact commit `b8d4c923`.
+- Milestone: `docs/ANIMATION_PRODUCTION_MILESTONE_v0.11.md`.
+- First vertical slice: explicit Blender Action selection with manifest binding.
+- AI Center remains paused and outside v0.11 scope.

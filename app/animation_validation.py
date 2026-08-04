@@ -39,6 +39,7 @@ class AnimationManifestReport:
     sheet_paths: tuple[Path, ...]
     contact_sheet_path: Path
     checked_file_count: int
+    action_name: str | None
 
 
 def validate_animation_manifest(
@@ -58,6 +59,15 @@ def validate_animation_manifest(
         raise ForgeError("Animation manifest application brand is invalid.")
     if manifest.get("module") != "Animation Sprite Renderer":
         raise ForgeError("Animation manifest module is invalid.")
+    action_name = manifest.get("actionName")
+    if action_name is not None and (
+        not isinstance(action_name, str)
+        or not action_name.strip()
+        or action_name != action_name.strip()
+        or len(action_name) > 128
+        or any(ord(character) < 32 or ord(character) == 127 for character in action_name)
+    ):
+        raise ForgeError("Animation manifest actionName is invalid.")
     if source_path is not None:
         source_path = source_path.expanduser().resolve()
         if not source_path.is_file() or _sha256(source_path) != manifest.get("sourceSha256"):
@@ -190,6 +200,7 @@ def validate_animation_manifest(
         sheet_paths=tuple(sheet_paths),
         contact_sheet_path=contact_sheet_path,
         checked_file_count=len(frame_paths) + len(sheet_paths) + 1 + (source_path is not None),
+        action_name=action_name,
     )
 
 

@@ -65,6 +65,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--frame-end", type=int)
     parser.add_argument("--frame-step", type=int, default=2)
     parser.add_argument("--max-frames", type=int, default=32)
+    parser.add_argument("--action-name")
     parser.add_argument("--camera-profile", default="Strategy30")
     parser.add_argument("--camera-azimuth", type=float, default=45.0)
     parser.add_argument("--camera-elevation", type=float, default=30.0)
@@ -84,17 +85,50 @@ def create_asset_root() -> bpy.types.Object:
     return root
 
 
-def detect_frame_range(args: argparse.Namespace) -> tuple[int, int]:
+def activate_action(requested_name: str | None) -> str | None:
+    active_owners = [
+        obj for obj in bpy.context.scene.objects
+        if getattr(getattr(obj, "animation_data", None), "action", None) is not None
+    ]
+    if requested_name is None:
+        active_names = sorted({obj.animation_data.action.name for obj in active_owners})
+        return active_names[0] if len(active_names) == 1 else None
+
+    action = bpy.data.actions.get(requested_name)
+    if action is None:
+        available = ", ".join(sorted(item.name for item in bpy.data.actions)) or "none"
+        raise RuntimeError(
+            f"Animation Action not found: {requested_name}. Available Actions: {available}"
+        )
+    if any(obj.animation_data.action == action for obj in active_owners):
+        return action.name
+
+    armatures = [obj for obj in bpy.context.scene.objects if obj.type == "ARMATURE"]
+    if len(armatures) != 1:
+        raise RuntimeError(
+            "Animation Action target is ambiguous; the imported model must contain exactly one armature."
+        )
+    animation_data = armatures[0].animation_data_create()
+    animation_data.action = action
+    return action.name
+
+
+def detect_frame_range(args: argparse.Namespace, action_name: str | None) -> tuple[int, int]:
     scene = bpy.context.scene
     start = args.frame_start if args.frame_start is not None else int(scene.frame_start)
     end = args.frame_end if args.frame_end is not None else int(scene.frame_end)
 
     action_ranges = []
-    for obj in scene.objects:
-        animation_data = getattr(obj, "animation_data", None)
-        action = getattr(animation_data, "action", None) if animation_data else None
-        if action:
+    if action_name is not None:
+        action = bpy.data.actions.get(action_name)
+        if action is not None:
             action_ranges.append(action.frame_range)
+    else:
+        for obj in scene.objects:
+            animation_data = getattr(obj, "animation_data", None)
+            action = getattr(animation_data, "action", None) if animation_data else None
+            if action and action.frame_range not in action_ranges:
+                action_ranges.append(action.frame_range)
     if action_ranges and args.frame_start is None:
         start = math.floor(min(r[0] for r in action_ranges))
     if action_ranges and args.frame_end is None:
@@ -201,6 +235,7 @@ def main() -> int:
     try:
         clear_scene()
         import_model(model)
+        action_name = activate_action(args.action_name)
         objects = renderable_objects()
         if not objects:
             raise RuntimeError("No renderable objects found.")
@@ -220,7 +255,7 @@ def main() -> int:
             args.engine,
         )
 
-        start, end = detect_frame_range(args)
+        start, end = detect_frame_range(args, action_name)
         frames = sample_frames(start, end, args.frame_step, args.max_frames)
         directions = DIRECTIONS_8 if args.directions == 8 else DIRECTIONS_4
         direction_records = []
@@ -318,6 +353,8 @@ def main() -> int:
             "contactSheetSha256": sha256_file(contact_sheet_path),
             "createdUtc": datetime.now(timezone.utc).isoformat(),
         }
+        if action_name is not None:
+            manifest["actionName"] = action_name
         manifest_path.write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2),
             encoding="utf-8",
@@ -332,6 +369,7 @@ def main() -> int:
             "frameCountPerDirection": len(frames),
             "totalRenderedFrames": total_renders,
             "frameRange": [start, end],
+            "actionName": action_name,
             "cameraProfile": args.camera_profile,
             "renderEngine": resolved_engine,
             "durationMs": round((time.perf_counter() - started) * 1000),

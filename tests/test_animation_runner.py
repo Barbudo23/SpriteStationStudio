@@ -54,6 +54,26 @@ class AnimationRunnerTests(unittest.TestCase):
             self.assertEqual(command[command.index("--camera-profile") + 1], "XCOM")
             self.assertEqual(command[command.index("--camera-elevation") + 1], "35.0")
 
+    def test_selected_action_is_forwarded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            request = AnimationRenderRequest(
+                **{**request.__dict__, "action_name": "Run Forward"}
+            )
+            command = AnimationRenderRunner(worker).build_command(request)
+            self.assertEqual(command[command.index("--action-name") + 1], "Run Forward")
+
+    def test_invalid_action_name_is_rejected_before_blender(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            for value in ("", " Run", "Run\nFast", "x" * 129):
+                with self.subTest(value=value):
+                    invalid = AnimationRenderRequest(
+                        **{**request.__dict__, "action_name": value}
+                    )
+                    with self.assertRaisesRegex(ForgeError, "Action name"):
+                        AnimationRenderRunner(worker).build_command(invalid)
+
     def test_invalid_direction_count_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             request, worker = self.make_request(Path(tmp))

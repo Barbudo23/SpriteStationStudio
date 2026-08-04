@@ -89,6 +89,7 @@ class AssetForgeApp(tk.Tk):
         self.animation_frame_end_var = tk.StringVar(value="")
         self.animation_frame_step_var = tk.IntVar(value=2)
         self.animation_max_frames_var = tk.IntVar(value=24)
+        self.animation_action_name_var = tk.StringVar(value="")
         self.status_var = tk.StringVar(value="Готово к работе")
         self.module_var = tk.StringVar(value="pseudo3d_forge")
         self.source_mode_var = tk.StringVar(value="3d_model")
@@ -416,13 +417,16 @@ class AssetForgeApp(tk.Tk):
         ttk.Label(
             animation,
             text=(
-                "Используется активная анимация FBX/GLB. "
+                "Пустое Action Name использует активную анимацию FBX/GLB. "
                 "Пустые Start/End означают автоматический диапазон."
             ),
             style="Muted.TLabel",
             wraplength=290,
             justify="left",
         ).pack(anchor="w", pady=(0, 10))
+
+        ttk.Label(animation, text="Action Name (optional)", style="Section.TLabel").pack(anchor="w")
+        ttk.Entry(animation, textvariable=self.animation_action_name_var).pack(fill="x", pady=(4, 8))
 
         ttk.Label(animation, text="Frame Start", style="Section.TLabel").pack(anchor="w")
         ttk.Entry(animation, textvariable=self.animation_frame_start_var).pack(fill="x", pady=(4, 8))
@@ -1595,6 +1599,7 @@ class AssetForgeApp(tk.Tk):
                 frame_step=int(self.animation_frame_step_var.get()),
                 max_frames=int(self.animation_max_frames_var.get()),
                 camera_profile=self.camera_profile_var.get(),
+                action_name=self.animation_action_name_var.get().strip() or None,
             )
             self.animation_runner.build_command(request)
         except (ForgeError, ValueError, OSError) as exc:

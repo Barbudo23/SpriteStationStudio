@@ -67,6 +67,27 @@ class AnimationValidationTests(unittest.TestCase):
             self.assertEqual(report.direction_count, 4)
             self.assertEqual(report.frame_count_per_direction, 2)
             self.assertEqual(len(report.frame_paths), 8)
+            self.assertIsNone(report.action_name)
+
+    def test_accepts_and_reports_selected_action(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["actionName"] = "Run Forward"
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertEqual(
+                validate_animation_manifest(manifest).action_name,
+                "Run Forward",
+            )
+
+    def test_rejects_invalid_action_name(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["actionName"] = " Run"
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "actionName"):
+                validate_animation_manifest(manifest)
 
     def test_rejects_frame_path_escape(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
