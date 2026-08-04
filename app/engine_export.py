@@ -8,6 +8,7 @@ from uuid import uuid4
 from zipfile import BadZipFile, ZIP_DEFLATED, ZipFile
 
 from app.blender_runner import ForgeError
+from app.animation_validation import validate_animation_timing
 
 
 UNITY_PRESET_NAME = "unity_import_preset.json"
@@ -158,7 +159,7 @@ def build_unity_import_preset(manifest: dict) -> dict:
     if not assets:
         raise ForgeError("Manifest does not contain exportable sprite assets.")
 
-    return {
+    preset = {
         "schemaVersion": "1.0",
         "engine": "Unity",
         "sourceManifestVersion": manifest.get("schemaVersion"),
@@ -166,6 +167,26 @@ def build_unity_import_preset(manifest: dict) -> dict:
         "assets": assets,
         "applicationMode": "explicit_import",
     }
+    if any(asset.get("spriteMode") == "Multiple" for asset in assets):
+        if manifest.get("timing") is not None and (
+            "sampledFrames" not in manifest or "frameRange" not in manifest
+        ):
+            raise ForgeError("Animation timing frame identity is invalid.")
+        timing = validate_animation_timing(
+            manifest.get("timing"),
+            sampled_frames=manifest.get("sampledFrames"),
+            frame_range=manifest.get("frameRange"),
+        )
+        if timing is not None:
+            preset["animationTiming"] = {
+                "fps": timing.fps,
+                "fpsSource": timing.fps_source,
+                "sourceFrameStep": timing.source_frame_step,
+                "sampleTimesSeconds": list(timing.sample_times_seconds),
+                "durationSeconds": timing.duration_seconds,
+                "loopPolicy": timing.loop_policy,
+            }
+    return preset
 
 
 def write_unity_import_preset(manifest_path: Path) -> Path:

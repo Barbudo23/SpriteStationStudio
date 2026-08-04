@@ -53,6 +53,49 @@ class UnityExportPresetTests(unittest.TestCase):
         self.assertEqual(asset["spriteMode"], "Multiple")
         self.assertEqual(asset["slices"][1]["rect"], [256, 0, 256, 256])
 
+    def test_carries_valid_animation_timing_into_unity_preset(self) -> None:
+        manifest = self.base_manifest()
+        manifest.update({
+            "sampledFrames": [1, 3],
+            "frameRange": {"start": 1, "end": 3},
+            "timing": {
+                "fps": 20.0,
+                "fpsSource": "scene",
+                "sourceFrameStep": 2,
+                "sampleTimesSeconds": [0.0, 0.1],
+                "durationSeconds": 0.15,
+                "loopPolicy": "loop",
+            },
+            "directions": [{
+                "id": "north",
+                "sheet": "animation_sheets/00_north.png",
+                "frames": [{"sourceFrame": 1}, {"sourceFrame": 3}],
+            }],
+        })
+        preset = build_unity_import_preset(manifest)
+        self.assertEqual(preset["animationTiming"]["fps"], 20.0)
+        self.assertEqual(preset["animationTiming"]["loopPolicy"], "loop")
+
+    def test_rejects_timing_with_missing_frame_identity(self) -> None:
+        manifest = self.base_manifest()
+        manifest.update({
+            "timing": {
+                "fps": 20.0,
+                "fpsSource": "scene",
+                "sourceFrameStep": 2,
+                "sampleTimesSeconds": [0.0],
+                "durationSeconds": 0.05,
+                "loopPolicy": "loop",
+            },
+            "directions": [{
+                "id": "north",
+                "sheet": "animation_sheets/00_north.png",
+                "frames": [{"sourceFrame": 1}],
+            }],
+        })
+        with self.assertRaisesRegex(ForgeError, "frame identity"):
+            build_unity_import_preset(manifest)
+
     def test_rejects_incomplete_or_aliased_animation_directions(self) -> None:
         invalid_directions = (
             [

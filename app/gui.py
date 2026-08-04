@@ -92,6 +92,8 @@ class AssetForgeApp(tk.Tk):
         self.animation_frame_step_var = tk.IntVar(value=2)
         self.animation_max_frames_var = tk.IntVar(value=24)
         self.animation_action_name_var = tk.StringVar(value="")
+        self.animation_playback_fps_var = tk.StringVar(value="")
+        self.animation_loop_policy_var = tk.StringVar(value="loop")
         self.status_var = tk.StringVar(value="Готово к работе")
         self.module_var = tk.StringVar(value="pseudo3d_forge")
         self.source_mode_var = tk.StringVar(value="3d_model")
@@ -438,6 +440,9 @@ class AssetForgeApp(tk.Tk):
             command=self._discover_animation_actions,
         )
         self.animation_action_discover_button.pack(fill="x", pady=(0, 8))
+        ttk.Label(animation, text="Playback FPS (optional)", style="Section.TLabel").pack(anchor="w")
+        ttk.Entry(animation, textvariable=self.animation_playback_fps_var).pack(fill="x", pady=(4, 8))
+        self._combo(animation, "Loop Policy", self.animation_loop_policy_var, ("loop", "once"))
 
         ttk.Label(animation, text="Frame Start", style="Section.TLabel").pack(anchor="w")
         ttk.Entry(animation, textvariable=self.animation_frame_start_var).pack(fill="x", pady=(4, 8))
@@ -677,6 +682,16 @@ class AssetForgeApp(tk.Tk):
             return int(value)
         except ValueError as exc:
             raise ValueError(f"{field_name} должен быть целым числом.") from exc
+
+    @staticmethod
+    def _optional_float(value: str, field_name: str) -> float | None:
+        value = value.strip()
+        if not value:
+            return None
+        try:
+            return float(value)
+        except ValueError as exc:
+            raise ValueError(f"{field_name} must be a number.") from exc
 
     def _run_primary_action(self) -> None:
         if self.source_mode_var.get() == "four_images":
@@ -1601,6 +1616,9 @@ class AssetForgeApp(tk.Tk):
             frame_end = self._optional_int(
                 self.animation_frame_end_var.get(), "Frame End"
             )
+            playback_fps = self._optional_float(
+                self.animation_playback_fps_var.get(), "Playback FPS"
+            )
             request = AnimationRenderRequest(
                 blender_path=Path(self.blender_var.get().strip()),
                 model_path=Path(self.model_var.get().strip()),
@@ -1614,6 +1632,8 @@ class AssetForgeApp(tk.Tk):
                 max_frames=int(self.animation_max_frames_var.get()),
                 camera_profile=self.camera_profile_var.get(),
                 action_name=self.animation_action_name_var.get().strip() or None,
+                playback_fps=playback_fps,
+                loop_policy=self.animation_loop_policy_var.get(),
             )
             self.animation_runner.build_command(request)
         except (ForgeError, ValueError, OSError) as exc:

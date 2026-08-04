@@ -66,6 +66,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--frame-step", type=int, default=2)
     parser.add_argument("--max-frames", type=int, default=32)
     parser.add_argument("--action-name")
+    parser.add_argument("--playback-fps", type=float)
+    parser.add_argument("--loop-policy", choices=("loop", "once"), default="loop")
     parser.add_argument("--camera-profile", default="Strategy30")
     parser.add_argument("--camera-azimuth", type=float, default=45.0)
     parser.add_argument("--camera-elevation", type=float, default=30.0)
@@ -257,6 +259,21 @@ def main() -> int:
 
         start, end = detect_frame_range(args, action_name)
         frames = sample_frames(start, end, args.frame_step, args.max_frames)
+        scene = bpy.context.scene
+        scene_fps = float(scene.render.fps) / float(scene.render.fps_base)
+        effective_fps = args.playback_fps if args.playback_fps is not None else scene_fps
+        if not math.isfinite(effective_fps) or not 1.0 <= effective_fps <= 240.0:
+            raise RuntimeError(f"Invalid animation playback FPS: {effective_fps}")
+        timing = {
+            "fps": effective_fps,
+            "fpsSource": "override" if args.playback_fps is not None else "scene",
+            "sourceFrameStep": args.frame_step,
+            "sampleTimesSeconds": [
+                (frame - start) / effective_fps for frame in frames
+            ],
+            "durationSeconds": (end - start + 1) / effective_fps,
+            "loopPolicy": args.loop_policy,
+        }
         directions = DIRECTIONS_8 if args.directions == 8 else DIRECTIONS_4
         direction_records = []
         all_outputs: list[Path] = []
@@ -264,7 +281,6 @@ def main() -> int:
 
         total_renders = len(directions) * len(frames)
         render_number = 0
-        scene = bpy.context.scene
 
         for direction_index, (direction_id, yaw_degrees) in enumerate(directions):
             direction_dir = frames_root / direction_id
@@ -321,6 +337,7 @@ def main() -> int:
             "frameRange": {"start": start, "end": end},
             "sampledFrames": frames,
             "frameCountPerDirection": len(frames),
+            "timing": timing,
             "canvas": {
                 "width": args.resolution,
                 "height": args.resolution,
@@ -370,6 +387,7 @@ def main() -> int:
             "totalRenderedFrames": total_renders,
             "frameRange": [start, end],
             "actionName": action_name,
+            "timing": timing,
             "cameraProfile": args.camera_profile,
             "renderEngine": resolved_engine,
             "durationMs": round((time.perf_counter() - started) * 1000),

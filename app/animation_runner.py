@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import json
+import math
 import subprocess
 from typing import Callable
 
@@ -24,6 +25,8 @@ class AnimationRenderRequest:
     max_frames: int = 32
     camera_profile: str = DEFAULT_CAMERA_PROFILE
     action_name: str | None = None
+    playback_fps: float | None = None
+    loop_policy: str = "loop"
 
 
 @dataclass(frozen=True)
@@ -109,6 +112,15 @@ class AnimationRenderRunner:
             or any(ord(character) < 32 or ord(character) == 127 for character in request.action_name)
         ):
             raise ForgeError("Animation Action name must be a trimmed non-empty string up to 128 characters.")
+        if request.playback_fps is not None and (
+            isinstance(request.playback_fps, bool)
+            or not isinstance(request.playback_fps, (int, float))
+            or not math.isfinite(float(request.playback_fps))
+            or not 1.0 <= float(request.playback_fps) <= 240.0
+        ):
+            raise ForgeError("Animation playback FPS must be from 1 to 240.")
+        if request.loop_policy not in {"loop", "once"}:
+            raise ForgeError("Animation loop policy must be loop or once.")
 
         args = [
             str(request.blender_path),
@@ -136,6 +148,9 @@ class AnimationRenderRunner:
             args.extend(["--frame-end", str(request.frame_end)])
         if request.action_name is not None:
             args.extend(["--action-name", request.action_name])
+        if request.playback_fps is not None:
+            args.extend(["--playback-fps", str(float(request.playback_fps))])
+        args.extend(["--loop-policy", request.loop_policy])
         return args
 
     @staticmethod
@@ -216,6 +231,14 @@ class AnimationRenderRunner:
             and manifest_report.action_name != request.action_name
         ):
             raise ForgeError("Rendered Animation Action does not match the request.")
+        timing = manifest_report.timing
+        if timing is None or timing.loop_policy != request.loop_policy:
+            raise ForgeError("Rendered animation timing does not match the request.")
+        if (
+            request.playback_fps is not None
+            and not math.isclose(timing.fps, float(request.playback_fps), abs_tol=1e-6)
+        ):
+            raise ForgeError("Rendered animation FPS does not match the request.")
 
         from app.engine_export import append_preset_to_zip, write_unity_import_preset
         unity_preset_path = write_unity_import_preset(manifest_path)

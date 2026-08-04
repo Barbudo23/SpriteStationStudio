@@ -16,7 +16,7 @@ validation. AI Center remains paused and outside this milestone.
 
 - [x] Explicit Blender Action name in request, worker, manifest, report and GUI.
 - [x] Read-only Action discovery before a render operation.
-- [ ] Stable animation timing contract (FPS, duration and loop policy).
+- [x] Stable animation timing contract (FPS, duration and loop policy).
 - [ ] Unity AnimationClip descriptor generated from approved sprite slices.
 - [ ] Transactional Unity AnimationClip creation in the isolated bridge project.
 - [ ] Physical Blender and Unity QA for at least two Actions from one model.
@@ -55,3 +55,22 @@ output argument and returned exactly one active Action:
 
 Automated closeout: `209/209` tests, Static Sprite synthetic E2E and Animation
 Workflow synthetic E2E all pass.
+
+## Slice 3 contract
+
+New animation manifests contain a `timing` object with effective FPS, whether
+that FPS came from the Blender scene or an explicit override, source-frame step,
+sample timestamps, full selected-range duration and `loop`/`once` policy.
+Timestamps are derived from source-frame identity rather than output-array
+position, so bounded sampling preserves the original motion timing. The same
+validated contract is copied into `unity_import_preset.json` as
+`animationTiming` for the next AnimationClip descriptor slice. Legacy v0.10
+manifests without timing remain readable.
+
+## Slice 3 physical QA
+
+Blender `5.1` rendered the established animated FBX with the explicitly selected
+`running|baselayer` Action, four directions, source frames `1` and `3`, 64px
+canvas, FPS override `20` and `once` policy. Eight frames, four sheets, contact
+sheet, ZIP and Unity preset were created successfully. Manifest, report and
+Unity preset agreed on timestamps `[0.0, 0.1]` and duration `0.15` seconds.

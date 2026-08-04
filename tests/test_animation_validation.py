@@ -89,6 +89,76 @@ class AnimationValidationTests(unittest.TestCase):
             with self.assertRaisesRegex(ForgeError, "actionName"):
                 validate_animation_manifest(manifest)
 
+    def test_accepts_timing_bound_to_sampled_frames(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["timing"] = {
+                "fps": 20.0,
+                "fpsSource": "scene",
+                "sourceFrameStep": 2,
+                "sampleTimesSeconds": [0.0, 0.1],
+                "durationSeconds": 0.15,
+                "loopPolicy": "loop",
+            }
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            timing = validate_animation_manifest(manifest).timing
+            self.assertIsNotNone(timing)
+            assert timing is not None
+            self.assertEqual(timing.fps, 20.0)
+            self.assertEqual(timing.loop_policy, "loop")
+
+    def test_rejects_timing_not_bound_to_frames(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["timing"] = {
+                "fps": 20.0,
+                "fpsSource": "override",
+                "sourceFrameStep": 2,
+                "sampleTimesSeconds": [0.0, 0.11],
+                "durationSeconds": 0.15,
+                "loopPolicy": "once",
+            }
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "sampled frames"):
+                validate_animation_manifest(manifest)
+
+    def test_accepts_timing_bound_to_sampled_frames(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["timing"] = {
+                "fps": 20.0,
+                "fpsSource": "scene",
+                "sourceFrameStep": 2,
+                "sampleTimesSeconds": [0.0, 0.1],
+                "durationSeconds": 0.15,
+                "loopPolicy": "loop",
+            }
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            timing = validate_animation_manifest(manifest).timing
+            self.assertIsNotNone(timing)
+            assert timing is not None
+            self.assertEqual(timing.fps, 20.0)
+            self.assertEqual(timing.loop_policy, "loop")
+
+    def test_rejects_timing_not_bound_to_frames(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["timing"] = {
+                "fps": 20.0,
+                "fpsSource": "override",
+                "sourceFrameStep": 2,
+                "sampleTimesSeconds": [0.0, 0.11],
+                "durationSeconds": 0.15,
+                "loopPolicy": "once",
+            }
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "sampled frames"):
+                validate_animation_manifest(manifest)
+
     def test_rejects_frame_path_escape(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             manifest = self.fixture(Path(tmp))

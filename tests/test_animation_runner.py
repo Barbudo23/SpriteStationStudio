@@ -63,6 +63,54 @@ class AnimationRunnerTests(unittest.TestCase):
             command = AnimationRenderRunner(worker).build_command(request)
             self.assertEqual(command[command.index("--action-name") + 1], "Run Forward")
 
+    def test_timing_options_are_forwarded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            request = AnimationRenderRequest(
+                **{**request.__dict__, "playback_fps": 30.0, "loop_policy": "once"}
+            )
+            command = AnimationRenderRunner(worker).build_command(request)
+            self.assertEqual(command[command.index("--playback-fps") + 1], "30.0")
+            self.assertEqual(command[command.index("--loop-policy") + 1], "once")
+
+    def test_invalid_timing_options_are_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            for field, value, message in (
+                ("playback_fps", True, "FPS"),
+                ("playback_fps", 0.5, "FPS"),
+                ("playback_fps", float("nan"), "FPS"),
+                ("loop_policy", "pingpong", "loop policy"),
+            ):
+                invalid = AnimationRenderRequest(**{**request.__dict__, field: value})
+                with self.subTest(field=field, value=value):
+                    with self.assertRaisesRegex(ForgeError, message):
+                        AnimationRenderRunner(worker).build_command(invalid)
+
+    def test_timing_options_are_forwarded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            request = AnimationRenderRequest(
+                **{**request.__dict__, "playback_fps": 30.0, "loop_policy": "once"}
+            )
+            command = AnimationRenderRunner(worker).build_command(request)
+            self.assertEqual(command[command.index("--playback-fps") + 1], "30.0")
+            self.assertEqual(command[command.index("--loop-policy") + 1], "once")
+
+    def test_invalid_timing_options_are_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            request, worker = self.make_request(Path(tmp))
+            for field, value, message in (
+                ("playback_fps", True, "FPS"),
+                ("playback_fps", 0.5, "FPS"),
+                ("playback_fps", float("nan"), "FPS"),
+                ("loop_policy", "pingpong", "loop policy"),
+            ):
+                invalid = AnimationRenderRequest(**{**request.__dict__, field: value})
+                with self.subTest(field=field, value=value):
+                    with self.assertRaisesRegex(ForgeError, message):
+                        AnimationRenderRunner(worker).build_command(invalid)
+
     def test_invalid_action_name_is_rejected_before_blender(self):
         with tempfile.TemporaryDirectory() as tmp:
             request, worker = self.make_request(Path(tmp))
@@ -205,6 +253,14 @@ class AnimationRunnerTests(unittest.TestCase):
                     "sampledFrames": [1],
                     "frameRange": {"start": 1, "end": 1},
                     "frameCountPerDirection": 1,
+                    "timing": {
+                        "fps": 24.0,
+                        "fpsSource": "scene",
+                        "sourceFrameStep": 2,
+                        "sampleTimesSeconds": [0.0],
+                        "durationSeconds": 1.0 / 24.0,
+                        "loopPolicy": "loop",
+                    },
                     "canvas": {
                         "width": 2, "height": 2,
                         "transparent": True, "colorMode": "RGBA",

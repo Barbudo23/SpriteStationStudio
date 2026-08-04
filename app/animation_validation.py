@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import math
 from pathlib import Path
 
 from app.blender_runner import ForgeError
@@ -40,6 +41,97 @@ class AnimationManifestReport:
     contact_sheet_path: Path
     checked_file_count: int
     action_name: str | None
+    timing: "AnimationTiming | None"
+
+
+@dataclass(frozen=True)
+class AnimationTiming:
+    fps: float
+    fps_source: str
+    loop_policy: str
+    duration_seconds: float
+    sample_times_seconds: tuple[float, ...]
+    source_frame_step: int
+
+
+def validate_animation_timing(
+    value: object,
+    *,
+    sampled_frames: list[int] | None = None,
+    frame_range: dict | None = None,
+) -> AnimationTiming | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ForgeError("Animation timing must be a JSON object.")
+    fps = value.get("fps")
+    duration = value.get("durationSeconds")
+    times = value.get("sampleTimesSeconds")
+    step = value.get("sourceFrameStep")
+    if (
+        isinstance(fps, bool)
+        or not isinstance(fps, (int, float))
+        or not math.isfinite(float(fps))
+        or not 1.0 <= float(fps) <= 240.0
+        or value.get("fpsSource") not in {"scene", "override"}
+        or value.get("loopPolicy") not in {"loop", "once"}
+        or isinstance(duration, bool)
+        or not isinstance(duration, (int, float))
+        or not math.isfinite(float(duration))
+        or not 0.0 < float(duration) <= 86400.0
+        or isinstance(step, bool)
+        or not isinstance(step, int)
+        or step < 1
+        or not isinstance(times, list)
+        or not times
+        or any(
+            isinstance(item, bool)
+            or not isinstance(item, (int, float))
+            or not math.isfinite(float(item))
+            for item in times
+        )
+        or not math.isclose(float(times[0]), 0.0, abs_tol=1e-6)
+        or any(float(current) >= float(following) for current, following in zip(times, times[1:]))
+        or float(times[-1]) >= float(duration)
+    ):
+        raise ForgeError("Animation timing contract is invalid.")
+    if sampled_frames is not None or frame_range is not None:
+        if (
+            not isinstance(sampled_frames, list)
+            or not sampled_frames
+            or any(isinstance(frame, bool) or not isinstance(frame, int) for frame in sampled_frames)
+            or not isinstance(frame_range, dict)
+            or isinstance(frame_range.get("start"), bool)
+            or isinstance(frame_range.get("end"), bool)
+            or not isinstance(frame_range.get("start"), int)
+            or not isinstance(frame_range.get("end"), int)
+            or frame_range["start"] > frame_range["end"]
+        ):
+            raise ForgeError("Animation timing frame identity is invalid.")
+        expected_times = [
+            (frame - frame_range["start"]) / float(fps)
+            for frame in sampled_frames
+        ]
+        expected_duration = (
+            frame_range["end"] - frame_range["start"] + 1
+        ) / float(fps)
+        if (
+            len(times) != len(expected_times)
+            or any(
+                not math.isclose(float(actual), expected, abs_tol=1e-6)
+                for actual, expected in zip(times, expected_times)
+            )
+            or not math.isclose(float(duration), expected_duration, abs_tol=1e-6)
+        ):
+            raise ForgeError("Animation timing does not match sampled frames.")
+    return AnimationTiming(
+        fps=float(fps),
+        fps_source=value["fpsSource"],
+        loop_policy=value["loopPolicy"],
+        duration_seconds=float(duration),
+        sample_times_seconds=tuple(float(item) for item in times),
+        source_frame_step=step,
+    )
 
 
 def validate_animation_manifest(
@@ -109,6 +201,11 @@ def validate_animation_manifest(
         raise ForgeError(
             "Animation manifest sampledFrames must increase inside frameRange."
         )
+    timing = validate_animation_timing(
+        manifest.get("timing"),
+        sampled_frames=sampled_frames,
+        frame_range=frame_range,
+    )
     canvas = manifest.get("canvas")
     if not isinstance(canvas, dict):
         raise ForgeError("Animation manifest canvas is invalid.")
@@ -201,6 +298,7 @@ def validate_animation_manifest(
         contact_sheet_path=contact_sheet_path,
         checked_file_count=len(frame_paths) + len(sheet_paths) + 1 + (source_path is not None),
         action_name=action_name,
+        timing=timing,
     )
 
 
