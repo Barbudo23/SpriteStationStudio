@@ -157,3 +157,13 @@ apply to the same unchanged RC2 artifact commit.
 Decision: **APPROVED FOR STABLE PACKAGING AND PUBLICATION**. The decision and
 packaging constraints are recorded in `docs/STABLE_DECISION_v0.10.0.md`.
 Stable packaging and publication remain the final separate iteration.
+
+## Stable release closeout — 2026-08-04
+
+Stable `v0.10.0` was built from artifact commit `b8d4c923`, verified from clean
+extraction, tagged and published as a non-prerelease GitHub Release. ZIP,
+manifest and checksum were downloaded again; all server and local digests
+matched, and the downloaded artifact passed `201/201` tests and both E2E checks.
+
+The v0.10.0 release plan is complete. Detailed evidence is recorded in
+`docs/RELEASE_ARTIFACT_QA_v0.10.0.md`.

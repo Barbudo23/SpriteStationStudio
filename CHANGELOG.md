@@ -1,6 +1,7 @@
 # Sprite Station Studio Brand Migration
 
 - Promoted the verified v0.10.0 RC2 code line to v0.10.0 Stable release identity without adding feature scope.
+- Published v0.10.0 Stable with commit-bound ZIP, manifest, checksum and tag, then re-downloaded and clean-verified all assets.
 
 - Public product name changed from AssetForge Studio to Sprite Station Studio (SSS).
 - Python distribution and new user configuration directory use the new isolated name.

@@ -130,4 +130,5 @@ above as historical development trace.
   no blocking defects; published assets re-downloaded and clean-verified).
 - [x] Make an explicit Stable decision and run final production QA (2026-08-04:
   `APPROVED FOR STABLE`; 199 tests, both E2E and all physical baselines pass).
-- [ ] Build and publish commit-bound Stable ZIP, manifest, checksum and tag.
+- [x] Build and publish commit-bound Stable ZIP, manifest, checksum and tag
+  (`v0.10.0`, artifact commit `b8d4c923`, post-download clean verification PASS).
