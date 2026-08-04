@@ -126,6 +126,7 @@ above as historical development trace.
 
 ## Remaining Stable iterations
 
-- [ ] Observe RC2 and close any reproducible blocking defects.
+- [x] Observe RC2 and close any reproducible blocking defects (2026-08-04:
+  no blocking defects; published assets re-downloaded and clean-verified).
 - [ ] Make an explicit Stable decision and run final production QA.
 - [ ] Build and publish commit-bound Stable ZIP, manifest, checksum and tag.

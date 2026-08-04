@@ -135,3 +135,14 @@ Tag `v0.10.0-rc2` points to corrected artifact commit `43c63e08`. GitHub
 prerelease publication completed with ZIP, manifest and checksum assets.
 GitHub server-side SHA-256 digests match all local files. RC2 stabilization is
 complete; Stable remains a separate decision after observation.
+
+## RC2 observation closeout — 2026-08-04
+
+No open GitHub issues or RC2 defect reports were present. The published ZIP,
+manifest and checksum were downloaded again from GitHub. The ZIP size and
+SHA-256 matched the release, and the independent verifier passed clean
+extraction, `199/199` tests and both synthetic workflow E2E checks. See
+`docs/RC2_OBSERVATION_2026-08-04.md`.
+
+The observation iteration is complete. Stable still requires a separate
+explicit decision and final production QA.
