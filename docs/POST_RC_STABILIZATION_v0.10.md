@@ -146,3 +146,14 @@ extraction, `199/199` tests and both synthetic workflow E2E checks. See
 
 The observation iteration is complete. Stable still requires a separate
 explicit decision and final production QA.
+
+## Stable decision — 2026-08-04
+
+Final production QA reconfirmed the immutable RC2 tag and GitHub assets, zero
+open issues, `199/199` tests and both workflow E2E checks. The previously
+recorded Windows GUI, Blender 5.1 and Unity 6000.4.0f1 physical baselines all
+apply to the same unchanged RC2 artifact commit.
+
+Decision: **APPROVED FOR STABLE PACKAGING AND PUBLICATION**. The decision and
+packaging constraints are recorded in `docs/STABLE_DECISION_v0.10.0.md`.
+Stable packaging and publication remain the final separate iteration.
