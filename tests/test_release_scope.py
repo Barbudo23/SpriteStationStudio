@@ -14,9 +14,9 @@ class ReleaseScopeTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         metadata = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
         self.assertEqual(metadata["project"]["name"], "sprite-station-studio")
-        self.assertEqual(metadata["project"]["version"], "0.10.0rc2")
+        self.assertEqual(metadata["project"]["version"], "0.10.0")
         self.assertEqual(metadata["project"]["version"], VERSION)
-        self.assertEqual(RELEASE_CHANNEL, "local-rc-candidate")
+        self.assertEqual(RELEASE_CHANNEL, "stable")
         gui = (root / "app" / "gui.py").read_text(encoding="utf-8")
         self.assertRegex(
             gui,
@@ -30,7 +30,7 @@ class ReleaseScopeTests(unittest.TestCase):
             f"# Sprite Station Studio (SSS) — {DISPLAY_VERSION}",
             readme,
         )
-        self.assertIn("v0.10.0-rc1", readme)
+        self.assertIn("v0.10.0-rc2", readme)
         self.assertIn("POST_RC_STABILIZATION_v0.10.md", readme)
 
     def test_v090_scope_freezes_existing_contracts_and_ai(self) -> None:

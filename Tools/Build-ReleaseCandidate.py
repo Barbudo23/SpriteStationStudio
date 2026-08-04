@@ -114,7 +114,7 @@ def build(output_dir: Path, git_executable: Path) -> tuple[Path, Path, Path]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build an unpublished Sprite Station Studio RC artifact.")
+    parser = argparse.ArgumentParser(description="Build an unpublished Sprite Station Studio release artifact.")
     parser.add_argument("--output-dir", type=Path, default=REPOSITORY / "output/release-candidate")
     parser.add_argument("--git", type=Path, default=shutil.which("git"), help="Path to git executable.")
     args = parser.parse_args()

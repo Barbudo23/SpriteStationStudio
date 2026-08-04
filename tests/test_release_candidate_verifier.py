@@ -34,6 +34,20 @@ class ReleaseCandidateVerifierTests(unittest.TestCase):
             "RELEASE_NOTES_v0.10.0-rc1.md",
         )
 
+    def test_derives_stable_release_notes_filename(self) -> None:
+        self.assertEqual(
+            MODULE.release_notes_filename("0.10.0"),
+            "RELEASE_NOTES_v0.10.0.md",
+        )
+
+    def test_accepts_stable_release_channel(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            _, manifest, _ = self.fixture(Path(tmp))
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+            payload["releaseChannel"] = "stable"
+            manifest.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertEqual(MODULE.read_manifest(manifest)["releaseChannel"], "stable")
+
     def fixture(self, root: Path, unsafe: bool = False) -> tuple[Path, Path, Path]:
         archive_path = root / "SpriteStationStudio-test.zip"
         prefix = "SpriteStationStudio-test"

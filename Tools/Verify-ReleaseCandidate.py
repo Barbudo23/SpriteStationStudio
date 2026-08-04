@@ -79,7 +79,9 @@ def read_manifest(path: Path) -> dict:
         raise ReleaseVerificationError("Release manifest application brand is invalid.")
     if not isinstance(payload["version"], str) or not VERSION_PATTERN.fullmatch(payload["version"]):
         raise ReleaseVerificationError("Release manifest version is invalid.")
-    if payload["releaseChannel"] not in {"local-rc-candidate", "github-prerelease"}:
+    if payload["releaseChannel"] not in {
+        "local-rc-candidate", "github-prerelease", "stable"
+    }:
         raise ReleaseVerificationError("Release manifest channel is invalid.")
     if not isinstance(payload["commit"], str) or not COMMIT_PATTERN.fullmatch(payload["commit"]):
         raise ReleaseVerificationError("Release manifest commit is invalid.")

@@ -147,7 +147,7 @@ class AssetForgeApp(tk.Tk):
         ).grid(row=0, column=0, sticky="e", padx=(0, 12))
         ttk.Label(
             right_status,
-            text=f"{DISPLAY_VERSION} Local Candidate",
+            text=DISPLAY_VERSION,
             style="Badge.TLabel",
         ).grid(row=0, column=1, sticky="e")
 
