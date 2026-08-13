@@ -80,3 +80,18 @@ Bridge project использует только необходимые встр
 Существующие ассеты вне новой папки Sprite Station не изменяются. `.meta` внутри экспортированного пакета создаются или обновляются Unity только после явного подтверждения пользователя.
 
 Реальные smoke-тесты применения выполнены в Unity 6000.4.0f1: 4/4 статических Sprite и 4/4 анимационных sheets с 8/8 slices получили TextureImporter-настройки без предупреждений.
+
+## Unity AnimationClip descriptor (v0.11 development)
+
+Для утверждённого animation package с timing-контрактом SSS атомарно создаёт
+`unity_animation_clip_descriptor.json`. Descriptor не является `.anim` и сам по
+себе не изменяет Unity-проект. Он описывает по одному будущему клипу на
+направление: точный sprite sheet и его SHA-256, имена импортируемых slices,
+source frames, timestamps, полную длительность, FPS, loop policy и binding
+`SpriteRenderer.m_Sprite`.
+
+Descriptor включается в хэшированный список approved package и повторно
+проверяется аудитом вместе с каноническим `unity_import_preset.json`. Его нельзя
+получить из rejected, изменённого после approval, untimed или preset-less
+результата. Физическое создание `.anim` остаётся следующим отдельным этапом и
+будет выполняться только в изолированном Unity Bridge.

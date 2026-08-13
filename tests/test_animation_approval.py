@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from app.animation_approval import (
     audit_approved_animation_package,
@@ -12,6 +13,11 @@ from app.animation_approval import (
     record_animation_review,
 )
 from app.blender_runner import ForgeError
+from app.engine_export import write_unity_import_preset
+from app.unity_animation_clip_descriptor import (
+    DESCRIPTOR_NAME,
+    validate_unity_animation_clip_descriptor,
+)
 from core.validation import encode_rgba_png
 
 
@@ -91,6 +97,96 @@ class AnimationApprovalTests(unittest.TestCase):
             self.assertTrue(audit.valid)
             self.assertEqual(audit.direction_count, 4)
 
+    def test_timed_package_contains_audited_unity_clip_descriptor(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            render = root / "render"
+            render.mkdir()
+            manifest, source = self.timed_fixture(render)
+            review = record_animation_review(manifest, source, "approved")
+            result = publish_approved_animation(review.path, root / "approved")
+            payload = json.loads(result.manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["artifactCount"], 13)
+            descriptor = result.output_dir / DESCRIPTOR_NAME
+            self.assertTrue(descriptor.is_file())
+            descriptor_report = validate_unity_animation_clip_descriptor(
+                descriptor,
+                result.output_dir / "animation_manifest.json",
+                result.output_dir / "unity_import_preset.json",
+            )
+            self.assertEqual(descriptor_report.clip_count, 4)
+            self.assertEqual(descriptor_report.keyframe_count, 8)
+            audit = audit_approved_animation_package(result.manifest_path)
+            self.assertEqual(audit.descriptor_path, descriptor)
+            self.assertEqual(audit.descriptor_clip_count, 4)
+            self.assertEqual(audit.descriptor_keyframe_count, 8)
+
+    def test_timed_package_requires_matching_unity_preset(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            render = root / "render"
+            render.mkdir()
+            manifest, source = self.timed_fixture(render)
+            preset = render / "unity_import_preset.json"
+            preset.unlink()
+            review = record_animation_review(manifest, source, "approved")
+            with self.assertRaisesRegex(ForgeError, "requires unity_import_preset"):
+                publish_approved_animation(review.path, root / "approved")
+            self.assertFalse((root / "approved").exists())
+
+    def test_timed_descriptor_tampering_fails_package_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            render = root / "render"
+            render.mkdir()
+            manifest, source = self.timed_fixture(render)
+            review = record_animation_review(manifest, source, "approved")
+            result = publish_approved_animation(review.path, root / "approved")
+            descriptor = result.output_dir / DESCRIPTOR_NAME
+            descriptor.write_text("{}\n", encoding="utf-8")
+            with self.assertRaisesRegex(ForgeError, "hash mismatch"):
+                audit_approved_animation_package(result.manifest_path)
+
+    def test_noncanonical_preset_rolls_back_timed_publication(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            render = root / "render"
+            render.mkdir()
+            manifest, source = self.timed_fixture(render)
+            preset_path = render / "unity_import_preset.json"
+            preset = json.loads(preset_path.read_text(encoding="utf-8"))
+            preset["assets"][0]["slices"][0]["rect"][0] = 1
+            preset_path.write_text(json.dumps(preset), encoding="utf-8")
+            review = record_animation_review(manifest, source, "approved")
+            target = root / "approved"
+            with self.assertRaisesRegex(ForgeError, "exactly match"):
+                publish_approved_animation(review.path, target)
+            self.assertFalse(target.exists())
+            self.assertEqual(list(root.glob(".approved.staging-*")), [])
+            self.assertEqual(
+                json.loads(preset_path.read_text(encoding="utf-8"))["assets"][0]["slices"][0]["rect"][0],
+                1,
+            )
+
+    def test_descriptor_failure_rolls_back_whole_timed_package(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            render = root / "render"
+            render.mkdir()
+            manifest, source = self.timed_fixture(render)
+            review = record_animation_review(manifest, source, "approved")
+            target = root / "approved"
+            with patch(
+                "app.animation_approval._write_unity_animation_clip_descriptor",
+                side_effect=OSError("injected descriptor failure"),
+            ):
+                with self.assertRaisesRegex(OSError, "injected descriptor failure"):
+                    publish_approved_animation(review.path, target)
+            self.assertFalse(target.exists())
+            self.assertEqual(list(root.glob(".approved.staging-*")), [])
+            self.assertTrue(manifest.is_file())
+            self.assertTrue((render / "unity_import_preset.json").is_file())
+
     def test_audit_rejects_published_frame_tampering(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -144,6 +240,25 @@ class AnimationApprovalTests(unittest.TestCase):
             with self.assertRaisesRegex(ForgeError, "Only an approved"):
                 publish_approved_animation(review.path, root / "rejected-package")
             self.assertFalse((root / "rejected-package").exists())
+
+    def timed_fixture(self, root: Path) -> tuple[Path, Path]:
+        manifest, source = self.fixture(root)
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload.update({
+            "assetName": "unit",
+            "actionName": "Idle",
+            "timing": {
+                "fps": 20.0,
+                "fpsSource": "override",
+                "sourceFrameStep": 1,
+                "sampleTimesSeconds": [0.0],
+                "durationSeconds": 0.05,
+                "loopPolicy": "loop",
+            },
+        })
+        manifest.write_text(json.dumps(payload), encoding="utf-8")
+        write_unity_import_preset(manifest)
+        return manifest, source
 
     @staticmethod
     def sha(path: Path) -> str:

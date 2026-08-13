@@ -17,7 +17,7 @@ validation. AI Center remains paused and outside this milestone.
 - [x] Explicit Blender Action name in request, worker, manifest, report and GUI.
 - [x] Read-only Action discovery before a render operation.
 - [x] Stable animation timing contract (FPS, duration and loop policy).
-- [ ] Unity AnimationClip descriptor generated from approved sprite slices.
+- [x] Unity AnimationClip descriptor generated from approved sprite slices.
 - [ ] Transactional Unity AnimationClip creation in the isolated bridge project.
 - [ ] Physical Blender and Unity QA for at least two Actions from one model.
 - [ ] Commit-bound v0.11 release candidate and clean-extraction gate.
@@ -74,3 +74,28 @@ Blender `5.1` rendered the established animated FBX with the explicitly selected
 canvas, FPS override `20` and `once` policy. Eight frames, four sheets, contact
 sheet, ZIP and Unity preset were created successfully. Manifest, report and
 Unity preset agreed on timestamps `[0.0, 0.1]` and duration `0.15` seconds.
+
+## Slice 4 contract
+
+An approved timed animation package now contains
+`unity_animation_clip_descriptor.json`. It is generated inside the same
+transactional staging directory as the approved package, included in the
+package artifact/hash list and revalidated by the package audit. Rejected,
+tampered, untimed or preset-less inputs cannot produce the descriptor.
+
+The descriptor contains one clip per direction. Each clip is bound to the exact
+sheet SHA-256, canonical Unity preset and slice rectangles, source frames and
+timing. Clip identity includes asset, Action and direction, preventing collisions
+when multiple Actions of one model are exported. A
+terminal duplicate of the last sprite at the full duration makes the future
+Unity AnimationClip length deterministic for both `loop` and `once` policies.
+The target binding is explicitly `SpriteRenderer.m_Sprite`; no Unity project is
+modified in this slice.
+
+## Slice 4 physical QA
+
+The real Blender 5.1 Slice 3 output was reviewed, approved and published into a
+new package on 2026-08-13. Package audit verified 17 integrity-bound artifacts,
+four `once` clips and twelve keyframes. Clip names include the imported
+`running|baselayer` Action and remain distinct across all four directions. The
+render output and user Unity projects were not modified.

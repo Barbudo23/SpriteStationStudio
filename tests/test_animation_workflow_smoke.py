@@ -22,6 +22,12 @@ class AnimationWorkflowSmokeTests(unittest.TestCase):
         self.assertEqual(payload["directionCount"], 4)
         self.assertEqual(payload["frameCountPerDirection"], 2)
         self.assertEqual(payload["renderCheckedFileCount"], 14)
-        self.assertEqual(payload["packageArtifactCount"], 15)
+        self.assertEqual(payload["packageArtifactCount"], 17)
+        self.assertEqual(
+            payload["unityClipDescriptor"],
+            "unity_animation_clip_descriptor.json",
+        )
+        self.assertEqual(payload["unityClipCount"], 4)
+        self.assertEqual(payload["unityClipKeyframeCount"], 12)
         self.assertTrue(payload["approved"])
         self.assertTrue(payload["auditValid"])

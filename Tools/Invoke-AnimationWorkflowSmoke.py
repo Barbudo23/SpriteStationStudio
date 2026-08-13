@@ -16,6 +16,7 @@ from app.animation_approval import (  # noqa: E402
     record_animation_review,
 )
 from app.animation_validation import validate_animation_manifest  # noqa: E402
+from app.engine_export import write_unity_import_preset  # noqa: E402
 from core.validation import encode_rgba_png  # noqa: E402
 
 
@@ -64,11 +65,20 @@ def create_render(root: Path) -> tuple[Path, Path]:
         "application": "Sprite Station Studio",
         "module": "Animation Sprite Renderer",
         "assetName": "synthetic_unit",
+        "actionName": "SyntheticRun",
         "sourceSha256": sha256(source),
         "directionCount": 4,
         "sampledFrames": [1, 3],
         "frameRange": {"start": 1, "end": 3},
         "frameCountPerDirection": 2,
+        "timing": {
+            "fps": 20.0,
+            "fpsSource": "override",
+            "sourceFrameStep": 2,
+            "sampleTimesSeconds": [0.0, 0.1],
+            "durationSeconds": 0.15,
+            "loopPolicy": "loop",
+        },
         "canvas": {
             "width": 2, "height": 2,
             "transparent": True, "colorMode": "RGBA",
@@ -77,6 +87,7 @@ def create_render(root: Path) -> tuple[Path, Path]:
         "contactSheet": contact.name,
         "contactSheetSha256": sha256(contact),
     }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    write_unity_import_preset(manifest)
     return manifest, source
 
 
@@ -98,6 +109,10 @@ def main() -> int:
             "packageArtifactCount": package_audit.artifact_count,
             "approved": review.decision == "approved",
             "auditValid": package_audit.valid,
+            "unityClipDescriptor": str(package_audit.descriptor_path.name)
+            if package_audit.descriptor_path else None,
+            "unityClipCount": package_audit.descriptor_clip_count,
+            "unityClipKeyframeCount": package_audit.descriptor_keyframe_count,
         }, indent=2))
     return 0
 

@@ -11,6 +11,12 @@ from uuid import uuid4
 
 from app.animation_validation import validate_animation_manifest
 from app.blender_runner import ForgeError
+from app.unity_animation_clip_descriptor import (
+    DESCRIPTOR_NAME,
+    PRESET_NAME,
+    _write_unity_animation_clip_descriptor,
+    validate_unity_animation_clip_descriptor,
+)
 
 
 @dataclass(frozen=True)
@@ -33,6 +39,9 @@ class ApprovedAnimationAudit:
     artifact_count: int
     direction_count: int
     frame_count_per_direction: int
+    descriptor_path: Path | None = None
+    descriptor_clip_count: int = 0
+    descriptor_keyframe_count: int = 0
     valid: bool = True
 
 
@@ -112,7 +121,7 @@ def publish_approved_animation(
     sources = [manifest, review_path, audit.contact_sheet_path]
     sources.extend(audit.frame_paths)
     sources.extend(audit.sheet_paths)
-    for optional_name in ("unity_import_preset.json",):
+    for optional_name in (PRESET_NAME,):
         optional = source_root / optional_name
         if optional.is_file():
             sources.append(optional)
@@ -133,6 +142,23 @@ def publish_approved_animation(
             shutil.copy2(source, target)
             copied_relatives.append(relative)
             artifacts.append({"path": relative.as_posix(), "sha256": _sha256(target)})
+        if audit.timing is not None:
+            staged_manifest = staging / manifest.name
+            staged_preset = staging / PRESET_NAME
+            if not staged_preset.is_file():
+                raise ForgeError(
+                    "Timed approved animation requires unity_import_preset.json."
+                )
+            descriptor = _write_unity_animation_clip_descriptor(
+                staged_manifest,
+                staged_preset,
+                staging / DESCRIPTOR_NAME,
+            )
+            copied_relatives.append(Path(descriptor.name))
+            artifacts.append({
+                "path": descriptor.name,
+                "sha256": _sha256(descriptor),
+            })
         package_manifest = staging / "approved_animation_package.json"
         package_manifest.write_text(json.dumps({
             "schemaVersion": "1.0",
@@ -204,6 +230,23 @@ def audit_approved_animation_package(
     ):
         raise ForgeError("Packaged animation review integrity is invalid.")
     animation = validate_animation_manifest(manifest)
+    preset_path = resolved.get(PRESET_NAME)
+    descriptor_path = resolved.get(DESCRIPTOR_NAME)
+    descriptor_report = None
+    if animation.timing is not None:
+        if preset_path is None or descriptor_path is None:
+            raise ForgeError(
+                "Timed approved animation lacks Unity preset or AnimationClip descriptor."
+            )
+        descriptor_report = validate_unity_animation_clip_descriptor(
+            descriptor_path,
+            manifest,
+            preset_path,
+        )
+    elif descriptor_path is not None:
+        raise ForgeError(
+            "Legacy animation package cannot contain an AnimationClip descriptor."
+        )
     required_paths = {
         manifest.relative_to(root).as_posix(),
         review_path.relative_to(root).as_posix(),
@@ -211,6 +254,8 @@ def audit_approved_animation_package(
         *(path.relative_to(root).as_posix() for path in animation.frame_paths),
         *(path.relative_to(root).as_posix() for path in animation.sheet_paths),
     }
+    if animation.timing is not None:
+        required_paths.update({PRESET_NAME, DESCRIPTOR_NAME})
     actual_paths = {
         path.relative_to(root).as_posix()
         for path in root.rglob("*")
@@ -230,6 +275,9 @@ def audit_approved_animation_package(
         artifact_count=len(resolved),
         direction_count=animation.direction_count,
         frame_count_per_direction=animation.frame_count_per_direction,
+        descriptor_path=descriptor_path,
+        descriptor_clip_count=(descriptor_report.clip_count if descriptor_report else 0),
+        descriptor_keyframe_count=(descriptor_report.keyframe_count if descriptor_report else 0),
     )
 
 
