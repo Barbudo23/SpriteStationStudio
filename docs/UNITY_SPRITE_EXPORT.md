@@ -119,3 +119,40 @@ PNG/meta и anim/meta образуют неизменяемую группу: к
 `APPLY TEXTURE IMPORT SETTINGS` для такого bundle не используется. Физический
 smoke в Unity 6000.4.0f1 подтвердил 4 клипа, 8 ключей, 35 артефактов, повторный
 portable reload и ноль предупреждений.
+
+## Two-Action physical portability gate (v0.11 verified)
+
+`Tools/Invoke-TwoActionPhysicalQA.py` verifies that two Actions from one
+24-bone FBX fixture can coexist as collision-safe portable output. The real
+Running and Walking sources are combined only in a newly created QA fixture;
+neither source file is modified. Production Action discovery then finds
+`Armature|Armature|SSS QA Run` and `Armature|Armature|SSS_QA_Run`. Their safe
+slugs are deliberately identical, so the gate depends on the descriptor's
+Action-aware identity suffix rather than a display name.
+
+The gate has two stages. `prepare` renders `loop` and `once` contact sheets and
+stops at `awaiting_visual_review`. No package is approved automatically.
+`finalize` requires `--reviewer` and `--confirm-contact-sheets-approved`, then
+rehashes every prepared artifact before running the existing approved-package
+and Unity AnimationClip audits.
+
+The completed physical result contains two separately namespaced portable
+bundles produced by Unity `6000.4.0f1`: 4 clips, 4 sheets, 8 keys and 35 hashed
+artifacts per Action; 8 clips, 8 sheets, 16 keys and 70 bundle artifacts in
+total. Both bundles report `portableReloadVerified=true`, contain no warnings
+and preserve the complete PNG/meta and anim/meta pairs. The two bundles must not
+be flattened into one directory because each portable group retains its own
+sheet and meta identities.
+
+Both stages are no-overwrite operations. Final output becomes visible only
+after both Action packages pass. Source FBX files, the prepared fixture and
+render artifacts, the repository bridge and user Unity projects remain
+unchanged.
+
+The verified gate snapshots and rehashes every prepared artifact before review.
+Its schema 1.1 final manifest hash-closes 147 evidence artifacts, including both
+approved and Unity bundle manifests; the self-excluded manifest makes 148 files
+in the final directory. Final publication remains
+no-overwrite and is recoverable if the state update is interrupted after the
+atomic final-directory rename. An idempotent repeat completed in 1.47 seconds by
+auditing the existing result without rebuilding the Unity bundles.

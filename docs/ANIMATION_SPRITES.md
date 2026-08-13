@@ -24,9 +24,23 @@
 If the sampled frame count exceeds `Max Frames`, the worker selects evenly
 distributed frames while preserving the beginning and end of the animation.
 
+## Current v0.11 Action behavior
+
+- Read-only discovery lists the Actions contained in an imported model before
+  rendering.
+- One exact Action name can be selected for each render and is bound through
+  the request, Blender worker, manifest, approval package and Unity clip
+  descriptor.
+- Timing records FPS, source-frame timestamps, duration and `loop`/`once`
+  policy.
+- Approved timed packages can produce audited portable native Unity `.anim`
+  clips through the isolated Unity bridge.
+
 ## Current limitations
 
-- Uses the active imported animation/action.
-- Does not yet expose a list of multiple Actions contained in one source file.
+- A render operation processes one selected Action at a time; multi-Action QA
+  coordinates two independent renders and packages rather than flattening them.
 - Sprite sheets are horizontal strips.
-- Real Blender validation must be completed on the target workstation.
+- The verified two-Action developer QA remains intentionally two-stage: contact
+  sheets are inspected explicitly before `finalize`, while the production GUI
+  continues to render one selected Action at a time.

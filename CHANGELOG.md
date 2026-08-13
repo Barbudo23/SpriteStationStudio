@@ -5,6 +5,12 @@
 - Added a validated animation timing contract for FPS source, timestamps, duration and loop policy, carried into Unity presets.
 - Added audited Unity AnimationClip descriptors generated atomically only inside approved timed animation packages.
 - Added transactional native Unity AnimationClip bundles built and portability-verified in a disposable Unity 6000.4.0f1 bridge project.
+- Completed the two-stage physical two-Action QA gate with real Running and
+  Walking Actions, explicit contact-sheet approval and two portable Unity
+  6000.4.0f1 bundles (8 clips, 8 sheets, 16 keys and 70 bundle artifacts).
+- Hardened the gate with canonical state paths, a hash-verified pre-review
+  snapshot, a 147-artifact hash-closed final manifest and crash-recoverable,
+  idempotent completion publication.
 
 - Promoted the verified v0.10.0 RC2 code line to v0.10.0 Stable release identity without adding feature scope.
 - Published v0.10.0 Stable with commit-bound ZIP, manifest, checksum and tag, then re-downloaded and clean-verified all assets.

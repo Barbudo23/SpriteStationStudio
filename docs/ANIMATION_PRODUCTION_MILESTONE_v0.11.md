@@ -19,7 +19,7 @@ validation. AI Center remains paused and outside this milestone.
 - [x] Stable animation timing contract (FPS, duration and loop policy).
 - [x] Unity AnimationClip descriptor generated from approved sprite slices.
 - [x] Transactional Unity AnimationClip creation in the isolated bridge project.
-- [ ] Physical Blender and Unity QA for at least two Actions from one model.
+- [x] Physical Blender and Unity QA for at least two Actions from one model.
 - [ ] Commit-bound v0.11 release candidate and clean-extraction gate.
 
 ## Slice 1 contract
@@ -138,3 +138,94 @@ assets with eight keyframes, preserved four sprite sheets and all paired `.meta`
 files, deleted and restored its isolated job, and verified portability without
 warnings. Final Python audit passed for all 35 bundle artifacts. The repository
 bridge, render source and user Unity projects remained unchanged.
+
+## Slice 6 contract
+
+The physical two-Action gate is intentionally split into `prepare` and
+`finalize`. It uses the real Running and Walking FBX sources, verifies that both
+armatures have the same set of 24 bones, and creates a new no-overwrite FBX
+fixture containing both Actions. The two source FBX files are never modified.
+
+The exported fixture is reopened through the production read-only Action
+discovery path. The current physical fixture exposes exactly these Actions:
+
+- `Armature|Armature|SSS QA Run`, frame range `1..20`, active, rendered as
+  `loop`;
+- `Armature|Armature|SSS_QA_Run`, frame range `1..32`, inactive, rendered as
+  `once`.
+
+These two names intentionally collapse to the same filesystem-safe slug. The
+gate therefore proves that the Action-aware identity hash keeps all eight clip
+names distinct even under a case-insensitive comparison. Both Actions are
+rendered from the same fixture SHA-256 with four directions, source frames
+`1, 3`, 20 FPS and a 64px canvas. Their contact sheets must also have different
+hashes.
+
+`prepare` stops with `status=awaiting_visual_review`. It hashes the two source
+models, fixture and all prepared render artifacts, prints both contact-sheet
+paths and creates no approval package or Unity bundle. A person must inspect
+both sheets before continuing. Preparation is run with:
+
+```powershell
+python Tools/Invoke-TwoActionPhysicalQA.py prepare `
+  --workspace "<new-workspace>" `
+  --blender "<path-to-blender.exe>" `
+  --unity "<path-to-Unity.exe>" `
+  --primary-source "<Running_withSkin.fbx>" `
+  --secondary-source "<Walking_withSkin.fbx>"
+```
+
+`finalize` accepts only that unchanged prepared workspace and requires both a
+reviewer identity and the explicit `--confirm-contact-sheets-approved` flag:
+
+```powershell
+python Tools/Invoke-TwoActionPhysicalQA.py finalize `
+  --workspace "<prepared-workspace>" `
+  --blender "<same-path-to-blender.exe>" `
+  --unity "<same-path-to-Unity.exe>" `
+  --reviewer "<reviewer-name>" `
+  --confirm-contact-sheets-approved
+```
+
+Finalization rechecks every prepared hash, publishes both approved packages and
+runs Unity `6000.4.0f1` twice in disposable bridge copies. The complete result
+is published by one no-overwrite rename only after both Actions pass. Failure
+must not expose a partial `final` directory. The repository bridge, prepared
+renders, fixture and both source FBX files must remain byte-identical.
+
+## Slice 6 physical QA
+
+The complete Blender-to-Unity gate passed on 2026-08-13. The `prepare` stage
+created one compatible 24-bone fixture from the real Running and Walking FBX
+sources, discovered exactly two Actions with one active Action and produced two
+different contact sheets. Both sheets were inspected and explicitly approved
+before `finalize` was allowed to run.
+
+The physical result contains:
+
+- `Armature|Armature|SSS QA Run` with `loop` policy;
+- `Armature|Armature|SSS_QA_Run` with `once` policy;
+- two audited approved packages with 17 artifacts each;
+- four clips, four sheets and eight keyframes per Action;
+- eight case-insensitively distinct clip names despite the identical safe slug;
+- two Unity `6000.4.0f1` bundles with 35 artifacts each;
+- totals of 8 clips, 8 sprite sheets, 16 keyframes and 70 bundle artifacts;
+- `portableReloadVerified=true` and zero Unity warnings for both bundles;
+- unchanged source FBX files, fixture, prepared artifacts and repository bridge.
+
+Before review, every prepared file is copied into a private snapshot and
+rehashed. The final schema 1.1 evidence manifest binds the prepared-state hash,
+visual review, both approved manifests and both bundle manifests, and closes
+the exact final file set with SHA-256 and file sizes. The physical final contains
+147 hash-listed artifacts plus the self-excluded result manifest itself (148
+files total); this is separate from the 70 artifacts counted inside the two
+portable Unity bundles.
+
+Completion publication is crash-recoverable: an already published, fully
+audited `final` directory is authoritative if the mutable state update was
+interrupted. A repeated `finalize` audited the existing result and returned the
+same successful outcome in 1.47 seconds without rebuilding either Unity bundle.
+No existing final output is overwritten.
+
+The repository regression suite passed all 256 tests after the final
+review-to-package-to-Unity hash-chain and Windows junction defenses were added.
