@@ -18,7 +18,7 @@ validation. AI Center remains paused and outside this milestone.
 - [x] Read-only Action discovery before a render operation.
 - [x] Stable animation timing contract (FPS, duration and loop policy).
 - [x] Unity AnimationClip descriptor generated from approved sprite slices.
-- [ ] Transactional Unity AnimationClip creation in the isolated bridge project.
+- [x] Transactional Unity AnimationClip creation in the isolated bridge project.
 - [ ] Physical Blender and Unity QA for at least two Actions from one model.
 - [ ] Commit-bound v0.11 release candidate and clean-extraction gate.
 
@@ -85,10 +85,12 @@ tampered, untimed or preset-less inputs cannot produce the descriptor.
 
 The descriptor contains one clip per direction. Each clip is bound to the exact
 sheet SHA-256, canonical Unity preset and slice rectangles, source frames and
-timing. Clip identity includes asset, Action and direction, preventing collisions
-when multiple Actions of one model are exported. A
-terminal duplicate of the last sprite at the full duration makes the future
-Unity AnimationClip length deterministic for both `loop` and `once` policies.
+timing. Clip identity includes asset, Action, direction and a stable identity
+hash, preventing safe-name and case-insensitive collisions when multiple Actions
+of one model are exported. The terminal key is placed at
+`duration - 1/FPS`: Unity holds that sprite for the final frame and reports the
+requested full duration for both `loop` and `once` policies. A duplicate is only
+needed when bounded sampling omitted that terminal source frame.
 The target binding is explicitly `SpriteRenderer.m_Sprite`; no Unity project is
 modified in this slice.
 
@@ -96,6 +98,43 @@ modified in this slice.
 
 The real Blender 5.1 Slice 3 output was reviewed, approved and published into a
 new package on 2026-08-13. Package audit verified 17 integrity-bound artifacts,
-four `once` clips and twelve keyframes. Clip names include the imported
+four `once` clips and eight source-frame keyframes. Clip names include the imported
 `running|baselayer` Action and remain distinct across all four directions. The
 render output and user Unity projects were not modified.
+
+## Slice 5 contract
+
+`UnityAnimationClipBridge` accepts only the exact
+`approved_animation_package.json` entry point and runs the complete package
+audit before and after making a private snapshot. It copies the minimal bridge
+project into an operating-system temporary directory and requires the pinned
+Unity `6000.4.0f1`; neither the repository bridge nor a user Unity project is
+opened for writing.
+
+Unity independently verifies the package artifact list, hashes, safe paths,
+canonical preset and descriptor. It imports each sheet with the exact slice
+rectangles and pivots, creates `.anim` through Unity's native
+`AnimationUtility.SetObjectReferenceCurve` API, then reloads and verifies the
+binding, keyframes, FPS, length, loop policy and Sprite GUID/local file IDs.
+Hand-written Unity YAML is not used.
+
+The portable result is a new atomic, no-overwrite bundle containing its complete
+approved source snapshot, build report and immutable pairs of sheet PNG/meta and
+AnimationClip/meta files. Unity proves portability by preserving those pairs,
+deleting the job assets, restoring them, refreshing the AssetDatabase and
+verifying all curves and identities again. Only after that succeeds does Python
+hash every artifact, audit the staged bundle and publish it with one directory
+rename. The existing TextureImporter apply command must not be run over this
+bundle because regenerating slice identities would invalidate clip references.
+
+The hashes prove bundle consistency, not cryptographic authorship of the human
+approval decision.
+
+## Slice 5 physical QA
+
+The current real Blender 5.1 `running|baselayer` approved package was processed
+by Unity `6000.4.0f1` on 2026-08-13. Unity created four `once` native `.anim`
+assets with eight keyframes, preserved four sprite sheets and all paired `.meta`
+files, deleted and restored its isolated job, and verified portability without
+warnings. Final Python audit passed for all 35 bundle artifacts. The repository
+bridge, render source and user Unity projects remained unchanged.

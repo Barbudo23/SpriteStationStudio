@@ -93,5 +93,29 @@ source frames, timestamps, полную длительность, FPS, loop poli
 Descriptor включается в хэшированный список approved package и повторно
 проверяется аудитом вместе с каноническим `unity_import_preset.json`. Его нельзя
 получить из rejected, изменённого после approval, untimed или preset-less
-результата. Физическое создание `.anim` остаётся следующим отдельным этапом и
-будет выполняться только в изолированном Unity Bridge.
+результата. Идентификатор клипа дополнен стабильным коротким SHA-256, поэтому
+разные Action, дающие одинаковое безопасное имя файла, не сталкиваются.
+
+## Portable Unity AnimationClip bundle (v0.11 development)
+
+Отдельный `UnityAnimationClipBridge` принимает только
+`approved_animation_package.json`. Он повторно проверяет весь пакет и запускает
+закреплённую Unity 6000.4.0f1 на одноразовой копии bridge-проекта. Пользовательский
+Unity-проект и рабочий bridge репозитория не изменяются.
+
+Unity применяет точные Multiple Sprite slices и pivot, создаёт `.anim` через
+нативный API, повторно открывает клипы и проверяет `SpriteRenderer.m_Sprite`,
+ключи, FPS, длительность, loop и GUID/local file ID. Затем job удаляется,
+переносимые файлы восстанавливаются и проверяются ещё раз. Успешный результат
+публикуется атомарно как хэшированный bundle с:
+
+- утверждённым исходным package;
+- четырьмя sprite sheet PNG и их `.meta`;
+- четырьмя `.anim` и их `.meta`;
+- Unity build report и bundle manifest.
+
+PNG/meta и anim/meta образуют неизменяемую группу: копирование одного `.anim`
+или повторное создание slices сломает ссылки на Sprite. Текущая команда
+`APPLY TEXTURE IMPORT SETTINGS` для такого bundle не используется. Физический
+smoke в Unity 6000.4.0f1 подтвердил 4 клипа, 8 ключей, 35 артефактов, повторный
+portable reload и ноль предупреждений.

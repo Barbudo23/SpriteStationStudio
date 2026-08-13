@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -144,23 +145,38 @@ def build_unity_animation_clip_descriptor(
                 "sourceFrame": source_frame,
                 "terminal": False,
             })
-        keyframes.append({
-            "timeSeconds": timing.duration_seconds,
-            "spriteName": keyframes[-1]["spriteName"],
-            "sourceFrame": keyframes[-1]["sourceFrame"],
-            "terminal": True,
-        })
+        terminal_time = timing.duration_seconds - (1.0 / timing.fps)
+        if keyframes[-1]["timeSeconds"] > terminal_time + 1e-6:
+            raise ForgeError(
+                "AnimationClip descriptor sampled frames exceed the clip duration."
+            )
+        if math.isclose(
+            keyframes[-1]["timeSeconds"], terminal_time, abs_tol=1e-6
+        ):
+            keyframes[-1]["terminal"] = True
+        else:
+            keyframes.append({
+                "timeSeconds": terminal_time,
+                "spriteName": keyframes[-1]["spriteName"],
+                "sourceFrame": keyframes[-1]["sourceFrame"],
+                "terminal": True,
+            })
         action_name = manifest.get("actionName")
         action_slug = _safe_name(action_name or "Animation")[:48]
         direction_slug = _safe_name(direction_id)
-        max_asset_length = max(1, 128 - len(action_slug) - len(direction_slug) - 2)
+        identity_suffix = _clip_identity_suffix(asset_name, action_name, direction_id)
+        max_asset_length = max(
+            1,
+            128 - len(action_slug) - len(direction_slug) - len(identity_suffix) - 3,
+        )
         clip_name = (
             f"{_safe_name(asset_name)[:max_asset_length]}_"
-            f"{action_slug}_{direction_slug}"
+            f"{action_slug}_{direction_slug}_{identity_suffix}"
         )
-        if clip_name in clip_names:
+        clip_name_key = clip_name.casefold()
+        if clip_name_key in clip_names:
             raise ForgeError("AnimationClip descriptor clip names are duplicated.")
-        clip_names.add(clip_name)
+        clip_names.add(clip_name_key)
         sheet_hash = direction.get("sheetSha256")
         if not _is_sha256(sheet_hash):
             raise ForgeError("AnimationClip descriptor sprite sheet hash is invalid.")
@@ -266,6 +282,19 @@ def validate_unity_animation_clip_descriptor(
 
 def _safe_name(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("._") or "Animation"
+
+
+def _clip_identity_suffix(
+    asset_name: str,
+    action_name: object,
+    direction_id: str,
+) -> str:
+    identity = json.dumps(
+        [asset_name, action_name, direction_id],
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(identity).hexdigest()[:12]
 
 
 def _load_json(path: Path, label: str) -> dict:

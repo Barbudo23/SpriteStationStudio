@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import unittest
 
 from app.blender_runner import ForgeError
@@ -72,10 +73,13 @@ class UnityAnimationClipDescriptorTests(unittest.TestCase):
         manifest, preset = self.fixture()
         descriptor = self.build(manifest, preset)
         self.assertEqual(descriptor["clipCount"], 2)
-        self.assertEqual(descriptor["clips"][0]["name"], "Running_Unit_Run_north_east")
+        self.assertRegex(
+            descriptor["clips"][0]["name"],
+            r"^Running_Unit_Run_north_east_[0-9a-f]{12}$",
+        )
         self.assertEqual(
             [item["timeSeconds"] for item in descriptor["clips"][0]["keyframes"]],
-            [0.0, 0.1, 0.15],
+            [0.0, 0.1],
         )
         self.assertTrue(descriptor["clips"][0]["keyframes"][-1]["terminal"])
         self.assertTrue(descriptor["clips"][0]["loopTime"])
@@ -123,6 +127,28 @@ class UnityAnimationClipDescriptorTests(unittest.TestCase):
         idle_preset = build_unity_import_preset(manifest)
         idle_names = [clip["name"] for clip in self.build(manifest, idle_preset)["clips"]]
         self.assertTrue(set(run_names).isdisjoint(idle_names))
+
+    def test_action_names_with_the_same_safe_slug_cannot_collide(self) -> None:
+        manifest, _ = self.fixture()
+        manifest["actionName"] = "!!!"
+        first = [
+            clip["name"]
+            for clip in self.build(manifest, build_unity_import_preset(manifest))["clips"]
+        ]
+        manifest["actionName"] = "???"
+        second = [
+            clip["name"]
+            for clip in self.build(manifest, build_unity_import_preset(manifest))["clips"]
+        ]
+        self.assertTrue(set(first).isdisjoint(second))
+        self.assertTrue(
+            all(
+                re.fullmatch(
+                    r"Running_Unit_Animation_[a-z_]+_[0-9a-f]{12}", name
+                )
+                for name in first + second
+            )
+        )
 
     def test_rejects_missing_timing_or_invalid_hash(self) -> None:
         manifest, preset = self.fixture()

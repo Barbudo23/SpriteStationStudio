@@ -28,6 +28,6 @@ class AnimationWorkflowSmokeTests(unittest.TestCase):
             "unity_animation_clip_descriptor.json",
         )
         self.assertEqual(payload["unityClipCount"], 4)
-        self.assertEqual(payload["unityClipKeyframeCount"], 12)
+        self.assertEqual(payload["unityClipKeyframeCount"], 8)
         self.assertTrue(payload["approved"])
         self.assertTrue(payload["auditValid"])

@@ -115,11 +115,11 @@ class AnimationApprovalTests(unittest.TestCase):
                 result.output_dir / "unity_import_preset.json",
             )
             self.assertEqual(descriptor_report.clip_count, 4)
-            self.assertEqual(descriptor_report.keyframe_count, 8)
+            self.assertEqual(descriptor_report.keyframe_count, 4)
             audit = audit_approved_animation_package(result.manifest_path)
             self.assertEqual(audit.descriptor_path, descriptor)
             self.assertEqual(audit.descriptor_clip_count, 4)
-            self.assertEqual(audit.descriptor_keyframe_count, 8)
+            self.assertEqual(audit.descriptor_keyframe_count, 4)
 
     def test_timed_package_requires_matching_unity_preset(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

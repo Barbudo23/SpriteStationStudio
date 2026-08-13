@@ -4,6 +4,7 @@
 - Added bounded read-only Blender Action discovery with frame ranges and an editable GUI selector before rendering.
 - Added a validated animation timing contract for FPS source, timestamps, duration and loop policy, carried into Unity presets.
 - Added audited Unity AnimationClip descriptors generated atomically only inside approved timed animation packages.
+- Added transactional native Unity AnimationClip bundles built and portability-verified in a disposable Unity 6000.4.0f1 bridge project.
 
 - Promoted the verified v0.10.0 RC2 code line to v0.10.0 Stable release identity without adding feature scope.
 - Published v0.10.0 Stable with commit-bound ZIP, manifest, checksum and tag, then re-downloaded and clean-verified all assets.
