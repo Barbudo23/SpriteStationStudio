@@ -1,4 +1,13 @@
-# AssetForge Studio — Stable Development Policy
+# Sprite Station Studio — Stable Development Policy
+
+## Контроль переименования
+
+Каждая проверка ошибок включает бренд-регрессию после перехода с AssetForge Studio:
+
+- новые пользовательские тексты, manifests, пути и настройки используют Sprite Station Studio / SSS;
+- старое имя допустимо только в исторических документах и явно сохранённых legacy-контрактах;
+- `.afs`, `AssetForgeUnityBridge`, `-assetForgeCommand`, внутренние классы и legacy-пути не переименовываются без отдельной миграции;
+- случайное возвращение старого публичного имени считается ошибкой разработки.
 
 ## Назначение
 

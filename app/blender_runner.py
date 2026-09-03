@@ -24,6 +24,7 @@ class RenderRequest:
     output_dir: Path
     resolution: int = 512
     engine: str = "AUTO"
+    camera_profile: str = "Strategy30"
 
     def validate(self) -> None:
         if not self.blender_path.is_file():
@@ -45,6 +46,8 @@ class RenderRequest:
 class RenderResult:
     preview_path: Path
     report_path: Path
+    manifest_path: Path
+    unity_preset_path: Path
     report: dict
 
 
@@ -52,6 +55,49 @@ class BlenderRunner:
     def __init__(self, worker_script: Path | None = None) -> None:
         root = Path(__file__).resolve().parents[1]
         self.worker_script = worker_script or root / "worker" / "render_preview.py"
+
+    @staticmethod
+    def _windows_registry_candidates() -> list[Path]:
+        """Return Blender executables registered by Windows Installer."""
+        try:
+            import winreg
+        except ImportError:
+            return []
+
+        candidates: list[Path] = []
+        uninstall_paths = (
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+            r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+        )
+        for hive in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+            for uninstall_path in uninstall_paths:
+                try:
+                    root_key = winreg.OpenKey(hive, uninstall_path)
+                except OSError:
+                    continue
+                with root_key:
+                    index = 0
+                    while True:
+                        try:
+                            subkey_name = winreg.EnumKey(root_key, index)
+                        except OSError:
+                            break
+                        index += 1
+                        try:
+                            with winreg.OpenKey(root_key, subkey_name) as subkey:
+                                display_name = str(
+                                    winreg.QueryValueEx(subkey, "DisplayName")[0]
+                                )
+                                if "blender" not in display_name.lower():
+                                    continue
+                                install_location = str(
+                                    winreg.QueryValueEx(subkey, "InstallLocation")[0]
+                                ).strip()
+                        except OSError:
+                            continue
+                        if install_location:
+                            candidates.append(Path(install_location) / "blender.exe")
+        return candidates
 
     @staticmethod
     def find_blender() -> Path | None:
@@ -65,6 +111,7 @@ class BlenderRunner:
             candidates.append(Path(found))
 
         if sys.platform.startswith("win"):
+            candidates.extend(BlenderRunner._windows_registry_candidates())
             program_files = [
                 Path(os.environ.get("ProgramFiles", r"C:\Program Files")),
                 Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")),
@@ -84,7 +131,10 @@ class BlenderRunner:
         return None
 
     def build_command(self, request: RenderRequest) -> list[str]:
+        from app.camera_profiles import get_camera_profile
+
         request.validate()
+        profile = get_camera_profile(request.camera_profile)
         if not self.worker_script.is_file():
             raise ForgeError(f"Worker script не найден: {self.worker_script}")
 
@@ -103,6 +153,16 @@ class BlenderRunner:
             str(request.resolution),
             "--engine",
             request.engine,
+            "--camera-profile",
+            profile.profile_id,
+            "--camera-azimuth",
+            str(profile.azimuth_degrees),
+            "--camera-elevation",
+            str(profile.elevation_degrees),
+            "--framing-margin",
+            str(profile.framing_margin),
+            "--pivot-mode",
+            profile.pivot_mode,
         ]
 
     def run(
@@ -115,8 +175,9 @@ class BlenderRunner:
 
         preview_path = request.output_dir / "Preview.png"
         report_path = request.output_dir / "import_report.json"
+        manifest_path = request.output_dir / "preview_manifest.json"
 
-        for stale in (preview_path, report_path):
+        for stale in (preview_path, report_path, manifest_path):
             try:
                 stale.unlink()
             except FileNotFoundError:
@@ -155,6 +216,8 @@ class BlenderRunner:
             raise ForgeError("Blender завершился без Preview.png")
         if not report_path.is_file():
             raise ForgeError("Blender завершился без import_report.json")
+        if not manifest_path.is_file():
+            raise ForgeError("Blender завершился без preview_manifest.json")
 
         try:
             report = json.loads(report_path.read_text(encoding="utf-8"))
@@ -164,8 +227,13 @@ class BlenderRunner:
         if report.get("status") != "success":
             raise ForgeError(report.get("error", "Worker вернул неизвестную ошибку."))
 
+        from app.engine_export import write_unity_import_preset
+        unity_preset_path = write_unity_import_preset(manifest_path)
+
         return RenderResult(
             preview_path=preview_path,
             report_path=report_path,
+            manifest_path=manifest_path,
+            unity_preset_path=unity_preset_path,
             report=report,
         )

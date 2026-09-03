@@ -1,6 +1,6 @@
 # Unity Asset Library v0.1
 
-Unity Asset Library allows AssetForge Studio to browse assets stored in local Unity projects.
+Unity Asset Library allows Sprite Station Studio to browse assets stored in local Unity projects.
 
 ## Features
 

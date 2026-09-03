@@ -9,6 +9,8 @@ import re
 import time
 from typing import Iterable
 
+from app.brand import config_path
+
 
 MODEL_EXTENSIONS = {".fbx", ".obj", ".dae", ".3ds", ".blend", ".gltf", ".glb"}
 PREFAB_EXTENSIONS = {".prefab"}
@@ -51,7 +53,7 @@ class UnityAssetLibrary:
     def __init__(self, cache_root: Path | None = None):
         self.cache_root = (
             cache_root
-            or Path.home() / ".assetforge" / "unity_asset_library"
+            or config_path("unity_asset_library")
         ).expanduser().resolve()
         self.cache_root.mkdir(parents=True, exist_ok=True)
 

@@ -20,6 +20,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", required=True)
     parser.add_argument("--resolution", type=int, default=512)
     parser.add_argument("--engine", default="AUTO")
+    parser.add_argument("--camera-profile", default="Strategy30")
+    parser.add_argument("--camera-azimuth", type=float, default=45.0)
+    parser.add_argument("--camera-elevation", type=float, default=30.0)
+    parser.add_argument("--framing-margin", type=float, default=1.35)
+    parser.add_argument("--pivot-mode", choices=("bottom_center",), default="bottom_center")
     return parser.parse_args(argv)
 
 
@@ -114,13 +119,24 @@ def look_at(obj: bpy.types.Object, target: Vector) -> None:
     obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
 
 
-def setup_camera(minimum: Vector, maximum: Vector) -> bpy.types.Object:
+def setup_camera(
+    minimum: Vector,
+    maximum: Vector,
+    azimuth_degrees: float = 45.0,
+    elevation_degrees: float = 30.0,
+    framing_margin: float = 1.35,
+) -> bpy.types.Object:
     size = maximum - minimum
     center = (minimum + maximum) * 0.5
     max_dim = max(size.x, size.y, size.z, 0.001)
 
-    azimuth = math.radians(45.0)
-    elevation = math.radians(30.0)
+    if not 0.0 <= elevation_degrees < 90.0:
+        raise ValueError("Camera elevation must be between 0 and 90 degrees.")
+    if not 1.0 <= framing_margin <= 3.0:
+        raise ValueError("Camera framing margin must be between 1.0 and 3.0.")
+
+    azimuth = math.radians(azimuth_degrees)
+    elevation = math.radians(elevation_degrees)
     distance = max_dim * 4.0
     horizontal = math.cos(elevation) * distance
 
@@ -134,7 +150,7 @@ def setup_camera(minimum: Vector, maximum: Vector) -> bpy.types.Object:
         center.z + math.sin(elevation) * distance,
     ))
     camera_data.type = "ORTHO"
-    camera_data.ortho_scale = max(size.x, size.y, size.z) * 1.35
+    camera_data.ortho_scale = max_dim * framing_margin
     camera_data.lens = 50
     camera_data.clip_start = max(max_dim / 1000.0, 0.001)
     camera_data.clip_end = max(distance * 10.0, 1000.0)
@@ -163,7 +179,8 @@ def setup_lighting(minimum: Vector, maximum: Vector) -> None:
 
     world = bpy.context.scene.world or bpy.data.worlds.new("ForgeWorld")
     bpy.context.scene.world = world
-    world.use_nodes = True
+    if world.node_tree is None:
+        world.use_nodes = True
     background = world.node_tree.nodes.get("Background")
     if background:
         background.inputs["Color"].default_value = (0.04, 0.04, 0.04, 1.0)
@@ -287,6 +304,7 @@ def main() -> int:
 
     preview = output_dir / "Preview.png"
     report_path = output_dir / "import_report.json"
+    manifest_path = output_dir / "preview_manifest.json"
     started = time.perf_counter()
     bounds = None
 
@@ -308,7 +326,12 @@ def main() -> int:
         bounds = normalize_scene(objects)
 
         print("[Forge] Creating camera")
-        setup_camera(*bounds)
+        setup_camera(
+            *bounds,
+            azimuth_degrees=args.camera_azimuth,
+            elevation_degrees=args.camera_elevation,
+            framing_margin=args.framing_margin,
+        )
 
         print("[Forge] Creating lights")
         setup_lighting(*bounds)
@@ -322,8 +345,48 @@ def main() -> int:
 
         report = make_report(model, preview, "success", started, bounds=bounds)
         report["renderEngine"] = resolved_engine
+        report["cameraProfile"] = args.camera_profile
         report_path.write_text(
             json.dumps(report, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        manifest = {
+            "schemaVersion": "1.1",
+            "application": "Sprite Station Studio",
+            "module": "Single Sprite Preview",
+            "sourceType": "3d_model",
+            "assetName": model.stem,
+            "sprite": preview.name,
+            "canvas": {
+                "width": args.resolution,
+                "height": args.resolution,
+                "transparent": True,
+                "colorMode": "RGBA",
+            },
+            "camera": {
+                "profile": args.camera_profile,
+                "projection": "orthographic",
+                "azimuthDegrees": args.camera_azimuth,
+                "elevationDegrees": args.camera_elevation,
+                "framingMargin": args.framing_margin,
+            },
+            "normalization": {
+                "centeredXY": True,
+                "groundAligned": True,
+                "scalePolicy": "fit_largest_dimension",
+                "pivot": {
+                    "mode": args.pivot_mode,
+                    "normalized": [0.5, 0.0],
+                },
+                "bounds": {
+                    "minimum": [float(value) for value in bounds[0]],
+                    "maximum": [float(value) for value in bounds[1]],
+                },
+            },
+            "renderEngine": resolved_engine,
+        }
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
         print(f"[Forge] SUCCESS: {preview}")

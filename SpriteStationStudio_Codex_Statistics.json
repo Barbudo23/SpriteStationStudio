@@ -1,0 +1,94 @@
+{
+  "generated_utc": "2026-07-22T19:15:00Z",
+  "measurement_scope": "Git HEAD d54662e249a7620f6d414c51feaf52dc8471d49c on studio/0.8.3-static-sprite-pipeline",
+  "repository": {
+    "files": 161,
+    "tracked_bytes": 50319551,
+    "lines_of_code": 11542,
+    "total_measured_text_lines": 13297,
+    "languages": {
+      "Python": {"files": 97, "lines": 11053},
+      "CSharp": {"files": 1, "lines": 454},
+      "Batch": {"files": 3, "lines": 31},
+      "Shell": {"files": 1, "lines": 4},
+      "Markdown": {"files": 33, "lines": 1683},
+      "JSON": {"files": 6, "lines": 61},
+      "TOML": {"files": 1, "lines": 11}
+    }
+  },
+  "modules": [
+    {"name": "Static Sprite Workflow v0.9", "completion_percent": 96, "status": "published prerelease", "evidence": "transactional workflow, audit, GUI, Blender/Unity and release gates passed"},
+    {"name": "Batch Preview and review", "completion_percent": 94, "status": "validated", "evidence": "BatchPlan 1.0, resume, contact sheet, immutable review, maximum 3 items"},
+    {"name": "Static SpriteBuilder", "completion_percent": 95, "status": "validated", "evidence": "approved-only staging, Sprite Set 1.0, alpha bounds, pivot and SHA-256"},
+    {"name": "Blender static rendering", "completion_percent": 90, "status": "validated development", "evidence": "Blender 5.1.2 physical E2E and camera profiles"},
+    {"name": "Unity sprite integration", "completion_percent": 86, "status": "validated development", "evidence": "Unity 6000.4.0f1 read-only preview, 2/2 sprites, zero warnings"},
+    {"name": "Desktop GUI and module shell", "completion_percent": 76, "status": "RC-tested", "evidence": "Windows launch, system file dialog, Tk controller E2E and edge cases"},
+    {"name": "Animation sprite rendering", "completion_percent": 60, "status": "development outside v0.9 scope", "evidence": "existing renderer and Unity paths; not part of RC gate"},
+    {"name": "AI Center", "completion_percent": 35, "status": "paused", "evidence": "provider layer and window exist; excluded from v0.9 scope"},
+    {"name": "Core framework", "completion_percent": 62, "status": "foundation", "evidence": "projects, event bus, job queue, SQLite database and plugin registry"},
+    {"name": "Four-image source", "completion_percent": 55, "status": "development", "evidence": "portable image asset ZIP workflow exists"},
+    {"name": "Unity Asset Library", "completion_percent": 55, "status": "development", "evidence": "local Unity project and asset discovery implemented"},
+    {"name": "AtlasBuilder", "completion_percent": 5, "status": "placeholder"},
+    {"name": "Godot exporter", "completion_percent": 0, "status": "not implemented"},
+    {"name": "Unreal exporter", "completion_percent": 0, "status": "not implemented"},
+    {"name": "Installer and updater", "completion_percent": 10, "status": "not implemented; ZIP prerelease only"},
+    {"name": "Release engineering", "completion_percent": 82, "status": "prerelease operational", "evidence": "reproducible ZIP, manifest, checksum, clean verification and GitHub prerelease"}
+  ],
+  "engineering": {
+    "static_sprite_v090_scope_completion_percent": 96,
+    "whole_product_vision_completion_percent": 58,
+    "commercial_stable_readiness_percent": 68,
+    "architecture_quality_score_10": 7.8,
+    "maintainability_score_10": 7.4,
+    "release_reproducibility_score_10": 9.0,
+    "remaining_primary_risks": [
+      "post-RC field feedback has not accumulated",
+      "AI Center is paused",
+      "animation is outside the v0.9 acceptance scope",
+      "installer, updater and signing are absent",
+      "Linux and macOS real GUI/Blender smoke remain unknown"
+    ],
+    "estimation_is_measured": false
+  },
+  "tests": {
+    "test_files": 37,
+    "test_methods": 131,
+    "last_run_passed": 131,
+    "last_run_failed": 0,
+    "line_coverage_percent": "UNKNOWN",
+    "branch_coverage_percent": "UNKNOWN",
+    "synthetic_static_workflow_e2e": "PASS",
+    "physical_blender_static_e2e": "PASS",
+    "unity_6000_4_0f1_preview": "PASS",
+    "manual_windows_gui_qa": "PASS",
+    "clean_install_python_s": "PASS",
+    "release_archive_verification": "PASS"
+  },
+  "git": {
+    "branch": "studio/0.8.3-static-sprite-pipeline",
+    "head": "d54662e249a7620f6d414c51feaf52dc8471d49c",
+    "commits": 43,
+    "repository": "Barbudo23/SpriteStationStudio",
+    "visibility": "private",
+    "tag": "v0.9.0-rc1",
+    "tag_commit": "df8613c5d44be876672273692c32520e0631b59d",
+    "github_release_status": "published prerelease"
+  },
+  "release": {
+    "version": "0.9.0rc1",
+    "archive": "SpriteStationStudio-v0.9.0rc1-df8613c5.zip",
+    "archive_bytes": 44211717,
+    "archive_sha256": "b1ec23daae4dc18548cbd85b6cfb4254ceb2c8808f686b72e1cefccc135756cb",
+    "tracked_files_in_archive": 160,
+    "published_as_stable": false
+  },
+  "codex": {
+    "basis": "Historical Codex token and session telemetry is unavailable in the repository and current tools.",
+    "estimated_input_tokens": 0,
+    "estimated_cached_tokens": 0,
+    "estimated_output_tokens": 0,
+    "estimated_total_tokens": 0,
+    "estimated_sessions": 0,
+    "telemetry_status": "UNKNOWN; zero values mean unavailable, not actual zero usage"
+  }
+}

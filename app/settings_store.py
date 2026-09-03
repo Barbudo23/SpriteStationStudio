@@ -6,6 +6,8 @@ import json
 import os
 import tempfile
 
+from app.brand import config_path, legacy_config_path
+
 
 @dataclass
 class AppSettings:
@@ -19,20 +21,23 @@ class AppSettings:
 
 
 class SettingsStore:
-    """Atomic JSON settings store for AssetForge Studio."""
+    """Atomic JSON settings store for Sprite Station Studio."""
 
     def __init__(self, path: Path | None = None):
-        self.path = (
-            path
-            or Path.home() / ".assetforge" / "settings.json"
-        ).expanduser().resolve()
+        self.path = (path or config_path("settings.json")).expanduser().resolve()
+        self.legacy_path = (
+            None if path is not None else legacy_config_path("settings.json").resolve()
+        )
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def load(self) -> AppSettings:
-        if not self.path.is_file():
+        read_path = self.path
+        if not read_path.is_file() and self.legacy_path and self.legacy_path.is_file():
+            read_path = self.legacy_path
+        if not read_path.is_file():
             return AppSettings()
         try:
-            payload = json.loads(self.path.read_text(encoding="utf-8"))
+            payload = json.loads(read_path.read_text(encoding="utf-8"))
             known = {
                 field: payload.get(field, getattr(AppSettings(), field))
                 for field in AppSettings.__dataclass_fields__

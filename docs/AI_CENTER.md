@@ -1,6 +1,6 @@
 # AI Center v0.8.2 Dev
 
-AI Center — изолированный модуль генерации изображений для AssetForge Studio.
+AI Center — изолированный модуль генерации изображений для Sprite Station Studio.
 
 ## Провайдеры
 
@@ -12,7 +12,7 @@ AI Center — изолированный модуль генерации изо�
 
 ## Безопасность
 
-- API-ключи не сохраняются в проекте и `~/.assetforge/ai_center.json`.
+- API-ключи не сохраняются в проекте и `~/.sprite_station_studio/ai_center.json`. Старый `~/.assetforge/ai_center.json` читается только как legacy fallback.
 - OpenAI использует переменную окружения `OPENAI_API_KEY`.
 - CloseAI использует переменную окружения `CLOSEAI_API_KEY`.
 - Ошибки API очищаются от значения ключа перед отображением.

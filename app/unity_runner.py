@@ -31,7 +31,7 @@ class UnityCommandResult:
 class UnityRunner:
     """Runs Unity Editor as an isolated batch-mode subprocess.
 
-    AssetForge never imports Unity assemblies into the Python process.
+    Sprite Station Studio never imports Unity assemblies into the Python process.
     Communication is performed through command JSON and report JSON files.
     """
 

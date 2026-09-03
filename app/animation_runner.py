@@ -7,6 +7,7 @@ import subprocess
 from typing import Callable
 
 from app.blender_runner import ForgeError
+from app.camera_profiles import DEFAULT_CAMERA_PROFILE, get_camera_profile
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class AnimationRenderRequest:
     frame_end: int | None = None
     frame_step: int = 2
     max_frames: int = 32
+    camera_profile: str = DEFAULT_CAMERA_PROFILE
 
 
 @dataclass(frozen=True)
@@ -29,6 +31,7 @@ class AnimationRenderResult:
     manifest_path: Path
     report_path: Path
     contact_sheet_path: Path
+    unity_preset_path: Path
     report: dict
 
 
@@ -40,6 +43,7 @@ class AnimationRenderRunner:
         )
 
     def build_command(self, request: AnimationRenderRequest) -> list[str]:
+        profile = get_camera_profile(request.camera_profile)
         if not request.blender_path.is_file():
             raise ForgeError(f"Blender executable не найден: {request.blender_path}")
         if not request.model_path.is_file():
@@ -67,6 +71,11 @@ class AnimationRenderRunner:
             "--directions", str(request.direction_count),
             "--frame-step", str(request.frame_step),
             "--max-frames", str(request.max_frames),
+            "--camera-profile", profile.profile_id,
+            "--camera-azimuth", str(profile.azimuth_degrees),
+            "--camera-elevation", str(profile.elevation_degrees),
+            "--framing-margin", str(profile.framing_margin),
+            "--pivot-mode", profile.pivot_mode,
         ]
         if request.frame_start is not None:
             args.extend(["--frame-start", str(request.frame_start)])
@@ -119,10 +128,15 @@ class AnimationRenderRunner:
         if report.get("status") != "success":
             raise ForgeError(report.get("error", "Ошибка animation render."))
 
+        from app.engine_export import append_preset_to_zip, write_unity_import_preset
+        unity_preset_path = write_unity_import_preset(manifest_path)
+        append_preset_to_zip(zip_path, unity_preset_path)
+
         return AnimationRenderResult(
             zip_path=zip_path,
             manifest_path=manifest_path,
             report_path=report_path,
             contact_sheet_path=contact_sheet_path,
+            unity_preset_path=unity_preset_path,
             report=report,
         )

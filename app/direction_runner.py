@@ -7,6 +7,7 @@ import json
 import subprocess
 
 from app.blender_runner import ForgeError, RenderRequest
+from app.camera_profiles import DEFAULT_CAMERA_PROFILE, get_camera_profile
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,7 @@ class DirectionRenderResult:
     zip_path: Path
     contact_sheet_path: Path
     manifest_path: Path
+    unity_preset_path: Path
     report: dict
 
 
@@ -22,8 +24,14 @@ class DirectionRenderRunner:
         root = Path(__file__).resolve().parents[1]
         self.worker_script = worker_script or root / "worker" / "render_directions.py"
 
-    def build_command(self, request: RenderRequest, direction_count: int) -> list[str]:
+    def build_command(
+        self,
+        request: RenderRequest,
+        direction_count: int,
+        camera_profile: str = DEFAULT_CAMERA_PROFILE,
+    ) -> list[str]:
         request.validate()
+        profile = get_camera_profile(camera_profile)
         if direction_count not in {4, 8}:
             raise ForgeError("Количество направлений должно быть 4 или 8.")
         if not self.worker_script.is_file():
@@ -46,15 +54,26 @@ class DirectionRenderRunner:
             request.engine,
             "--directions",
             str(direction_count),
+            "--camera-profile",
+            profile.profile_id,
+            "--camera-azimuth",
+            str(profile.azimuth_degrees),
+            "--camera-elevation",
+            str(profile.elevation_degrees),
+            "--framing-margin",
+            str(profile.framing_margin),
+            "--pivot-mode",
+            profile.pivot_mode,
         ]
 
     def run(
         self,
         request: RenderRequest,
         direction_count: int,
+        camera_profile: str = DEFAULT_CAMERA_PROFILE,
         on_output: Callable[[str], None] | None = None,
     ) -> DirectionRenderResult:
-        command = self.build_command(request, direction_count)
+        command = self.build_command(request, direction_count, camera_profile)
         request.output_dir.mkdir(parents=True, exist_ok=True)
 
         process = subprocess.Popen(
@@ -95,9 +114,14 @@ class DirectionRenderRunner:
         if report.get("status") != "success":
             raise ForgeError(report.get("error", "Ошибка direction render."))
 
+        from app.engine_export import append_preset_to_zip, write_unity_import_preset
+        unity_preset_path = write_unity_import_preset(manifest_path)
+        append_preset_to_zip(zip_path, unity_preset_path)
+
         return DirectionRenderResult(
             zip_path=zip_path,
             contact_sheet_path=contact_sheet_path,
             manifest_path=manifest_path,
+            unity_preset_path=unity_preset_path,
             report=report,
         )

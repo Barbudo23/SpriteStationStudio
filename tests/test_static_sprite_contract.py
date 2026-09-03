@@ -1,0 +1,68 @@
+from __future__ import annotations
+
+import ast
+import unittest
+from pathlib import Path
+
+
+class StaticSpriteContractTests(unittest.TestCase):
+    def test_direction_worker_is_valid_python(self) -> None:
+        source = self._worker_path().read_text(encoding="utf-8")
+        ast.parse(source)
+
+    def test_manifest_records_reproducible_sprite_metadata(self) -> None:
+        source = self._worker_path().read_text(encoding="utf-8")
+        for required in (
+            '"schemaVersion": "1.1"',
+            '"camera"',
+            '"normalization"',
+            '"pivot"',
+            '"transparent": True',
+            '"colorMode": "RGBA"',
+        ):
+            self.assertIn(required, source)
+
+    def test_animation_worker_uses_same_manifest_contract(self) -> None:
+        source = (
+            Path(__file__).resolve().parents[1]
+            / "worker"
+            / "render_animation_directions.py"
+        ).read_text(encoding="utf-8")
+        ast.parse(source)
+        for required in (
+            '"schemaVersion": "1.1"',
+            '"camera"',
+            '"normalization"',
+            '"pivot"',
+            '"transparent": True',
+        ):
+            self.assertIn(required, source)
+
+    def test_single_preview_uses_same_manifest_contract(self) -> None:
+        source = (
+            Path(__file__).resolve().parents[1] / "worker" / "render_preview.py"
+        ).read_text(encoding="utf-8")
+        ast.parse(source)
+        for required in (
+            '"schemaVersion": "1.1"',
+            '"camera"',
+            '"normalization"',
+            '"pivot"',
+            '"transparent": True',
+        ):
+            self.assertIn(required, source)
+
+    def test_single_preview_avoids_blender_51_world_nodes_deprecation(self) -> None:
+        source = (
+            Path(__file__).resolve().parents[1] / "worker" / "render_preview.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("if world.node_tree is None:", source)
+        self.assertNotIn("\n    world.use_nodes = True\n", source)
+
+    @staticmethod
+    def _worker_path() -> Path:
+        return Path(__file__).resolve().parents[1] / "worker" / "render_directions.py"
+
+
+if __name__ == "__main__":
+    unittest.main()
